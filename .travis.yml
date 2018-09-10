@@ -1,0 +1,32 @@
+language: go
+sudo: false
+matrix:
+  include:
+  - go: 1.x
+    env: LATEST=true
+before_install:
+- go get github.com/mitchellh/gox
+install:
+- 
+script:
+- go get -t -v ./...
+- diff -u <(echo -n) <(gofmt -d .)
+- go vet $(go list ./... | grep -v /vendor/)
+- go test -v -race ./...
+- if [ "${LATEST}" = "true" ]; then gox -os "windows linux darwin" -arch amd64  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
+
+before_deploy:
+- git config --local user.name "codechenx"
+- git config --local user.email "codechenx@gmail.com"
+deploy:
+  provider: releases
+  api_key:
+    secure: reTruNoSsiktk5u9v1G9D9Drr3jrPqdHqNbJGAyVxPKUpor9biCUzoLh4rbT3nzYNusqY7e/QyLrEUpGaS8HK5Qt2/dNjXxx1mxQ11V/x7toJy5PaR/zFmfZgdd0yOWJaZpbWufOJn5z86SSU4lIMTqghZMpMQ763KMHiR0Jh85e+8aXUDbWZgFkPq/cird/Y4GwAfpnyuhMoiA1ZOc6EaGIMY0lYBob5Um0XzwpjQp4SbZAskrOr7n36rCGEFJYl6kplh8SfSb8z/pUPB21updccuAlML5X24GJjtjj/JJkXs64hw3sm7kzCZIUztLWFOLgYalSLsxdCXkZpd6qw5W+yRrYh/CU2D3ARqLAWDZH93lnXIm2xlCsqHXI0q8te8AOVfmuSm/954Ndcn6068fEefQdkFlixm8gQr6pWnTwpaCBm8jsAAmOE1xhb7ugLkMNnGlk+gA5mtPemSQIUKQOPR9TD8CJBlxx2/0Xpoln+0Nv8QqHEW71hzHgxkzAz3JOi+vPo62TWGsXox/eOxB7/+QEXJtRRmcnYUhrlfdocGvN4A//IcM50V/Z75ntq+PVjLTqqXNBDF++ekdslRrvFpMIi/ZVa5pVdgzfRGSsAU7GkvHz/UmEZrY1tTQH2+70D3Ufjs1SUzB26qAgmdhBhZ//QcnSeVFcz4pzAyE=
+  file: 
+  - tv_linux_amd64
+  - tv_darwin_amd64
+  - tv_windows_amd64.exe
+  on:
+    repo: codechenx/tv
+    tags: true
+    condition: $LATEST = true
