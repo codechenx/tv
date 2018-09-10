@@ -11,7 +11,7 @@ func fatalError(err error) {
 		color.Set(color.FgRed)
 		fmt.Println(err)
 		color.Unset()
-		defer app.Stop()
-		os.Exit(1)
+		app.Stop()
+		defer os.Exit(1)
 	}
 }

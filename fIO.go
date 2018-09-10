@@ -30,8 +30,12 @@ func loadFile(fn string, b *Buffer) error {
 		if b.sep == "" {
 			if strings.Contains(line, "\t") {
 				b.sep = "\t"
-			} else {
+			} else if strings.Contains(line, ",") {
 				b.sep = ","
+			} else if strings.Contains(line, " ") {
+				b.sep = " "
+			} else {
+				fatalError(errors.New("you must set a separator"))
 			}
 		}
 
