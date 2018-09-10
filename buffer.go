@@ -36,11 +36,11 @@ func (b Buffer) addVirHeader() {
 	var rowVirHeader []string
 	var colVirHeader []string
 	for i := 0; i < b.colNum; i++ {
-		colVirHeader = append(colVirHeader, strconv.Itoa(i))
+		colVirHeader = append(colVirHeader, strconv.Itoa(i+1))
 	}
 	rowVirHeader = append(rowVirHeader, string("#"))
 	for i := 0; i < b.rowNum; i++ {
-		rowVirHeader = append(rowVirHeader, strconv.Itoa(i))
+		rowVirHeader = append(rowVirHeader, strconv.Itoa(i+1))
 	}
 	if b.header == -1 {
 		b.cont = append(b.cont, []string{})
