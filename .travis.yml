@@ -4,6 +4,8 @@ matrix:
   include:
   - go: 1.x
     env: LATEST=true
+env:
+- CODECOV_TOKEN="9aa162dc-37d5-4e87-b06a-64dceec0b227"
 before_install:
 - go get github.com/mitchellh/gox
 install:
@@ -12,7 +14,7 @@ script:
 - go get -t -v ./...
 - diff -u <(echo -n) <(gofmt -d .)
 - go vet $(go list ./... | grep -v /vendor/)
-- go test -v -race ./...
+- go test -v -race -coverprofile=coverage.txt -covermode=atomic ./... 
 - if [ "${LATEST}" = "true" ]; then gox -os "windows linux darwin" -arch amd64  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
 
 before_deploy:
@@ -31,3 +33,6 @@ deploy:
     repo: codechenx/tv
     tags: true
     condition: $LATEST = true
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
