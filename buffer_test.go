@@ -10,7 +10,7 @@ func Test_createNewBuffer(t *testing.T) {
 		name string
 		want *Buffer
 	}{
-		{"createNewBuffer", &Buffer{name: "", sep: "", header: 0, rowNum: 0, colNum: 0, cont: [][]string{}}},
+		{"createNewBuffer", &Buffer{name: "", sep: "", header: 0, vHRN: 0, vHCN: 0, rowNum: 0, colNum: 0, cont: [][]string{}}},
 	}
 	for _, tt := range tests {
 		if got := createNewBuffer(); !reflect.DeepEqual(got, tt.want) {
@@ -80,7 +80,9 @@ func TestBuffer_addVirHeader(t *testing.T) {
 		want   [][]string
 	}{
 		{"Add virtual header to cont", fields{"", "", 2, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}},
-		{"Add virtual header to cont", fields{"", "", 1, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}},
+		{"Add virtual header to cont", fields{"", "", 1, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"1", "2", "3", "4"}, []string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}},
+		{"Add virtual header to cont", fields{"", "", 0, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"#", "some", "thing", "other", "thing"}, []string{"1", "some", "thing", "other", "thing"}}},
+		{"Add virtual header to cont", fields{"", "", -1, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"#", "1", "2", "3", "4"}, []string{"1", "some", "thing", "other", "thing"}, []string{"2", "some", "thing", "other", "thing"}}},
 	}
 	for _, tt := range tests {
 		b := Buffer{
