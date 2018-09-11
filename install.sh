@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 # This script will install tv to the directory you're in. To install
 # somewhere else (e.g. /usr/local/bin) just move tv binary into it
 
