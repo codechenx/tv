@@ -16,7 +16,7 @@
 - [Description](#description)
 - [To do](#to-do)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binaries)
+  - [Prebuilt binaries](#prebuilt-binariesonly-64bit)
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
@@ -29,7 +29,7 @@
 
 # Installation
 
-### Prebuilt binaries
+### Prebuilt binaries(only 64bit)
 ```bash
 $ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
