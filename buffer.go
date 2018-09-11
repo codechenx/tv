@@ -10,13 +10,15 @@ type Buffer struct {
 	name   string
 	sep    string
 	header int
+	vHRN   int // virHeaderRowNumber
+	vHCN   int //virHeaderColNumber
 	cont   [][]string
 	rowNum int
 	colNum int
 }
 
 func createNewBuffer() *Buffer {
-	return &Buffer{name: "", sep: "", header: 0, rowNum: 0, colNum: 0, cont: [][]string{}}
+	return &Buffer{name: "", sep: "", header: 0, vHRN: 0, vHCN: 0, rowNum: 0, colNum: 0, cont: [][]string{}}
 }
 
 func (b *Buffer) contAppend(s, sep string) error {
@@ -32,7 +34,7 @@ func (b *Buffer) contAppend(s, sep string) error {
 	return nil
 }
 
-func (b Buffer) addVirHeader() {
+func (b *Buffer) addVirHeader() {
 	var rowVirHeader []string
 	var colVirHeader []string
 	for i := 0; i < b.colNum; i++ {
@@ -51,6 +53,8 @@ func (b Buffer) addVirHeader() {
 			copy(b.cont[i][1:], b.cont[i])
 			b.cont[i][0] = rowVirHeader[i]
 		}
+		b.vHRN += 1
+		b.vHCN += 1
 	}
 
 	if b.header == 0 {
@@ -59,12 +63,14 @@ func (b Buffer) addVirHeader() {
 			copy(b.cont[i][1:], b.cont[i])
 			b.cont[i][0] = rowVirHeader[i]
 		}
+		b.vHCN += 1
 	}
 
 	if b.header == 1 {
 		b.cont = append(b.cont, []string{})
 		copy(b.cont[1:], b.cont)
 		b.cont[0] = colVirHeader
+		b.vHCN += 1
 	}
 
 	if b.header == 2 {

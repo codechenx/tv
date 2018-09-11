@@ -1,6 +1,8 @@
 package main
 
-import "github.com/alexflint/go-arg"
+import (
+	"github.com/alexflint/go-arg"
+)
 
 func main() {
 	args.setDefault()

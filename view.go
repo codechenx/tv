@@ -6,7 +6,7 @@ import (
 )
 
 func render(b *Buffer) {
-	cols, rows := b.colNum, b.rowNum
+	cols, rows := b.colNum+b.vHCN, b.rowNum+b.vHRN
 	for r := 0; r < rows; r++ {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
