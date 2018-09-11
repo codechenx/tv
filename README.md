@@ -31,7 +31,7 @@
 
 ### Prebuilt binaries
 ```bash
-curl https://github.com/codechenx/tv/blob/master/install.sh | bash
+$ curl https://github.com/codechenx/tv/blob/master/install.sh | bash
 ```
 
 ### Build from source
