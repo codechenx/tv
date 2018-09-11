@@ -15,3 +15,11 @@ func fatalError(err error) {
 		defer os.Exit(1)
 	}
 }
+
+func warningError(err error) {
+	if err != nil {
+		color.Set(color.FgYellow)
+		fmt.Println(err)
+		color.Unset()
+	}
+}

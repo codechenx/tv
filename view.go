@@ -21,5 +21,4 @@ func render(b *Buffer) {
 	}
 
 	table.SetFixed(1, 1)
-
 }

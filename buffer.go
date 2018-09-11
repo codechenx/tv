@@ -53,8 +53,8 @@ func (b *Buffer) addVirHeader() {
 			copy(b.cont[i][1:], b.cont[i])
 			b.cont[i][0] = rowVirHeader[i]
 		}
-		b.vHRN += 1
-		b.vHCN += 1
+		b.vHRN++
+		b.vHCN++
 	}
 
 	if b.header == 0 {
@@ -63,14 +63,14 @@ func (b *Buffer) addVirHeader() {
 			copy(b.cont[i][1:], b.cont[i])
 			b.cont[i][0] = rowVirHeader[i]
 		}
-		b.vHCN += 1
+		b.vHCN++
 	}
 
 	if b.header == 1 {
 		b.cont = append(b.cont, []string{})
 		copy(b.cont[1:], b.cont)
 		b.cont[0] = colVirHeader
-		b.vHCN += 1
+		b.vHRN++
 	}
 
 	if b.header == 2 {
