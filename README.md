@@ -66,7 +66,7 @@ Options:
   - --sep SEP, -s SEP      split symbol
   - --ss SS                ignore lines with specific prefix
   - --sn SN                ignore first n lines
-  - --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name
+  - --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use first column as column name and first row as row name
   - --t                    transpose and view data
   - --help, -h             display this help and exit
   - --version              display version and exit
