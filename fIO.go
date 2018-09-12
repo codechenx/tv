@@ -19,10 +19,14 @@ func loadFile(fn string, b *Buffer) error {
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-
 	for scanner.Scan() {
 		line := scanner.Text()
-		//Skip line
+		//ignore first n lines
+		if args.SkipNum > 0 {
+			args.SkipNum--
+			continue
+		}
+		//ignore line with specified prefix
 		if args.SkipSymbol != "" && strings.HasPrefix(line, args.SkipSymbol) {
 			continue
 		}
