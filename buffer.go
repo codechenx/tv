@@ -21,12 +21,13 @@ func createNewBuffer() *Buffer {
 	return &Buffer{name: "", sep: "", header: 0, vHRN: 0, vHCN: 0, rowNum: 0, colNum: 0, cont: [][]string{}}
 }
 
-func (b *Buffer) contAppend(s, sep string) error {
+func (b *Buffer) contAppend(s, sep string, strict bool) error {
 	sSlice := strings.Split(s, sep)
 	if b.rowNum == 0 {
 		b.colNum = len(sSlice)
 	}
-	if len(sSlice) != b.colNum {
+
+	if len(sSlice) != b.colNum && strict {
 		return errors.New("lack some column")
 	}
 	b.cont = append(b.cont, sSlice)

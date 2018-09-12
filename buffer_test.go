@@ -31,8 +31,9 @@ func TestBuffer_contAppend(t *testing.T) {
 		colNum int
 	}
 	type args struct {
-		s   string
-		sep string
+		s      string
+		sep    string
+		strict bool
 	}
 	tests := []struct {
 		name    string
@@ -41,11 +42,12 @@ func TestBuffer_contAppend(t *testing.T) {
 		want    [][]string
 		wantErr bool
 	}{
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some,thing,other,thing", ","}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other,thing", ","}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some	thing	other	thing", "	"}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some	thing	other	thing", "	"}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ","}, [][]string{[]string{"some", "thing", "other", "thing"}}, true},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some,thing,other,thing", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other,thing", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some	thing	other	thing", "	", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some	thing	other	thing", "	", true}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, true},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", false}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other"}}, false},
 	}
 	for _, tt := range tests {
 		b := &Buffer{
@@ -59,7 +61,7 @@ func TestBuffer_contAppend(t *testing.T) {
 			colNum: tt.fields.colNum,
 		}
 
-		err := b.contAppend(tt.args.s, tt.args.sep)
+		err := b.contAppend(tt.args.s, tt.args.sep, tt.args.strict)
 		if got := b.cont; !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("%q. Buffer.contAppend(string,string) = %v, wantCont = %v", tt.name, got, tt.want)
 		}

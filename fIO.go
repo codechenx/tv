@@ -37,7 +37,7 @@ func loadFile(fn string, b *Buffer) error {
 			}
 		}
 
-		err = b.contAppend(line, b.sep)
+		err = b.contAppend(line, b.sep, false)
 		if err != nil {
 			return err
 		}

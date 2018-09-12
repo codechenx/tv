@@ -16,7 +16,6 @@ script:
 - go vet $(go list ./... | grep -v /vendor/)
 - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./... 
 - if [ "${LATEST}" = "true" ]; then gox -os "windows linux darwin" -arch amd64  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
-- sudo chmod +x tv_linux_amd64 tv_darwin_amd64 tv_windows_amd64.exe
 before_deploy:
 - git config --local user.name "codechenx"
 - git config --local user.email "codechenx@gmail.com"

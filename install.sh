@@ -29,3 +29,4 @@ TAG=`githubLatestTag codechenx/tv`
 
 echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$platform""
 curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$platform"" > tv
+chmod +x tv
