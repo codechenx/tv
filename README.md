@@ -52,18 +52,15 @@ $ go get -u github.com/codechenx/tv
 
 # Usage
 
-Usage: tv [--sep SEP] [--ss SS] [--h H] FILENAME
+Usage: tv [--sep SEP] [--ss SS] [--h H] [--t] FILENAME
 
 Positional arguments:
   FILENAME
 
 Options:
   --sep SEP, -s SEP      split symbol
-  
-  --ss SS                 skip line with prefix of symbol
-  
-  --h H                   -1 for neither of ColumnName and RowName 0 for only ColumnName, 1 for only RowName, 2 for both of ColumnName and RowName
- 
+  --ss SS                skip line with prefix of symbol
+  --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name
+  --t                    transpose and view data
   --help, -h             display this help and exit
-  
   --version              display version and exit

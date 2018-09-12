@@ -11,17 +11,6 @@ func Test_loadFile(t *testing.T) {
 		b  *Buffer
 	}
 
-	type fields struct {
-		name   string
-		sep    string
-		header int
-		vHRN   int
-		vHCN   int
-		cont   [][]string
-		rowNum int
-		colNum int
-	}
-
 	tests := []struct {
 		name     string
 		args     args
