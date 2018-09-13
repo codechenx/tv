@@ -22,7 +22,7 @@ tv is a tool to view the delimited file in terminal
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
-- [(Extra)Examples for common biological data](#command-for-common-biological-data)
+- [(Extra)Examples for common biological data](#examples-for-common-biological-data)
 
 # Feature
 
