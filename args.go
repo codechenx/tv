@@ -18,8 +18,8 @@ func (args *Args) setDefault() {
 }
 
 func (Args) Version() string {
-	return "tv 0.2"
+	return "tv 0.2.1"
 }
 func (Args) Description() string {
-	return "Table Viewer"
+	return "tv(Table Viewer) for delimited file in terminal "
 }

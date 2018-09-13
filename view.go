@@ -1,13 +1,16 @@
 package main
 
 import (
+	"errors"
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
 
-func render(b *Buffer) {
+func render(b *Buffer) error {
+	if b.colNum == b.vHCN && b.rowNum == b.vHRN {
+		warningError(errors.New("file is empty"))
+	}
 	cols, rows := b.colNum+b.vHCN, b.rowNum+b.vHRN
-
 	for r := 0; r < rows; r++ {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
@@ -29,4 +32,5 @@ func render(b *Buffer) {
 	}
 
 	table.SetFixed(1, 1)
+	return nil
 }

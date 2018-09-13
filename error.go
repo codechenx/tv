@@ -21,5 +21,7 @@ func warningError(err error) {
 		color.Set(color.FgYellow)
 		fmt.Println(err)
 		color.Unset()
+		app.Stop()
+		defer os.Exit(1)
 	}
 }

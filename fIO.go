@@ -2,22 +2,32 @@ package main
 
 import (
 	"bufio"
+	"compress/gzip"
 	"errors"
 	"os"
 	"strings"
 )
 
-func loadFile(fn string, b *Buffer) error {
+func loadFile(fn string, b *Buffer, comp bool) error {
 	if !exists(fn) {
-		return errors.New("file is not exist")
+		return errors.New("the file does not exist")
 	}
 	file, err := os.Open(fn)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	var scanner *bufio.Scanner
+	if comp {
+		gzCont, err := gzip.NewReader(file)
+		if err != nil {
+			return err
+		}
+		scanner = bufio.NewScanner(gzCont)
+	} else {
+		scanner = bufio.NewScanner(file)
+	}
 
-	scanner := bufio.NewScanner(file)
+	//scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -37,12 +47,12 @@ func loadFile(fn string, b *Buffer) error {
 			} else if strings.Contains(line, ",") {
 				b.sep = ","
 			} else {
-				fatalError(errors.New("you must set a separator"))
+				fatalError(errors.New("you need to set a separator"))
 			}
 		} else if b.sep == "\\t" {
 			b.sep = "\t"
 		}
-		err = b.contAppend(line, b.sep, false)
+		err = b.contAppend(line, b.sep, true)
 		if err != nil {
 			return err
 		}

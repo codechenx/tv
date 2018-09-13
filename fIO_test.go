@@ -7,8 +7,9 @@ import (
 
 func Test_loadFile(t *testing.T) {
 	type args struct {
-		fn string
-		b  *Buffer
+		fn   string
+		b    *Buffer
+		comp bool
 	}
 
 	tests := []struct {
@@ -17,12 +18,14 @@ func Test_loadFile(t *testing.T) {
 		wantErr  bool
 		wantCont [][]string
 	}{
-		{"load file", args{"data/test.csv", createNewBuffer()}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
-		{"load file", args{"data/test.tsv", createNewBuffer()}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
+		{"load file into buffer", args{"data/test.csv", createNewBuffer(), false}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
+		{"load file into buffer", args{"data/test.tsv", createNewBuffer(), false}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
+		{"load compressed file into buffer", args{"data/test.csv.gz", createNewBuffer(), true}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
+		{"load compressed file into buffer", args{"data/test.tsv.gz", createNewBuffer(), true}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := loadFile(tt.args.fn, tt.args.b); (err != nil) != tt.wantErr {
+			if err := loadFile(tt.args.fn, tt.args.b, tt.args.comp); (err != nil) != tt.wantErr {
 				t.Errorf("loadFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
