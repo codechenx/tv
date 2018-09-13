@@ -39,8 +39,9 @@ func loadFile(fn string, b *Buffer) error {
 			} else {
 				fatalError(errors.New("you must set a separator"))
 			}
+		} else if b.sep == "\\t" {
+			b.sep = "\t"
 		}
-
 		err = b.contAppend(line, b.sep, false)
 		if err != nil {
 			return err
