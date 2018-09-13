@@ -34,7 +34,7 @@ tv is a tool to view the delimited file in terminal
 # To do
 
 - [ ] search string
-- [ ] sort value of column(row)
+- [ ] sort values of column
 
 
 # Installation
