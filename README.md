@@ -86,7 +86,7 @@ Options:
 tv file.vcf --ss "##"
 tv file.vcf.gz --ss "##"
 #qiime otu table
-tv file.txt --s "# "
+tv file.txt --ss "# "
 #maf format
-tv file.txt --s "#"
+tv file.maf --ss "#"
 ```
