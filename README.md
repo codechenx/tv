@@ -22,6 +22,7 @@ tv is a tool to view the delimited file in terminal
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
+- [(Extra)Example for common biological data](#command-for-common-biological-data)
 
 # Feature
 
@@ -78,3 +79,14 @@ Options:
   - --t                    transpose and view data
   - --help, -h             display this help and exit
   - --version              display version and exit
+  
+# Example for common biological data
+```bash
+#vcf or compressed vcf format
+tv file.vcf --ss "##"
+tv file.vcf.gz --ss "##"
+#qiime otu table
+tv file.txt --s "# "
+#maf format
+tv file.txt --s "#"
+```
