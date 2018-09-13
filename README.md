@@ -28,6 +28,7 @@ tv is a tool to view the delimited file in terminal
 - Spreadsheet-like view for delimited data
 - Vim-like key binding 
 - Support for gzip compressed file
+- Automatically identify tsv and csv format(Experimental)
 
 # To do
 
