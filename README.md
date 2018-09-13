@@ -22,7 +22,7 @@ tv is a tool to view the delimited file in terminal
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
-- [(Extra)Example for common biological data](#command-for-common-biological-data)
+- [(Extra)Examples for common biological data](#command-for-common-biological-data)
 
 # Feature
 
@@ -80,7 +80,7 @@ Options:
   - --help, -h             display this help and exit
   - --version              display version and exit
   
-# Example for common biological data
+# Examples for common biological data
 ```bash
 #vcf or compressed vcf format
 tv file.vcf --ss "##"
