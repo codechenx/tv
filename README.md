@@ -15,12 +15,19 @@ tv is a tool to view the delimited file in terminal
 # Table of Contents
 
 - [Description](#description)
+- [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
   - [Prebuilt binaries](#prebuilt-binariesonly-64bit)
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
+
+# Feature
+
+- Spreadsheet-like view for delimited data
+- Vim-like key binding 
+- Suitable for gzip compressed file
 
 # To do
 
