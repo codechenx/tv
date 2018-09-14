@@ -22,7 +22,7 @@ tv is a tool to view the delimited file in terminal
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
-- [(Extra)Examples for common biological data](#examples-for-common-biological-data)
+- [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
 
 # Feature
 
@@ -53,16 +53,16 @@ $ go get -u github.com/codechenx/tv
 ```
 # Key binding
 
-  | Key               | description              |
-  | ----------------- | ------------------------ |
-  | h, left arrow     | Move left by one column  |
-  | l, right arrow    | Move right by one column |
-  | j, down arrow     | Move down by one row     |
-  | k, up             | Move up by one row       |
-  | g, home           | Move to the top          |
-  | G, end            | Move to the bottom       |
-  | Ctrl-F, page down | Move down by one page    |
-  | Ctrl-B, page up   | Move up by one page      |
+| Key               | description              |
+| ----------------- | ------------------------ |
+| h, left arrow     | Move left by one column  |
+| l, right arrow    | Move right by one column |
+| j, down arrow     | Move down by one row     |
+| k, up             | Move up by one row       |
+| g, home           | Move to the top          |
+| G, end            | Move to the bottom       |
+| Ctrl-F, page down | Move down by one page    |
+| Ctrl-B, page up   | Move up by one page      |
 
 # Usage
 
@@ -79,8 +79,8 @@ Options:
   - --t                    transpose and view data
   - --help, -h             display this help and exit
   - --version              display version and exit
-  
-# Examples for common biological data
+
+# (Extra)Examples for common biological data
 ```bash
 #vcf or compressed vcf format
 tv file.vcf --ss "##"
