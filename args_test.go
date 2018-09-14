@@ -6,7 +6,7 @@ func TestArgs_setDefault(t *testing.T) {
 	type fields struct {
 		FileName   string
 		Sep        string
-		SkipSymbol string
+		SkipSymbol []string
 		SkipNum    int
 		Header     int
 		Transpose  bool
@@ -15,7 +15,7 @@ func TestArgs_setDefault(t *testing.T) {
 		name   string
 		fields fields
 	}{
-		{"set default argument", fields{"", "", "", 0, 0, false}},
+		{"set default argument", fields{"", "", nil, 0, 0, false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

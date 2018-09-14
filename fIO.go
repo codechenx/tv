@@ -37,7 +37,7 @@ func loadFile(fn string, b *Buffer, comp bool) error {
 			continue
 		}
 		//ignore line with specified prefix
-		if args.SkipSymbol != "" && strings.HasPrefix(line, args.SkipSymbol) {
+		if skipLine(line, args.SkipSymbol){
 			continue
 		}
 		//Auto set split symbols
@@ -67,4 +67,15 @@ func exists(path string) bool {
 		}
 	}
 	return true
+}
+
+func skipLine(line string, sy []string) bool {
+	if len(args.SkipSymbol) != 0 {
+		for _, sy := range args.SkipSymbol {
+			if strings.HasPrefix(line, sy) {
+				return true
+			}
+		}
+	}
+	return false
 }

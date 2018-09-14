@@ -72,13 +72,13 @@ Positional arguments:
   FILENAME
 
 Options:
-  - --sep SEP, -s SEP      split symbol
-  - --ss SS                ignore lines with specific prefix
-  - --sn SN                ignore first n lines
-  - --h H(default:0)       -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use first column as column name and first row as row name
+  - --sep SEP, -s SEP(string)      split symbol
+  - --ss SS (string)               ignore lines with specific prefix(Support for multiple arguments)
+  - --sn SN(int, default:0)        ignore first n lines
+  - --h H(int, default:0)          -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use first column as column name and first row as row name
   - --t                    transpose and view data
-  - --help, -h             display this help and exit
-  - --version              display version and exit
+  - --help, -h                     display this help and exit
+  - --version                      display version and exit
 
 # (Extra)Examples for common biological data
 ```bash
