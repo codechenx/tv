@@ -55,3 +55,28 @@ func Test_exists(t *testing.T) {
 		})
 	}
 }
+
+func Test_skipLine(t *testing.T) {
+	type args struct {
+		line string
+		sy   []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"some line fo test", args{"@some line fo filtrate", []string{"@some"}}, true},
+		{"some line fo test", args{"@some line fo filtrate", []string{"some"}}, false},
+		{"some line fo test", args{"@some line fo filtrate", []string{"@some", "some"}}, true},
+		{"some line fo test", args{"some @some line fo filtrate", []string{"@some", "some"}}, true},
+		{"some line fo test", args{"some @some line fo filtrate", []string{"@some"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := skipLine(tt.args.line, tt.args.sy); got != tt.want {
+				t.Errorf("skipLine() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
