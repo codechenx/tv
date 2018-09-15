@@ -21,6 +21,7 @@ func Test_loadFile(t *testing.T) {
 		{"load file into buffer", args{"data/test.tsv", createNewBuffer()}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
 		{"load compressed file into buffer", args{"data/test.csv.gz", createNewBuffer()}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
 		{"load compressed file into buffer", args{"data/test.tsv.gz", createNewBuffer()}, false, [][]string{[]string{"A", "B", "C"}, []string{"1", "2222", "3"}, []string{"2", "1628", "3"}}},
+		{"file does not exist", args{"file_does_not_exits", createNewBuffer()}, true, [][]string{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
