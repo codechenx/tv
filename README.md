@@ -89,4 +89,7 @@ tv file.vcf.gz --ss "##"
 tv file.txt --ss "# "
 #maf format
 tv file.maf --ss "#"
+#interval list
+tv file.interval_list --ss "@HD" "@SQ"
+
 ```

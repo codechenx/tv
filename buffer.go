@@ -27,7 +27,7 @@ func (b *Buffer) contAppend(s, sep string, strict bool) error {
 		b.colNum = len(sSlice)
 	}
 
-	if len(sSlice) != b.colNum && strict {
+	if strict && len(sSlice) != b.colNum {
 		return errors.New("lack some column")
 	}
 	b.cont = append(b.cont, sSlice)

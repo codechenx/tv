@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/alexflint/go-arg"
-	"strings"
 )
 
 func main() {
@@ -11,12 +10,12 @@ func main() {
 	initView()
 	b := createNewBuffer()
 	b.header = args.Header
-	b.sep = args.Sep
-	comp := false
-	if strings.HasSuffix(args.FileName, ".gz") {
-		comp = true
+	if args.Sep == "\\t" {
+		b.sep = "\t"
+	} else {
+		b.sep = args.Sep
 	}
-	err := loadFile(args.FileName, b, comp)
+	err := loadFile(args.FileName, b)
 	fatalError(err)
 	b.addVirHeader()
 	render(b)
