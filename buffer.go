@@ -21,16 +21,30 @@ func createNewBuffer() *Buffer {
 	return &Buffer{name: "", sep: "", header: 0, vHRN: 0, vHCN: 0, rowNum: 0, colNum: 0, cont: [][]string{}}
 }
 
-func (b *Buffer) contAppend(s, sep string, strict bool) error {
-	sSlice := strings.Split(s, sep)
+func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	if b.rowNum == 0 {
-		b.colNum = len(sSlice)
+		b.colNum = len(s)
 	}
-
-	if strict && len(sSlice) != b.colNum {
+	if strict && len(s) != b.colNum {
 		return errors.New("lack some column")
 	}
-	b.cont = append(b.cont, sSlice)
+
+	b.cont = append(b.cont, s)
+	b.rowNum++
+	return nil
+}
+
+func (b *Buffer) contAppendStr(s, sep string, strict bool) error {
+	sSli := strings.Split(s, sep)
+	if b.rowNum == 0 {
+		b.colNum = len(sSli)
+	}
+
+	if strict && len(sSli) != b.colNum {
+		return errors.New("lack some column")
+	}
+
+	b.cont = append(b.cont, sSli)
 	b.rowNum++
 	return nil
 }

@@ -18,8 +18,6 @@ if [ "$UNAME" == "Linux" ] ; then
 	platform="linux_amd64"
 elif [ "$UNAME" == "Darwin" ] ; then
 	 platform="darwin_amd64"
-elif [[ "$UNAME" == CYGWIN* || "$UNAME" == MINGW* ]] ; then
-	platform="windows_amd64.exe"
 fi
 
 echo "Detected platform: $platform"

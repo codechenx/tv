@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/alexflint/go-arg"
-)
+import "github.com/alexflint/go-arg"
 
 func main() {
 	args.setDefault()
@@ -18,7 +16,7 @@ func main() {
 	err := loadFile(args.FileName, b)
 	fatalError(err)
 	b.addVirHeader()
-	render(b)
+	render(b, args.Transpose)
 	if err := app.SetRoot(table, true).Run(); err != nil {
 		panic(err)
 	}

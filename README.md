@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/codechenx/tv.svg?branch=master)](https://travis-ci.org/codechenx/tv)
 [![codecov](https://codecov.io/gh/codechenx/tv/branch/master/graph/badge.svg)](https://codecov.io/gh/codechenx/tv)
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
+[![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 
 #### Description
@@ -41,9 +42,13 @@ tv is a tool to view the delimited file in terminal
 
 ### Prebuilt binaries(only 64bit)
 
+#### Linux and macOS
 ```bash
 $ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
+
+#### Window
+download from [releases](https://github.com/codechenx/tv/releases) 
 
 ### Build from source
 
@@ -66,19 +71,21 @@ $ go get -u github.com/codechenx/tv
 
 # Usage
 
-Usage: tv [--sep SEP] [--ss SS] [--h H] [--t] FILENAME
+Usage: tv [--sep SEP] [--ss SS] [--sn SN] [--rc RC] [--hc HC] [--h H] [--t] FILENAME
 
 Positional arguments:
   FILENAME
 
 Options:
-  - --sep SEP, -s SEP(string)      split symbol
-  - --ss SS (string)               ignore lines with specific prefix(Support for multiple arguments)
-  - --sn SN(int, default:0)        ignore first n lines
-  - --h H(int, default:0)          -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use first column as column name and first row as row name
-  - --t                    transpose and view data
-  - --help, -h                     display this help and exit
-  - --version                      display version and exit
+  - --sep SEP, -s SEP      split symbol [default: ""]
+  - --ss SS                ignore lines with specific prefix(support for multiple arguments) [default: []]
+  - --sn SN                ignore first n lines [default: 0]
+  - --rc RC                only retain and show these column, separated by space [default: []]
+  - --hc HC                hide these column, separated by space [default: []]
+  - --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name [default: 0]
+  - --t                    transpose and view data [default: false]
+  - --help, -h             display this help and exit
+  - --version              display version and exit
 
 # (Extra)Examples for common biological data
 ```bash

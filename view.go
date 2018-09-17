@@ -6,7 +6,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func render(b *Buffer) error {
+func render(b *Buffer, trs bool) error {
 	if b.colNum == b.vHCN && b.rowNum == b.vHRN {
 		warningError(errors.New("file is empty"))
 	}
@@ -17,7 +17,8 @@ func render(b *Buffer) error {
 			if c < 1 || r < 1 {
 				color = tcell.ColorYellow
 			}
-			if !args.Transpose {
+			// check transpose view
+			if !trs {
 				table.SetCell(r, c,
 					tview.NewTableCell(b.cont[r][c]).
 						SetTextColor(color).

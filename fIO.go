@@ -36,10 +36,26 @@ func loadFile(fn string, b *Buffer) error {
 		if err != nil {
 			return err
 		}
-		err = b.contAppend(line, b.sep, true)
-		if err != nil {
-			return err
+
+		if len(args.ShowNum) != 0 || len(args.HideNum) != 0 {
+			var lineSli []string
+			tempLineSli := strings.Split(line, b.sep)
+			visCol, err := getVisCol(args.ShowNum, args.HideNum, len(tempLineSli))
+			if err != nil {
+				return err
+			}
+			for _, i := range visCol {
+				lineSli = append(lineSli, tempLineSli[i])
+			}
+			err = b.contAppendSli(lineSli, true)
+
+		} else {
+			err = b.contAppendStr(line, b.sep, true)
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 	return nil
 }
@@ -94,4 +110,54 @@ func fScanner(fn string, comp bool) (*bufio.Scanner, error) {
 		return bufio.NewScanner(file), nil
 	}
 
+}
+
+func getVisCol(showNumL, hideNumL []int, colLen int) ([]int, error) {
+	for _, i := range showNumL {
+		if i > colLen {
+			return nil, errors.New("column " + string(i) + "does not exist")
+		}
+	}
+
+	for _, i := range hideNumL {
+		if i > colLen {
+			return nil, errors.New("column " + string(i) + "does not exist")
+		}
+	}
+
+	var visCol []int
+	for i := 0; i < colLen; i++ {
+		flag, err := checkVisible(showNumL, hideNumL, i)
+		if err != nil {
+			return nil, err
+		}
+		if flag {
+			visCol = append(visCol, i)
+		}
+	}
+	return visCol, nil
+
+}
+
+func checkVisible(showNumL, hideNumL []int, col int) (bool, error) {
+	if len(showNumL) != 0 && len(hideNumL) != 0 {
+		return false, errors.New("you can only set visible column or hidden column")
+	}
+
+	if len(showNumL) != 0 {
+		for _, colTestS := range showNumL {
+			if col+1 == colTestS {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	if len(hideNumL) != 0 {
+		for _, colTestH := range hideNumL {
+			if col+1 == colTestH {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
 }

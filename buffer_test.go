@@ -19,7 +19,56 @@ func Test_createNewBuffer(t *testing.T) {
 	}
 }
 
-func TestBuffer_contAppend(t *testing.T) {
+func TestBuffer_contAppendSli(t *testing.T) {
+	type fields struct {
+		name   string
+		sep    string
+		header int
+		vHRN   int
+		vHCN   int
+		cont   [][]string
+		rowNum int
+		colNum int
+	}
+	type args struct {
+		s      []string
+		strict bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    [][]string
+		wantErr bool
+	}{
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{}, 0, 0}, args{[]string{"some", "thing", "other", "thing"}, true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, true}, [][]string{[]string{"some", "thing", "other", "thing"}}, true},
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, false}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &Buffer{
+				name:   tt.fields.name,
+				sep:    tt.fields.sep,
+				header: tt.fields.header,
+				vHRN:   tt.fields.vHRN,
+				vHCN:   tt.fields.vHCN,
+				cont:   tt.fields.cont,
+				rowNum: tt.fields.rowNum,
+				colNum: tt.fields.colNum,
+			}
+			err := b.contAppendSli(tt.args.s, tt.args.strict)
+			if got := b.cont; !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("%q. Buffer.contAppendSli(slice,bool) = %v, wantCont = %v", tt.name, got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("%q. Buffer.contAppendSli(slice,bool) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestBuffer_contAppendStr(t *testing.T) {
 	type fields struct {
 		name   string
 		sep    string
@@ -61,12 +110,12 @@ func TestBuffer_contAppend(t *testing.T) {
 			colNum: tt.fields.colNum,
 		}
 
-		err := b.contAppend(tt.args.s, tt.args.sep, tt.args.strict)
+		err := b.contAppendStr(tt.args.s, tt.args.sep, tt.args.strict)
 		if got := b.cont; !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("%q. Buffer.contAppend(string,string) = %v, wantCont = %v", tt.name, got, tt.want)
+			t.Errorf("%q. Buffer.contAppendStr(string,string, bool) = %v, wantCont = %v", tt.name, got, tt.want)
 		}
 		if (err != nil) != tt.wantErr {
-			t.Errorf("%q. Buffer.contAppend() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			t.Errorf("%q. Buffer.contAppendStr(string,string, bool) error = %v, wantErr %v", tt.name, err, tt.wantErr)
 		}
 	}
 }
