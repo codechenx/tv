@@ -11,7 +11,6 @@ type Args struct {
 	Transpose  bool     `arg:"--t" help:"transpose and view data [default: false]"`
 }
 
-
 func (args *Args) setDefault() {
 	args.Sep = ""
 	args.SkipSymbol = []string{}

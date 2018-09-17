@@ -178,8 +178,8 @@ func Test_getVisCol(t *testing.T) {
 		{"set hide argument", args{[]int{}, []int{1, 2, 5}, 6}, []int{2, 3, 5}, false},
 		{"do not set any argument", args{[]int{}, []int{}, 6}, []int{0., 1, 2, 3, 4, 5}, false},
 		{"argument error", args{[]int{1, 2, 3}, []int{1, 2, 3}, 6}, nil, true},
-		{"column does not exist", args{[]int{1,2,3,7}, []int{}, 6}, nil, true},
-		{"column does not exist", args{[]int{}, []int{1,2,3,7}, 6}, nil, true},
+		{"column does not exist", args{[]int{1, 2, 3, 7}, []int{}, 6}, nil, true},
+		{"column does not exist", args{[]int{}, []int{1, 2, 3, 7}, 6}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
