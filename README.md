@@ -78,10 +78,10 @@ Positional arguments:
 
 Options:
   - --sep SEP, -s SEP      split symbol [default: ""]
-  - --ss SS                ignore lines with specific prefix(support for multiple arguments) [default: []]
+  - --ss SS                ignore lines with specific prefix(support for multiple arguments, separated by space) [default: []]
   - --sn SN                ignore first n lines [default: 0]
-  - --rc RC                only retain and show these column, separated by space [default: []]
-  - --hc HC                hide these column, separated by space [default: []]
+  - --rc RC                show columns(support for multiple arguments, separated by space) [default: []]
+  - --hc HC                hide columns(support for multiple arguments, separated by space) [default: []]
   - --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name [default: 0]
   - --t                    transpose and view data [default: false]
   - --help, -h             display this help and exit
