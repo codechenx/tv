@@ -82,7 +82,7 @@ Options:
   - --sn SN                ignore first n lines [default: 0]
   - --rc RC                show columns(support for multiple arguments, separated by space) [default: []]
   - --hc HC                hide columns(support for multiple arguments, separated by space) [default: []]
-  - --h H                   -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name [default: 0]
+  - --h H                  -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name [default: 0]
   - --t                    transpose and view data [default: false]
   - --help, -h             display this help and exit
   - --version              display version and exit
@@ -98,5 +98,8 @@ tv file.txt --ss "# "
 tv file.maf --ss "#"
 #interval list
 tv file.interval_list --ss "@HD" "@SQ"
+tv file.interval_list --ss "@"
+# bed 
+tv file.bed --h -1
 
 ```

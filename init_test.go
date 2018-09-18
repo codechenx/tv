@@ -13,6 +13,4 @@ func Test_initView(t *testing.T) {
 			initView()
 		})
 	}
-
-	stopView()
 }
