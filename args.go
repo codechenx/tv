@@ -1,5 +1,6 @@
 package main
 
+//Args struct
 type Args struct {
 	FileName   string   `arg:"positional"`
 	Sep        string   `arg:"-s" help:"split symbol [default: \"\"]"`

@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+//buffer to store data
 type Buffer struct {
 	name   string
 	sep    string

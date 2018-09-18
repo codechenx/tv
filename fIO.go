@@ -109,10 +109,8 @@ func fScanner(fn string, comp bool) (*bufio.Scanner, error) {
 			return nil, err
 		}
 		return bufio.NewScanner(gzCont), nil
-	} else {
-		return bufio.NewScanner(file), nil
 	}
-
+	return bufio.NewScanner(file), nil
 }
 
 func getVisCol(showNumL, hideNumL []int, colLen int) ([]int, error) {

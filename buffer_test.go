@@ -41,9 +41,9 @@ func TestBuffer_contAppendSli(t *testing.T) {
 		want    [][]string
 		wantErr bool
 	}{
-		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{}, 0, 0}, args{[]string{"some", "thing", "other", "thing"}, true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
-		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, true}, [][]string{[]string{"some", "thing", "other", "thing"}}, true},
-		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, false}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other"}}, false},
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{}, 0, 0}, args{[]string{"some", "thing", "other", "thing"}, true}, [][]string{{"some", "thing", "other", "thing"}}, false},
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, true}, [][]string{{"some", "thing", "other", "thing"}}, true},
+		{"Add slice to cont", fields{"", "", 0, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 1, 4}, args{[]string{"some", "thing", "other"}, false}, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,12 +91,12 @@ func TestBuffer_contAppendStr(t *testing.T) {
 		want    [][]string
 		wantErr bool
 	}{
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some,thing,other,thing", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other,thing", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some	thing	other	thing", "	", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some	thing	other	thing", "	", true}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, false},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", true}, [][]string{[]string{"some", "thing", "other", "thing"}}, true},
-		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", false}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some,thing,other,thing", ",", true}, [][]string{{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other,thing", ",", true}, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{}, 1, 4}, args{"some	thing	other	thing", "	", true}, [][]string{{"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 2, 4}, args{"some	thing	other	thing", "	", true}, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, false},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", true}, [][]string{{"some", "thing", "other", "thing"}}, true},
+		{"Add string to cont", fields{"", "", 2, 0, 0, [][]string{{"some", "thing", "other", "thing"}}, 2, 4}, args{"some,thing,other", ",", false}, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other"}}, false},
 	}
 	for _, tt := range tests {
 		b := &Buffer{
@@ -138,10 +138,10 @@ func TestBuffer_addVirHeader(t *testing.T) {
 		wantvHRN int
 		wantvHCN int
 	}{
-		{"Add virtual header to cont", fields{"", "", 2, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 0, 0},
-		{"Add virtual header to cont", fields{"", "", 1, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"1", "2", "3", "4"}, []string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 1, 0},
-		{"Add virtual header to cont", fields{"", "", 0, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"#", "some", "thing", "other", "thing"}, []string{"1", "some", "thing", "other", "thing"}}, 0, 1},
-		{"Add virtual header to cont", fields{"", "", -1, 0, 0, [][]string{[]string{"some", "thing", "other", "thing"}, []string{"some", "thing", "other", "thing"}}, 2, 4}, [][]string{[]string{"#", "1", "2", "3", "4"}, []string{"1", "some", "thing", "other", "thing"}, []string{"2", "some", "thing", "other", "thing"}}, 1, 1},
+		{"Add virtual header to cont", fields{"", "", 2, 0, 0, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 2, 4}, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 0, 0},
+		{"Add virtual header to cont", fields{"", "", 1, 0, 0, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 2, 4}, [][]string{{"1", "2", "3", "4"}, {"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 1, 0},
+		{"Add virtual header to cont", fields{"", "", 0, 0, 0, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 2, 4}, [][]string{{"#", "some", "thing", "other", "thing"}, {"1", "some", "thing", "other", "thing"}}, 0, 1},
+		{"Add virtual header to cont", fields{"", "", -1, 0, 0, [][]string{{"some", "thing", "other", "thing"}, {"some", "thing", "other", "thing"}}, 2, 4}, [][]string{{"#", "1", "2", "3", "4"}, {"1", "some", "thing", "other", "thing"}, {"2", "some", "thing", "other", "thing"}}, 1, 1},
 	}
 	for _, tt := range tests {
 		b := Buffer{
