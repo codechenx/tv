@@ -1,8 +1,11 @@
 package main
 
-import "github.com/alexflint/go-arg"
+import (
+	"github.com/alexflint/go-arg"
+)
 
 func main() {
+	var err error
 	args.setDefault()
 	arg.MustParse(&args) // temp
 	initView()
@@ -13,11 +16,14 @@ func main() {
 	} else {
 		b.sep = args.Sep
 	}
-	err := loadFile(args.FileName, b)
+	err = loadFile(args.FileName, b)
 	fatalError(err)
 	b.addVirHeader()
-	render(b, args.Transpose)
-	if err := app.SetRoot(table, true).Run(); err != nil {
-		panic(err)
+	err = render(b, args.Transpose)
+	fatalError(err)
+	if !debug {
+		if err = app.SetRoot(table, true).Run(); err != nil {
+			panic(err)
+		}
 	}
 }

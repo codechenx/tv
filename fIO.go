@@ -48,6 +48,9 @@ func loadFile(fn string, b *Buffer) error {
 				lineSli = append(lineSli, tempLineSli[i])
 			}
 			err = b.contAppendSli(lineSli, true)
+			if err != nil {
+				return err
+			}
 
 		} else {
 			err = b.contAppendStr(line, b.sep, true)

@@ -8,7 +8,7 @@ import (
 
 func render(b *Buffer, trs bool) error {
 	if b.colNum == b.vHCN && b.rowNum == b.vHRN {
-		warningError(errors.New("file is empty"))
+		return errors.New("file is empty")
 	}
 	cols, rows := b.colNum+b.vHCN, b.rowNum+b.vHRN
 	for r := 0; r < rows; r++ {

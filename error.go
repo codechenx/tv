@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"os"
 )
 
 func fatalError(err error) {
@@ -11,8 +10,9 @@ func fatalError(err error) {
 		color.Set(color.FgRed)
 		fmt.Println(err)
 		color.Unset()
-		app.Stop()
-		defer os.Exit(1)
+		if app != nil {
+			app.Stop()
+		}
 	}
 }
 
@@ -21,7 +21,8 @@ func warningError(err error) {
 		color.Set(color.FgYellow)
 		fmt.Println(err)
 		color.Unset()
-		app.Stop()
-		defer os.Exit(1)
+		if app != nil {
+			app.Stop()
+		}
 	}
 }
