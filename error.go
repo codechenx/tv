@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"os"
 )
 
 func fatalError(err error) {
@@ -12,6 +13,9 @@ func fatalError(err error) {
 		color.Unset()
 		if app != nil {
 			app.Stop()
+		}
+		if !debug{
+			os.Exit(1)
 		}
 	}
 }
@@ -23,6 +27,9 @@ func warningError(err error) {
 		color.Unset()
 		if app != nil {
 			app.Stop()
+		}
+		if !debug{
+			os.Exit(1)
 		}
 	}
 }
