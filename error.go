@@ -14,7 +14,7 @@ func fatalError(err error) {
 		if app != nil {
 			app.Stop()
 		}
-		if !debug{
+		if !debug {
 			os.Exit(1)
 		}
 	}
@@ -28,7 +28,7 @@ func warningError(err error) {
 		if app != nil {
 			app.Stop()
 		}
-		if !debug{
+		if !debug {
 			os.Exit(1)
 		}
 	}

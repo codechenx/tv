@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-
 func Test_fatalError(t *testing.T) {
 	type args struct {
 		err error
