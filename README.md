@@ -9,6 +9,8 @@
 #### Description
 
 tv is a tool to view the delimited file in terminal
+for bioinformaticians, you can use [bv](https://github.com/codechenx/bv),which provide more format support for bioinformatics data
+
 
  ![Screenshot](screenshots/example.png)
 
