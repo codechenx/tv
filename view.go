@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
@@ -32,6 +33,12 @@ func render(b *Buffer, trs bool) error {
 		}
 	}
 
-	table.SetFixed(1, 1)
+	table.Select(0, 0).SetFixed(1, 1).SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			app.Stop()
+		}
+	}).SetSelectable(true, true).SetSelectedFunc(func(row int, column int) {
+		table.GetCell(row, column).SetTextColor(tcell.ColorRed)
+	})
 	return nil
 }
