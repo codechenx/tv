@@ -12,7 +12,7 @@ func main() {
 	args.setDefault()
 	RootCmd := &cobra.Command{
 		Use:   "tv {File_Name}",
-		Short: "An example cobra command",
+		Short: "tv(Table Viewer) for delimited file in terminal",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, cmdargs []string) {
 
@@ -25,14 +25,12 @@ func main() {
 			} else {
 				b.sep = args.Sep
 			}
-
 			err = loadFile(args.FileName, b)
 			fatalError(err)
-			b.addVirHeader()
 			err = render(b, args.Transpose)
 			fatalError(err)
 			if !debug {
-				if err = app.SetRoot(table, true).Run(); err != nil {
+				if err = app.SetRoot(grid, true).SetFocus(table).Run(); err != nil {
 					panic(err)
 				}
 			}
@@ -40,15 +38,14 @@ func main() {
 	}
 
 	RootCmd.Flags().StringVar(&args.Sep, "s", "", "split symbol [default: \"\"]")
-	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "ignore lines with specific prefix(support for multiple arguments, separated by space")
+	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "ignore lines with specific prefix(support for multiple arguments, separated by comma")
 	RootCmd.Flags().IntVar(&args.SkipNum, "ir", 0, "ignore first N row [default: 0]")
-	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "only display certain columns(support for multiple arguments, separated by space)")
-	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "do not display certain columns(support for multiple arguments, separated by space)")
-	RootCmd.Flags().IntVar(&args.Header, "he", 0, "-1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use first column as column name and first row as row name [default: 0]")
+	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "only display certain columns(support for multiple arguments, separated by comma)")
+	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "do not display certain columns(support for multiple arguments, separated by comma)")
+	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "-1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]")
 	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "transpose and view data [default: false]")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
-
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

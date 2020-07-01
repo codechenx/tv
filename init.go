@@ -6,6 +6,7 @@ import (
 
 var app *tview.Application
 var table *tview.Table
+var grid *tview.Grid
 var args Args
 var debug bool
 

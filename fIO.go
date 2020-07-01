@@ -36,7 +36,6 @@ func loadFile(fn string, b *Buffer) error {
 		if err != nil {
 			return err
 		}
-
 		if len(args.ShowNum) != 0 || len(args.HideNum) != 0 {
 			var lineSli []string
 			tempLineSli := strings.Split(line, b.sep)
