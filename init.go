@@ -5,17 +5,31 @@ import (
 )
 
 var app *tview.Application
-var table *tview.Table
-var grid *tview.Grid
+var UI *tview.Pages
+var b *Buffer
 var args Args
 var debug bool
 
+// initialize tview, buffer, table
 func initView() {
 	app = tview.NewApplication()
-	table = tview.NewTable()
-	table.SetBorders(true)
+	b = createNewBuffer()
 }
 
+//stop UI
 func stopView() {
 	app.Stop()
+}
+
+//covert int to bool, if i >0:true, else false
+func I2B(i int) bool {
+	if i > 0 {
+		return true
+	}
+	return false
+}
+
+// check if input([]string) is digitized
+func checkAllNum(a []string) {
+
 }

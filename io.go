@@ -59,6 +59,7 @@ func loadFile(fn string, b *Buffer) error {
 		}
 
 	}
+
 	return nil
 }
 

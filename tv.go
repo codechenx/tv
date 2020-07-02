@@ -18,19 +18,30 @@ func main() {
 
 			var err error
 			args.FileName = cmdargs[0]
-			b := createNewBuffer()
-			b.header = args.Header
 			if args.Sep == "\\t" {
 				b.sep = "\t"
 			} else {
 				b.sep = args.Sep
 			}
+
+			switch args.Header {
+			case -1:
+				b.rowFreeze, b.colFreeze = 0, 0
+			case 0:
+				b.rowFreeze, b.colFreeze = 1, 1
+			case 1:
+				b.rowFreeze, b.colFreeze = 1, 0
+			case 2:
+				b.rowFreeze, b.colFreeze = 0, 1
+
+			}
+
 			err = loadFile(args.FileName, b)
 			fatalError(err)
-			err = render(b, args.Transpose)
+			err = drawUI(b, args.Transpose)
 			fatalError(err)
 			if !debug {
-				if err = app.SetRoot(grid, true).SetFocus(table).Run(); err != nil {
+				if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
 					panic(err)
 				}
 			}
