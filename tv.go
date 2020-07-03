@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,19 +10,36 @@ func main() {
 	initView()
 	args.setDefault()
 	RootCmd := &cobra.Command{
-		Use:   "tv {File_Name}",
-		Short: "tv(Table Viewer) for delimited file in terminal",
-		Args:  cobra.ExactArgs(1),
+		Use:     "tv {File_Name}",
+		Version: "0.5",
+		Short:   "tv(Table Viewer) for delimited file in terminal",
 		Run: func(cmd *cobra.Command, cmdargs []string) {
-
-			var err error
-			args.FileName = cmdargs[0]
-			if args.Sep == "\\t" {
-				b.sep = "\t"
+			info, err := os.Stdin.Stat()
+			fatalError(err)
+			//check whether from a console pipe
+			if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
+				if len(cmdargs) < 1 {
+					stopView()
+					_ = cmd.Help()
+					return
+				}
+				//get file name form console
+				args.FileName = cmdargs[0]
+				err = loadFileToBuffer(args.FileName, b)
+				fatalError(err)
 			} else {
-				b.sep = args.Sep
+				args.FileName = "From Shell Pipe"
+				err = loadPipeToBuffer(os.Stdin, b)
+				fatalError(err)
+			}
+			if args.Sep == "\\t" {
+				b.sep = '\t'
+			}
+			if len([]rune(args.Sep)) > 0 {
+				b.sep = []rune(args.Sep)[0]
 			}
 
+			//process freeze mode
 			switch args.Header {
 			case -1:
 				b.rowFreeze, b.colFreeze = 0, 0
@@ -36,13 +52,11 @@ func main() {
 
 			}
 
-			err = loadFile(args.FileName, b)
-			fatalError(err)
 			err = drawUI(b, args.Transpose)
 			fatalError(err)
 			if !debug {
 				if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
-					panic(err)
+					fatalError(err)
 				}
 			}
 		},
@@ -57,8 +71,5 @@ func main() {
 	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "transpose and view data [default: false]")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	fatalError(err)
 }

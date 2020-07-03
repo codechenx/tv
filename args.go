@@ -21,10 +21,3 @@ func (args *Args) setDefault() {
 	args.Header = 0
 	args.Transpose = false
 }
-
-func (Args) Version() string {
-	return "tv 0.4"
-}
-func (Args) Description() string {
-	return "tv(Table Viewer) for delimited file in terminal "
-}
