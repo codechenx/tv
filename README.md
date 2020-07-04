@@ -107,7 +107,7 @@ tv also can recive data form pipe as an input
 
 #### Sorting and Stats
 
-For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
+For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.You can change the data type of current column by Ctril-m. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
 
 
 
