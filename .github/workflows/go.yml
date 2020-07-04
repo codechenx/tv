@@ -17,6 +17,6 @@ jobs:
     - uses: actions/checkout@v2
     - uses: wangyoucao577/go-release-action@master
       with:
-        github_token: f818ed24375fcb158f0d4eae69a8696275445dd1
+        github_token: ${{ secrets.f818ed24375fcb158f0d4eae69a8696275445dd1 }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
