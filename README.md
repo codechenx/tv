@@ -1,7 +1,5 @@
 # tv(table viewer) for delimited file in terminal
 [![GitHub release](https://img.shields.io/github/release/codechenx/tv.svg)](http://GitHub.com/codechenx/tv/releases)
-[![Build Status](https://travis-ci.org/codechenx/tv.svg?branch=master)](https://travis-ci.org/codechenx/tv)
-[![codecov](https://codecov.io/gh/codechenx/tv/branch/master/graph/badge.svg)](https://codecov.io/gh/codechenx/tv)
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
@@ -38,12 +36,11 @@ for bioinformaticians, you can use [bv](https://github.com/codechenx/bv),which p
 # To do
 
 - [ ] search string
-- [ ] sort values of column
 
 
 # Installation
 
-### Prebuilt binaries(only 64bit)
+### Prebuilt binaries
 
 #### Linux and macOS
 ```bash
