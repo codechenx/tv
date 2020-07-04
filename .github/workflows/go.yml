@@ -13,9 +13,9 @@ jobs:
         goos: [linux, windows, darwin]
         goarch: ["386", amd64]
     steps:
-    - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@master
-      with:
-        github_token: 846a7eb801a687d2d239ceedfa76fd7d4e8937dd
-        goos: ${{ matrix.goos }}
-        goarch: ${{ matrix.goarch }}
+      - uses: actions/checkout@v2
+      - uses: wangyoucao577/go-release-action@master
+        with:
+          github_token: ${{secrets.846a7eb801a687d2d239ceedfa76fd7d4e8937dd}}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
