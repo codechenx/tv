@@ -15,8 +15,8 @@ jobs:
         goarch: ["386", amd64]
     steps:
     - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@master
+    - uses: ${{ secrets.GITHUB_TOKEN }}
       with:
-        github_token: ${{ secrets.f818ed24375fcb158f0d4eae69a8696275445dd1 }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
