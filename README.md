@@ -40,13 +40,15 @@ for bioinformaticians, you can use [bv](https://github.com/codechenx/bv),which p
 
 # Installation
 
-### Prebuilt binaries
+### Prebuilt binaries(only x86_64)
 
 #### Linux and macOS
 ```bash
 $ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
+or
 
+download from [releases](https://github.com/codechenx/tv/releases) 
 #### Window
 download from [releases](https://github.com/codechenx/tv/releases) 
 
