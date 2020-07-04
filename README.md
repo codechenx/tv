@@ -31,7 +31,7 @@ for bioinformaticians, you can use [bv](https://github.com/codechenx/bv),which p
 - Spreadsheet-like view for delimited data
 - Vim-like key binding 
 - Support for gzip compressed file
-- Automatically identify tsv and csv format(Experimental)
+- Automatically identify seperator
 
 # To do
 
@@ -95,7 +95,7 @@ $ go get -u github.com/codechenx/tv
   -h, --help         help for tv
   -v, --version     version for tv
 ```
-  
+
 
 tv also can recive data form pipe as an input
 
