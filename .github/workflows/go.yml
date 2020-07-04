@@ -1,8 +1,4 @@
-on:
-  push:
-    tags:
-      - 'v*'
-
+on: release
 name: Build Release
 jobs:
   release-linux-386:
