@@ -14,7 +14,6 @@ script:
 - go get -t -v ./...
 - diff -u <(echo -n) <(gofmt -d .)
 - go vet $(go list ./... | grep -v /vendor/)
-- go test -v -race -coverprofile=coverage.txt -covermode=atomic ./... 
 - if [ "${LATEST}" = "true" ]; then gox -os "windows linux darwin" -arch amd64  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
 before_deploy:
 - git config --local user.name "codechenx"

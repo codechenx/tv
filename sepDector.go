@@ -2,38 +2,43 @@ package main
 
 import (
 	"errors"
-	"strings"
 )
 
 type sepDetecor struct {
 	char []rune
-	freq []map[rune]int
+	freq map[rune][]int
 }
 
+//There are some features that a separator has.
+//Firstly, a separator can split every line into same number of parts(exclude the affection of `"`) and is't zero.(requirement)
+//Secondly, delimited files trend to use ',' or '\t' as their separator.
+//So if the number of ',' or '\t' can meet requirement . I prefer to use it as a separator.
+//If ',' or '\t' can't meet requirement and there is only one char can meet requirement, sepDetect() prefer to use it as a separator.
+//Otherwise, it is hard to know which char can be a separator. Machine learning may be a available choice.
+
 func (sd *sepDetecor) sepDetect(s []string) rune {
-	preferChar := []rune{',', '\t'}
+	preferChar := []rune{',', '	'}
 	sd.calFreq(s)
+
+	//sum of int array
+	sum := func(ia []int) int {
+		var iSum int
+		for _, i := range ia {
+			iSum += i
+		}
+		return iSum
+	}
 	//exclude char appear 0 time in some lines
 	var candidate []rune
-	charFreqByLine := map[rune][]int{}
 	for _, char := range sd.char {
-		flag := true
-		var freqByLine []int
-		for _, freq := range sd.freq {
-			if freq[char] == 0 {
-				flag = false
-			}
-			freqByLine = append(freqByLine, freq[char])
-		}
-		if flag {
+		if sum(sd.freq[char]) != 0 {
 			candidate = append(candidate, char)
-			charFreqByLine[char] = freqByLine
 		}
 	}
 
 	// if char is in preferChar list and char frequency in every line is also equal, return it
 	for _, pc := range preferChar {
-		if v := charFreqByLine[pc]; allIntItemEqual(v) {
+		if v := sd.freq[pc]; allIntItemEqual(v) {
 			return pc
 		}
 	}
@@ -41,7 +46,7 @@ func (sd *sepDetecor) sepDetect(s []string) rune {
 	//check all char which one's frequency in every line is  equal
 	var tempCandidate []rune
 	for _, char := range candidate {
-		if allIntItemEqual(charFreqByLine[char]) {
+		if allIntItemEqual(sd.freq[char]) {
 			tempCandidate = append(tempCandidate, char)
 		}
 	}
@@ -58,14 +63,22 @@ func (sd *sepDetecor) calFreq(s []string) {
 	if len(s) < 1 {
 		fatalError(errors.New("tv can't identify separator, you need to set it manual"))
 	}
+	if sd.freq == nil {
+		sd.freq = map[rune][]int{}
+	}
 	charArray := []rune(s[0])
 	sd.char = uniqueChar(charArray[:len(charArray)-1])
-	for _, line := range s {
-		charFreqSL := map[rune]int{}
-		for _, char := range sd.char {
-			charFreqSL[char] = strings.Count(line, string(char))
+	for _, char := range sd.char {
+		var charFreq []int
+		for _, line := range s {
+			record, err := lineCSVParse(line, char)
+			if err != nil {
+				fatalError(errors.New("tv can't identify separator, you need to set it manual"))
+			}
+
+			charFreq = append(charFreq, len(record))
 		}
-		sd.freq = append(sd.freq, charFreqSL)
+		sd.freq[char] = charFreq
 	}
 }
 

@@ -10,6 +10,7 @@ type Args struct {
 	HideNum    []int
 	Header     int
 	Transpose  bool
+	NLine      int
 }
 
 func (args *Args) setDefault() {
@@ -20,4 +21,5 @@ func (args *Args) setDefault() {
 	args.HideNum = []int{}
 	args.Header = 0
 	args.Transpose = false
+	args.NLine = 0
 }

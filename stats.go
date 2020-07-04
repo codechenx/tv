@@ -15,8 +15,8 @@ type statsSummary interface {
 type DiscreteStats struct {
 	data        []string
 	summaryData [][]string
-	count       int
-	counter     map[string]int
+	//count       int
+	counter map[string]int
 }
 
 type ContinuousStats struct {
@@ -70,9 +70,9 @@ func (s *ContinuousStats) getSummaryStr(a []string) string {
 
 func (s *DiscreteStats) summary(a []string) {
 	s.data = a
-	s.count = len(a)
-	summaryArray := [][]string{{"#Count", I2S(s.count)}}
-	s.summaryData = summaryArray
+	//s.count = len(a)
+	//summaryArray := [][]string{{"#Count", I2S(s.count)}}
+	//s.summaryData = summaryArray
 
 	//catalogue counter
 	s.counter = make(map[string]int)

@@ -14,6 +14,12 @@ func main() {
 		Version: "0.5",
 		Short:   "tv(Table Viewer) for delimited file in terminal",
 		Run: func(cmd *cobra.Command, cmdargs []string) {
+			if args.Sep == "\\t" {
+				args.Sep = "	"
+			}
+			if len([]rune(args.Sep)) > 0 {
+				b.sep = []rune(args.Sep)[0]
+			}
 			info, err := os.Stdin.Stat()
 			fatalError(err)
 			//check whether from a console pipe
@@ -25,18 +31,16 @@ func main() {
 				}
 				//get file name form console
 				args.FileName = cmdargs[0]
+				usefulInfo("Data loading...")
 				err = loadFileToBuffer(args.FileName, b)
 				fatalError(err)
+				usefulInfo("Data loaded")
 			} else {
 				args.FileName = "From Shell Pipe"
+				usefulInfo("Data loading...")
 				err = loadPipeToBuffer(os.Stdin, b)
+				usefulInfo("Data loaded")
 				fatalError(err)
-			}
-			if args.Sep == "\\t" {
-				b.sep = '\t'
-			}
-			if len([]rune(args.Sep)) > 0 {
-				b.sep = []rune(args.Sep)[0]
 			}
 
 			//process freeze mode
@@ -51,7 +55,6 @@ func main() {
 				b.rowFreeze, b.colFreeze = 0, 1
 
 			}
-
 			err = drawUI(b, args.Transpose)
 			fatalError(err)
 			if !debug {
@@ -62,13 +65,14 @@ func main() {
 		},
 	}
 
-	RootCmd.Flags().StringVar(&args.Sep, "s", "", "split symbol [default: \"\"]")
-	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "ignore lines with specific prefix(support for multiple arguments, separated by comma")
-	RootCmd.Flags().IntVar(&args.SkipNum, "ir", 0, "ignore first N row [default: 0]")
-	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "only display certain columns(support for multiple arguments, separated by comma)")
-	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "do not display certain columns(support for multiple arguments, separated by comma)")
+	RootCmd.Flags().StringVar(&args.Sep, "s", "", "Split symbol [default: \"\"]")
+	RootCmd.Flags().IntVar(&args.NLine, "nl", 0, "Only display first N line")
+	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "Ignore lines with specific prefix(support for multiple arguments, separated by comma")
+	RootCmd.Flags().IntVar(&args.SkipNum, "in", 0, "Ignore first N row [default: 0]")
+	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "Only display certain columns(support for multiple arguments, separated by comma)")
+	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "Do not display certain columns(support for multiple arguments, separated by comma)")
 	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "-1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]")
-	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "transpose and view data [default: false]")
+	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "Transpose and view data [default: false]")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
 	fatalError(err)

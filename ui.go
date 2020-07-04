@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/gdamore/tcell"
@@ -23,7 +24,7 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 			}
 			if r == 0 && args.Header != -1 && args.Header != 2 {
 				t.SetCell(r, c,
-					tview.NewTableCell("("+type2name(b.colType[c])+")"+b.cont[r][c]).
+					tview.NewTableCell(b.cont[r][c]).
 						SetTextColor(color).
 						SetAlign(tview.AlignLeft))
 				continue
@@ -65,12 +66,23 @@ func drawUI(b *Buffer, trs bool) error {
 	drawBuffer(b, bufferTable, trs)
 
 	//main page init
-	cursorPosStr := "0,0"
+	cursorPosStr := "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
+	infoStr := "All Done"                                                       //footer middle
+	shorFileName := filepath.Base(args.FileName)
+	fileNameStr := shorFileName + "  |  " + "? help page" //footer left
 	mainPage := tview.NewFrame(bufferTable).
 		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(args.FileName, false, tview.AlignLeft, tcell.ColorDarkOrange).
+		AddText(fileNameStr, false, tview.AlignLeft, tcell.ColorDarkOrange).
+		AddText(infoStr, false, tview.AlignCenter, tcell.ColorDarkOrange).
 		AddText(cursorPosStr, false, tview.AlignRight, tcell.ColorDarkOrange)
 
+	drawFooterText := func(lstr, cstr, rstr string) {
+		mainPage.Clear()
+		mainPage = mainPage.
+			AddText(lstr, false, tview.AlignLeft, tcell.ColorDarkOrange).
+			AddText(cstr, false, tview.AlignCenter, tcell.ColorDarkOrange).
+			AddText(rstr, false, tview.AlignRight, tcell.ColorDarkOrange)
+	}
 	//statsTable init
 	statsTable := tview.NewTable()
 	statsTable.SetSelectable(true, true)
@@ -79,8 +91,26 @@ func drawUI(b *Buffer, trs bool) error {
 
 	// stats page init
 	statsPage := tview.NewFrame(statsTable).
-		SetBorders(0, 0, 0, 1, 0, 0).
+		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText("Basic Stats", true, tview.AlignCenter, tcell.ColorDarkOrange)
+	//help page init
+	helpPage := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWordWrap(true).SetText(getHelpContent())
+	//UI init
+	UI = tview.NewPages()
+	UI.AddPage("help", helpPage, true, true)
+	UI.AddPage("stats", statsPage, true, true)
+	UI.AddPage("main", mainPage, true, true)
+
+	//helpPage HotKey Event
+	helpPage.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyRune && event.Rune() == '?' {
+			UI.SwitchToPage("main")
+		}
+		return event
+	})
 
 	//statsPage HotKey Event
 	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -94,17 +124,18 @@ func drawUI(b *Buffer, trs bool) error {
 		//go to head of current column
 		if event.Key() == tcell.KeyCtrlH {
 			_, column := statsTable.GetSelection()
-			statsTable.Select(0,column)
+			statsTable.Select(0, column)
 			statsTable.ScrollToBeginning()
 		}
 
 		//go to end of current column
 		if event.Key() == tcell.KeyCtrlE {
 			_, column := statsTable.GetSelection()
-			statsTable.Select(statsTable.GetRowCount()-1,column)
+			statsTable.Select(statsTable.GetRowCount()-1, column)
 			statsTable.ScrollToEnd()
 		}
 		return event
+
 	})
 
 	statsTable.SetDoneFunc(func(key tcell.Key) {
@@ -113,19 +144,11 @@ func drawUI(b *Buffer, trs bool) error {
 		}
 	})
 
-	//UI init
-	UI = tview.NewPages()
-	UI.AddPage("stats", statsPage, true, true)
-	UI.AddPage("main", mainPage, true, true)
-
 	//bufferTable Event
 	//bufferTable update cursor postion
 	bufferTable.SetSelectionChangedFunc(func(row int, column int) {
-		cursorPosStr = strconv.Itoa(row) + "," + strconv.Itoa(column)
-		mainPage.Clear()
-		mainPage.AddText(args.FileName, false, tview.AlignLeft, tcell.ColorDarkOrange).
-			AddText(cursorPosStr, false, tview.AlignRight, tcell.ColorDarkOrange)
-
+		cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
+		drawFooterText(fileNameStr, infoStr, cursorPosStr)
 	})
 
 	//bufferTable HotKey Event
@@ -133,27 +156,39 @@ func drawUI(b *Buffer, trs bool) error {
 		//sort by column, ascend
 		if event.Key() == tcell.KeyCtrlK {
 			_, column := bufferTable.GetSelection()
+			infoStr = "Sorting..."
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			app.ForceDraw()
 			if b.getColType(column) == colTypeFloat {
 				b.sortByNum(column, false)
 			} else {
 				b.sortByStr(column, false)
 			}
 			drawBuffer(b, bufferTable, trs)
+			infoStr = "All Done"
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
 		}
 		//sort by column, descend
 		if event.Key() == tcell.KeyCtrlL {
 			_, column := bufferTable.GetSelection()
+			infoStr = "Sorting..."
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			app.ForceDraw()
 			if b.getColType(column) == colTypeFloat {
 				b.sortByNum(column, true)
 			} else {
 				b.sortByStr(column, true)
 			}
 			drawBuffer(b, bufferTable, trs)
+			infoStr = "All Done"
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
 		}
 
 		//show current column's stats info
 		if event.Key() == tcell.KeyCtrlY {
 			_, column := bufferTable.GetSelection()
+			infoStr = "Calculating"
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
 			var statsS statsSummary
 			summaryArray := b.getCol(column)
 			if I2B(b.colFreeze) {
@@ -166,41 +201,56 @@ func drawUI(b *Buffer, trs bool) error {
 			}
 			statsS.summary(summaryArray)
 			statsTable.Select(0, 0).GetFocusable()
-			UI.SwitchToPage("stats")
 			app.SetFocus(statsTable)
 			statsTable.ScrollToBeginning()
 			drawStats(statsS, statsTable)
+			UI.SwitchToPage("stats")
+			infoStr = "All Done"
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
 		}
 
 		//change column data type
 		if event.Key() == tcell.KeyCtrlM {
-			_, column := bufferTable.GetSelection()
+			row, column := bufferTable.GetSelection()
 			var colType int
-			if b.getColType(column) == colTypeFloat{
+			if b.getColType(column) == colTypeFloat {
 				colType = colTypeStr
-			}else {
+			} else {
 				colType = colTypeFloat
 			}
 
 			b.setColType(column, colType)
-			drawBuffer(b, bufferTable, trs)
+			cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
+			drawFooterText(fileNameStr, infoStr, cursorPosStr)
 		}
 
 		//go to head of current column
 		if event.Key() == tcell.KeyCtrlH {
 			_, column := bufferTable.GetSelection()
-			bufferTable.Select(0,column)
+			bufferTable.Select(0, column)
 			bufferTable.ScrollToBeginning()
-			drawBuffer(b, bufferTable, trs)
 		}
 
 		//go to end of current column
 		if event.Key() == tcell.KeyCtrlE {
 			_, column := bufferTable.GetSelection()
-			bufferTable.Select(b.rowLen-1,column)
+			bufferTable.Select(b.rowLen-1, column)
 			bufferTable.ScrollToEnd()
-			drawBuffer(b, bufferTable, trs)
 		}
+		//switch to help page
+		if event.Key() == tcell.KeyRune && event.Rune() == '?' {
+			UI.SwitchToPage("help")
+		}
+
+		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
+			bufferTable.Select(b.rowLen-1, b.colLen-1)
+		}
+
+		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
+			bufferTable.Select(0, 0)
+			bufferTable.ScrollToBeginning()
+		}
+		app.ForceDraw()
 		return event
 	})
 

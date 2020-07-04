@@ -11,9 +11,9 @@ const colTypeFloat = 1
 //get column data type name. s: string, n: number
 func type2name(i int) string {
 	if i == 0 {
-		return "s"
+		return "Str"
 	}
-	return "n"
+	return "Num"
 }
 
 var app *tview.Application
@@ -32,3 +32,5 @@ func initView() {
 func stopView() {
 	app.Stop()
 }
+
+//help page content

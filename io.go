@@ -12,6 +12,7 @@ import (
 
 //load file content to buffer
 func loadFileToBuffer(fn string, b *Buffer) error {
+	totalAddedLN := 0 //the number of lines has been added into buffer
 	scanner, err := getFileScanner(fn)
 	scanner.Split(bufio.ScanLines)
 	if err != nil {
@@ -24,6 +25,10 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		lineNumber := 10
 		for scanner.Scan() {
 			line := scanner.Text()
+			//skip empty line
+			if line == "\n" {
+				continue
+			}
 			//ignore first n lines
 			if args.SkipNum > 0 {
 				args.SkipNum--
@@ -61,13 +66,22 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
 			return err
+
+		}
+		totalAddedLN++
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
 		}
 	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
+		//skip empty line
+		if line == "\n" {
+			continue
+		}
 		//ignore first n lines
-		if args.SkipNum > 0 {
+		if args.SkipNum > 0 && args.NLine > 0 {
 			args.SkipNum--
 			continue
 		}
@@ -77,11 +91,14 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		}
 
 		//parse and add line to buffer
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
 			return err
 		}
-
+		totalAddedLN++
 	}
 
 	return nil
@@ -89,6 +106,7 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 
 //load console pipe content to buffer
 func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
+	totalAddedLN := 0 //the number of lines has been added into buffer
 	var err error
 	scanner := bufio.NewScanner(stdin)
 	//read 10 lines to detect separator
@@ -97,6 +115,10 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 	if b.sep == 0 {
 		for scanner.Scan() {
 			line := scanner.Text()
+			//skip empty line
+			if line == "\n" {
+				continue
+			}
 			//ignore first n lines
 			if args.SkipNum > 0 {
 				args.SkipNum--
@@ -125,9 +147,17 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 		if err != nil {
 			return err
 		}
+		totalAddedLN++
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
 	}
 	for scanner.Scan() {
 		line := scanner.Text()
+		//skip empty line
+		if line == "\n" {
+			continue
+		}
 		//ignore first n lines
 		if args.SkipNum > 0 {
 			args.SkipNum--
@@ -137,12 +167,16 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 		if skipLine(line, args.SkipSymbol) {
 			continue
 		}
+
 		//parse and add line to buffer
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
 			return err
 		}
-
+		totalAddedLN++
 	}
 
 	return nil
@@ -181,14 +215,14 @@ func getFileScanner(fn string) (*bufio.Scanner, error) {
 //check columns that should be displayed
 func getVisCol(showNumL, hideNumL []int, colLen int) ([]int, error) {
 	for _, i := range showNumL {
-		if i > colLen {
-			return nil, errors.New("column " + string(i) + "does not exist")
+		if i > colLen || i <= 0 {
+			return nil, errors.New("Column number " + I2S(i) + " does not exist")
 		}
 	}
 
 	for _, i := range hideNumL {
-		if i > colLen {
-			return nil, errors.New("column " + string(i) + "does not exist")
+		if i > colLen || i <= 0 {
+			return nil, errors.New("Column number " + I2S(i) + " does not exist")
 		}
 	}
 
@@ -230,11 +264,12 @@ func checkVisible(showNumL, hideNumL []int, col int) (bool, error) {
 	return true, nil
 }
 
+//use go csv library to parse a string line into csv format
 func lineCSVParse(s string, sep rune) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(s))
 	r.Comma = sep
 	r.LazyQuotes = true
-	r.TrimLeadingSpace = true
+	//r.TrimLeadingSpace = true //disable, because it will remove NULL item and cause issue.
 	record, err := r.Read()
 	return record, err
 }
@@ -242,18 +277,18 @@ func lineCSVParse(s string, sep rune) ([]string, error) {
 //add displayable(according to user's input argument) RowArray(covert line to array) To Buffer
 func addDRToBuffer(b *Buffer, line string, showNum, hideNum []int) error {
 	var err error
+	lineCSVParts, err := lineCSVParse(line, b.sep)
+	if err != nil {
+		return err
+	}
 	if len(showNum) != 0 || len(hideNum) != 0 {
 		var lineSli []string
-		tempLineSli, err := lineCSVParse(line, b.sep)
-		if err != nil {
-			return err
-		}
-		visCol, err := getVisCol(showNum, hideNum, len(tempLineSli))
+		visCol, err := getVisCol(showNum, hideNum, len(lineCSVParts))
 		if err != nil {
 			return err
 		}
 		for _, i := range visCol {
-			lineSli = append(lineSli, tempLineSli[i])
+			lineSli = append(lineSli, lineCSVParts[i])
 		}
 		err = b.contAppendSli(lineSli, true)
 		if err != nil {
@@ -261,7 +296,7 @@ func addDRToBuffer(b *Buffer, line string, showNum, hideNum []int) error {
 		}
 
 	} else {
-		err := b.contAppendStr(line, b.sep, true)
+		err := b.contAppendSli(lineCSVParts, true)
 		if err != nil {
 			return err
 		}

@@ -27,32 +27,12 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 		b.colType = make([]int, b.colLen+1)
 	}
 	if strict && len(s) != b.colLen {
-		return errors.New("lack some column")
+		return errors.New("Row " + I2S(b.rowLen) + " lack some column")
 	}
 
 	b.cont = append(b.cont, s)
 	b.rowLen++
 
-	return nil
-}
-
-//add []string to buffer
-func (b *Buffer) contAppendStr(s string, sep rune, strict bool) error {
-	sSli, err := lineCSVParse(s, b.sep)
-	if err != nil {
-		return err
-	}
-	if b.rowLen == 0 {
-		b.colLen = len(sSli)
-		b.colType = make([]int, b.colLen+1)
-	}
-
-	if strict && len(sSli) != b.colLen {
-		return errors.New("lack some column")
-	}
-
-	b.cont = append(b.cont, sSli)
-	b.rowLen++
 	return nil
 }
 

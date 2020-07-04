@@ -63,46 +63,57 @@ $ go get -u github.com/codechenx/tv
 
 | Key               | description              |
 | ----------------- | ------------------------ |
-| h, left arrow     | Move left by one column  |
-| l, right arrow    | Move right by one column |
-| j, down arrow     | Move down by one row     |
-| k, up             | Move up by one row       |
-| g, home           | Move to the top          |
-| G, end            | Move to the bottom       |
-| Ctrl-F, page down | Move down by one page    |
-| Ctrl-B, page up   | Move up by one page      |
+| ? | Help page |
+| h, left arrow     | Move left |
+| l, right arrow    | Move right |
+| j, down arrow     | Move down|
+| k, up             | Move up     |
+| g, home           | move to first cell of table        |
+| G, end            | move to last cell of table      |
+| Ctrl-f, page down | Move down by one page    |
+| Ctrl-b, page up  | Move up by one page      |
+| Ctrl-e | Move to end of current column |
+| Ctrl-h | Move to head of current column |
+| Ctrl-m | Change column data type to string or number |
+| Ctrl-k | Sort data by column(ascend) |
+| Ctrl-l | Sort data by column(descend) |
+| Ctrl-y | Show basic stats of current column, back to data table |
 
 # Usage
+#### Usage:
+  tv {File_Name} [flags]
 
-Usage: tv [--sep SEP] [--ss SS] [--sn SN] [--rc RC] [--hc HC] [--h H] [--t] FILENAME
+#### Flags:
+```bash
+  --s string       Split symbol
+  --nl int         Only display first N line
+  --is strings     Ignore lines with specific prefix(support for multiple arguments, separated by comma
+  --in int         Ignore first N row [default: 0]
+  --dc ints        Only display certain columns(support for multiple arguments, separated by comma)
+  --hc ints        Do not display certain columns(support for multiple arguments, separated by comma)
+  --fi int         -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]
+  --tr             Transpose and view data [default: false]
+```
+  -h, --help         help for tv
+  -v, --version     version for tv
 
-Positional arguments:
-  FILENAME
-
-Options:
-  - --sep SEP, -s SEP      split symbol [default: ""]
-  - --ss SS                ignore lines with specific prefix(support for multiple arguments, separated by space) [default: []]
-  - --sn SN                ignore first n lines [default: 0]
-  - --rc RC                show columns(support for multiple arguments, separated by space) [default: []]
-  - --hc HC                hide columns(support for multiple arguments, separated by space) [default: []]
-  - --h H                  -1, no column name and row name; 0, use first row as row name; 1, use first column as column name; 2, use firt column as column name and first row as row name [default: 0]
-  - --t                    transpose and view data [default: false]
-  - --help, -h             display this help and exit
-  - --version              display version and exit
+ #### OR
+  tv also can recive data form pipe as an input
+  ```bash
+  cat file.csv | tv
+  ```
 
 # (Extra)Examples for common biological data
+
 ```bash
 #vcf or compressed vcf format
-tv file.vcf --ss "##"
-tv file.vcf.gz --ss "##"
+tv file.vcf --is "##"
+tv file.vcf.gz --is "##"
 #qiime otu table
-tv file.txt --ss "# "
+tv file.txt --is "# "
 #maf format
-tv file.maf --ss "#"
+tv file.maf --is "#"
 #interval list
-tv file.interval_list --ss "@HD" "@SQ"
-tv file.interval_list --ss "@"
-# bed 
-tv file.bed --h -1
-
+tv file.interval_list --is "@HD","@SQ"
+tv file.interval_list --is "@"
 ```
