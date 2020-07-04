@@ -2,7 +2,7 @@ on:
   push:
     tags:
       - 'v*'
-      
+
 name: Build Release
 jobs:
   release-linux-386:
@@ -88,8 +88,4 @@ jobs:
         GITHUB_TOKEN: f561b72f740be799a5a4b02da84e0fb7fa2f818b
         GOARCH: amd64
         GOOS: windows
-<<<<<<< HEAD
         EXTRA_FILES: "LICENSE"
-=======
-        EXTRA_FILES: "LICENSE"
->>>>>>> 61b01a3a04914a5cd41532a7cc33993eeff88096
