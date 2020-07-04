@@ -16,5 +16,3 @@ jobs:
         GITHUB_TOKEN: 846a7eb801a687d2d239ceedfa76fd7d4e8937dd
         GOARCH: "386"
         GOOS: linux
-        EXTRA_FILES: "LICENSE"
-     
