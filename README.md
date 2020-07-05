@@ -46,7 +46,7 @@ brew install codechenx/tv/tv
 ```
 #### Bash(Linux and macOS)
 ```bash
-$ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
+curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
 #### Debian package(Ubuntu, Debian, etc)
 download from [releases](https://github.com/codechenx/tv/releases) 
