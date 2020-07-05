@@ -20,7 +20,7 @@ release:
 brews:
   - github:
       owner: codechenx
-      name: hombrew-tv
+      name: homebrew-tv
     commit_author:
       name: codechenx
       email: codechenx@gmail.com
