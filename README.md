@@ -40,14 +40,18 @@ tv is a tool to view the delimited file in terminal.
 
 ### Prebuilt binaries(only x86_64)
 
-#### Linux and macOS
+#### Homebrew(macOS)
+```bash
+brew install codechenx/tv/tv
+```
+#### Bash(Linux and macOS)
 ```bash
 $ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
-or
-
+#### Debian package(Ubuntu, Debian, etc)
 download from [releases](https://github.com/codechenx/tv/releases) 
-#### Window
+
+#### RPM package(Centos, Fedora, etc)
 download from [releases](https://github.com/codechenx/tv/releases) 
 
 ### Build from source
