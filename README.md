@@ -58,7 +58,7 @@ download from [releases](https://github.com/codechenx/tv/releases)
 
  Use go get to install and update:
 ```bash
-$ go get -u github.com/codechenx/tv
+go get -u github.com/codechenx/tv
 ```
 # Key binding
 
