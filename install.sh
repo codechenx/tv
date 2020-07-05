@@ -23,6 +23,7 @@ TAG=`githubLatestTag codechenx/tv`
 
 echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform".tar.gz"
 curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform".tar.gz" > tv.tar.gz
+tar -zxf tv.tar.gz
 chmod +x tv
 
 echo "This script will install tv to the directory you're in. 
