@@ -17,7 +17,7 @@
 - [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binaries\(only-x86_64\))
+  - [Prebuilt binaries](#prebuilt-binariesonly-x86_64)
   - [Build from source](#build-from-source)
 - [Usage](#usage)
 - [Key binding](#key-binding)
