@@ -4,6 +4,8 @@
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 
+![icon-192x192](data/icon-192x192.png)
+
 #### Description
 
 tv is a tool to view the delimited file in terminal.
@@ -17,7 +19,7 @@ tv is a tool to view the delimited file in terminal.
 - [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binariesonly-64bit)
+  - [Prebuilt binaries](#prebuilt-binaries\(only-x86_64\))
   - [Build from source](#build-from-source)
 - [Key binding](#key-binding)
 - [Usage](#usage)
