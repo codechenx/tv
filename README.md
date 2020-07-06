@@ -10,10 +10,7 @@
 
 # Introduction
   **tv is a tool to view the delimited file in terminal.**
-
  ![Screenshot](screenshots/example.gif)
-
-
 # Table of Contents
 
 - [Introduction](#introduction)
@@ -27,7 +24,6 @@
 - [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
 
 
-
 # Feature
 
 - Spreadsheet-like view for delimited data
@@ -36,11 +32,9 @@
 - Automatically identify seperator
 
 
-
 # To do
 
 - [ ] search string
-
 
 
 # Installation
@@ -76,6 +70,7 @@ download from [releases](https://github.com/codechenx/tv/releases)
 ```bash
 go get -u github.com/codechenx/tv
 ```
+
 
 # Usage
 
