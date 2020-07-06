@@ -8,7 +8,6 @@
 
 tv is a tool to view the delimited file in terminal.
 
-
  ![Screenshot](screenshots/example.gif)
 
 
@@ -24,6 +23,8 @@ tv is a tool to view the delimited file in terminal.
 - [Usage](#usage)
 - [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
 
+
+
 # Feature
 
 - Spreadsheet-like view for delimited data
@@ -31,9 +32,12 @@ tv is a tool to view the delimited file in terminal.
 - Support for gzip compressed file
 - Automatically identify seperator
 
+
+
 # To do
 
 - [ ] search string
+
 
 
 # Installation
@@ -44,7 +48,16 @@ tv is a tool to view the delimited file in terminal.
 ```bash
 brew install codechenx/tv/tv
 ```
+#### Snap(Linux)
+
+```bash
+sudo snap install codechenx-tv
+```
+
+\* You need to make sure snap is already *installed* in your system , refer to https://snapcraft.io/docs/installing-snapd
+
 #### Bash(Linux and macOS)
+
 ```bash
 curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
@@ -60,6 +73,8 @@ download from [releases](https://github.com/codechenx/tv/releases)
 ```bash
 go get -u github.com/codechenx/tv
 ```
+
+
 # Key binding
 
 | Key               | description              |
@@ -80,7 +95,10 @@ go get -u github.com/codechenx/tv
 | Ctrl-l | Sort data by column(descend) |
 | Ctrl-y | Show basic stats of current column, back to data table |
 
+
+
 # Usage
+
 #### Usage:
   tv {File_Name} [flags]
 
@@ -105,13 +123,9 @@ tv also can recive data form pipe as an input
   cat file.csv | tv
   ```
 
-
-
 #### Sorting and Stats
 
 For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.You can change the data type of current column by Ctrl-m. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
-
-
 
 
 
