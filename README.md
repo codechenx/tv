@@ -21,8 +21,8 @@ tv is a tool to view the delimited file in terminal.
 - [Installation](#installation)
   - [Prebuilt binaries](#prebuilt-binaries\(only-x86_64\))
   - [Build from source](#build-from-source)
-- [Key binding](#key-binding)
 - [Usage](#usage)
+- [Key binding](#key-binding)
 - [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
 
 
@@ -76,29 +76,6 @@ download from [releases](https://github.com/codechenx/tv/releases)
 go get -u github.com/codechenx/tv
 ```
 
-
-# Key binding
-
-| Key               | description              |
-| ----------------- | ------------------------ |
-| ? | Help page |
-| h, left arrow     | Move left |
-| l, right arrow    | Move right |
-| j, down arrow     | Move down|
-| k, up             | Move up     |
-| g, home           | move to first cell of table        |
-| G, end            | move to last cell of table      |
-| Ctrl-f, page down | Move down by one page    |
-| Ctrl-b, page up  | Move up by one page      |
-| Ctrl-e | Move to end of current column |
-| Ctrl-h | Move to head of current column |
-| Ctrl-m | Change column data type to string or number |
-| Ctrl-k | Sort data by column(ascend) |
-| Ctrl-l | Sort data by column(descend) |
-| Ctrl-y | Show basic stats of current column, back to data table |
-
-
-
 # Usage
 
 #### Usage:
@@ -129,7 +106,25 @@ tv also can recive data form pipe as an input
 
 For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.You can change the data type of current column by Ctrl-m. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
 
+# Key binding
 
+| Key               | description              |
+| ----------------- | ------------------------ |
+| ? | Help page |
+| h, left arrow     | Move left |
+| l, right arrow    | Move right |
+| j, down arrow     | Move down|
+| k, up             | Move up     |
+| g, home           | move to first cell of table        |
+| G, end            | move to last cell of table      |
+| Ctrl-f, page down | Move down by one page    |
+| Ctrl-b, page up  | Move up by one page      |
+| Ctrl-e | Move to end of current column |
+| Ctrl-h | Move to head of current column |
+| Ctrl-m | Change column data type to string or number |
+| Ctrl-k | Sort data by column(ascend) |
+| Ctrl-l | Sort data by column(descend) |
+| Ctrl-y | Show basic stats of current column, back to data table |
 
 # (Extra)Examples for common biological data
 
