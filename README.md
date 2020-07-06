@@ -4,18 +4,19 @@
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 
-![icon-192x192](data/icon-192x192.png)
+<p align="center">
+   <img src="data/icon-192x192.png" alt="tv icon"/>
+</p>
 
-#### Description
-
-tv is a tool to view the delimited file in terminal.
+# Introduction
+  **tv is a tool to view the delimited file in terminal.**
 
  ![Screenshot](screenshots/example.gif)
 
 
 # Table of Contents
 
-- [Description](#description)
+- [Introduction](#introduction)
 - [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
