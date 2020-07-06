@@ -35,3 +35,11 @@ nfpms:
         - deb
         - rpm
     bindir: /usr/bin
+
+snapcrafts:
+  - description: tv is a tool to view the delimited file in terminal.
+    license: Apache 2.0
+    base: core
+    publish: true
+    grade: stable
+    confinement: strict
