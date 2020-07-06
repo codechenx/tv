@@ -8,16 +8,15 @@
    <img src="data/icon-192x192.png" alt="tv icon"/>
 </p>
 
-#### Description
-
-tv is a tool to view the delimited file in terminal.
+# Introduction
+  **tv is a tool to view the delimited file in terminal.**
 
  ![Screenshot](screenshots/example.gif)
 
 
 # Table of Contents
 
-- [Description](#description)
+- [Introduction](#introduction)
 - [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
