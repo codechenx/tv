@@ -26,5 +26,6 @@ curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$pla
 tar -zxf tv.tar.gz
 chmod +x tv
 
-echo "This script will install tv to the directory you're in. 
-To install somewhere else (e.g. /usr/local/bin) just move tv binary into it"
+echo "\033[33mThis script will download tv binary file to your current directory
+you need to run sudo cp tv /usr/local/bin/ 
+or copy tv binary file to any directory which is in the environment variable PATH"
