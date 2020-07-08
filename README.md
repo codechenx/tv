@@ -40,13 +40,14 @@
 # Installation
 
 ### Prebuilt binaries(only x86_64)
-#### Bash(Linux and macOS, best choice for non-root user)
+#### Bash(Linux and macOS, best choice for non-root linux user)
 
 ```bash
 curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
-\* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
+\* This comd will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 
+\* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases) 
 #### Homebrew(macOS)
 ```bash
 brew install codechenx/tv/tv
