@@ -54,7 +54,8 @@ brew install codechenx/tv/tv
 ```bash
 curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
-#### Debian package(Ubuntu, Debian, etc)
+\* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
+#### Debian package(Ubuntu, Debian, etc) 
 download from [releases](https://github.com/codechenx/tv/releases) 
 
 #### RPM package(Centos, Fedora, etc)
