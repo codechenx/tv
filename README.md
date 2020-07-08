@@ -40,6 +40,12 @@
 # Installation
 
 ### Prebuilt binaries(only x86_64)
+#### Bash(Linux and macOS, best choice for non-root nser)
+
+```bash
+curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
+```
+\* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 
 #### Homebrew(macOS)
 ```bash
@@ -49,12 +55,6 @@ brew install codechenx/tv/tv
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-#### Bash(Linux and macOS)
-
-```bash
-curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
-```
-\* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 #### Debian package(Ubuntu, Debian, etc) 
 download from [releases](https://github.com/codechenx/tv/releases) 
 
