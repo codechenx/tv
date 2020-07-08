@@ -47,11 +47,7 @@ brew install codechenx/tv/tv
 ```
 #### Snap(Linux)
 
-```bash
-sudo snap install codechenx-tv
-```
-
-\* You need to make sure snap is already *installed* in your system , refer to https://snapcraft.io/docs/installing-snapd
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
 #### Bash(Linux and macOS)
 
