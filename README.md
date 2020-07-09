@@ -77,7 +77,7 @@ go get -u github.com/codechenx/tv
   tv {File_Name} [flags]
 
 ### Flags:
-```bash
+```
   --s string       Split symbol
   --nl int         Only display first N line
   --is strings     Ignore lines with specific prefix(support for multiple arguments, separated by comma
