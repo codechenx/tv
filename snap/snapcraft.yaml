@@ -17,5 +17,5 @@ parts:
       - gcc
 apps:
   codechenx-tv:
-    command: bin/tv
-    aliases: tv
+    command: bin/codechenx-tv
+    aliases: [tv]
