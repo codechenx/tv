@@ -8,5 +8,13 @@ base: core18
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 parts:
-  my-part:
-    plugin: nil
+  codechenx-tv:
+    plugin: go
+    go-importpath: https://github.com/codechenx/tv
+    source: .
+    source-type: git
+    build-packages:
+      - gcc
+apps:
+  codechenx-tv:
+    command: bin/tv
