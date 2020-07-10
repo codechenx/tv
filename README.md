@@ -55,7 +55,7 @@ brew install codechenx/tv/tv
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-*you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by 'tv'
+*After installation, you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by 'tv'
 
 #### Debian package(Ubuntu, Debian, etc) 
 download from [releases](https://github.com/codechenx/tv/releases) 
