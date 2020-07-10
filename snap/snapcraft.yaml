@@ -16,5 +16,5 @@ parts:
     build-packages:
       - gcc
 apps:
-  codechenx-tv:
+  tv:
     command: bin/tv
