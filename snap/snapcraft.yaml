@@ -11,7 +11,7 @@ parts:
   codechenx-tv:
     plugin: go
     go-importpath: https://github.com/codechenx/tv
-    source: .
+    source: https://github.com/codechenx/tv.git
     source-type: git
     build-packages:
       - gcc
