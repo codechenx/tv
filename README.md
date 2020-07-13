@@ -4,6 +4,8 @@
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 
+[![codechenx-tv](https://snapcraft.io//codechenx-tv/badge.svg)](https://snapcraft.io/codechenx-tv)
+
 <p align="center">
    <img src="data/icon-192x192.png" alt="tv icon"/>
 </p>
@@ -58,7 +60,7 @@ brew install codechenx/tv/tv
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-*you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by 'tv'
+*you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by ```tv```
 
 
 #### Debian package(Ubuntu, Debian, etc) 
