@@ -4,13 +4,13 @@ package main
 type Args struct {
 	FileName   string
 	Sep        string
-	SkipSymbol []string
-	SkipNum    int
-	ShowNum    []int
-	HideNum    []int
-	Header     int
+	SkipSymbol []string //ignore line with specified prefix
+	SkipNum    int      //Number of lines that should be skipped
+	ShowNum    []int    //columns that should be displayed
+	HideNum    []int    //columns that should be hidden
+	Header     int      //header display mode
 	Transpose  bool
-	NLine      int
+	NLine      int //Number of lines that should be displayed
 }
 
 func (args *Args) setDefault() {
