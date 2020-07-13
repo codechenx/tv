@@ -38,6 +38,5 @@ rm -f tv_"$TAG"_"$platform"_"$architecture".tar.gz
 chmod +x tv
 
 echo "#################################################################################
-This script will download tv binary file to your current directory
-you need to run sudo cp tv /usr/local/bin/ 
-or copy tv binary file to any directory which is in the environment variable PATH"
+This script has downloaded tv binary file to your current directory
+you need to copy tv binary file to any directory which is in the environment variable PATH"
