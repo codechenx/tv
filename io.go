@@ -14,10 +14,10 @@ import (
 func loadFileToBuffer(fn string, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	scanner, err := getFileScanner(fn)
-	scanner.Split(bufio.ScanLines)
 	if err != nil {
 		return err
 	}
+	scanner.Split(bufio.ScanLines)
 	//set separator, if user does not provide it.
 	var detectLines []string //lines as detect separator data
 	if b.sep == 0 {
