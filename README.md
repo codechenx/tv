@@ -18,7 +18,7 @@
 - [Feature](#feature)
 - [To do](#to-do)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binariesonly-x86_64)
+  - [Prebuilt binaries](#prebuilt-binariesonly)
   - [Build from source](#build-from-source)
 - [Usage](#usage)
 - [Key binding](#key-binding)
@@ -40,8 +40,8 @@
 
 # Installation
 
-### Prebuilt binaries(only x86_64)
-#### Bash(Linux and macOS, best choice for non-root linux user)
+### Prebuilt binaries
+#### Bash(Linux and macOS, best choice for non-root linux user, only x86_64)
 
 ```bash
 curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
