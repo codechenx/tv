@@ -7,22 +7,32 @@ function githubLatestTag {
 }
 
 UNAME=$(uname)
-
+ARCH=$(uname -m)
 platform=""
 
 if [ "$UNAME" == "Linux" ] ; then
-	platform="linux_amd64"
+	 platform="linux"
 elif [ "$UNAME" == "Darwin" ] ; then
-	 platform="darwin_amd64"
+	 platform="darwin"
 fi
 
-echo "Detected platform: $platform"
+if [ "$ARCH" == "x86_64" ] ; then
+	architecture="amd64"
+elif [ "$ARCH" == "armv7l" ] ; then
+	 architecture="armv7"
+elif [ "$ARCH" == "arm64" ] ; then
+	 architecture="arm64"
+else
+	 architecture="386"
+fi
+
+echo "Detected platform: $platform"_"$architecture"
 
 
 TAG=`githubLatestTag codechenx/tv`
 
-echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform".tar.gz"
-curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform".tar.gz" > tv.tar.gz
+echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz"
+curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz" > tv.tar.gz
 tar -zxf tv.tar.gz
 chmod +x tv
 
