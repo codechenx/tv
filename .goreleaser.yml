@@ -22,8 +22,8 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
-release:
-  name_template: "{{.ProjectName}}-{{.Env.USER}}"
+changelog:
+  skip: true
 brews:
   - github:
       owner: codechenx
