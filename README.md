@@ -41,7 +41,7 @@
 # Installation
 
 ### Prebuilt binaries
-#### Bash(Linux and macOS, best choice for non-root linux user)
+#### Bash(Linux and macOS, best choice for non-root user)
 
 ```bash
 curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
