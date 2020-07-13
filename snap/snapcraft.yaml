@@ -20,5 +20,4 @@ apps:
     command: bin/tv
     plugs:
       - home
-      - personal-files
       - removable-media
