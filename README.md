@@ -48,10 +48,18 @@ curl https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 \* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 
 \* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases) 
+
 #### Homebrew(macOS)
 ```bash
 brew install codechenx/tv/tv
 ```
+
+#### Snap(Linux)
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
+
+*you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by 'tv'
+
 
 #### Debian package(Ubuntu, Debian, etc) 
 download from [releases](https://github.com/codechenx/tv/releases) 
@@ -116,6 +124,7 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-k | Sort data by column(ascend) |
 | Ctrl-l | Sort data by column(descend) |
 | Ctrl-y | Show basic stats of current column, back to data table |
+| q, Ctrl-c | Quit |
 
 # (Extra)Examples for common biological data
 
