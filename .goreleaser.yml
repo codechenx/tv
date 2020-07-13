@@ -11,6 +11,14 @@ builds:
   - CGO_ENABLED=0
   goarch:
     - amd64
+    - mips64
+    - 386
+    - arm
+    - arm64
+    
+  goarm:
+      - 6
+      - 7
 checksum:
   name_template: 'checksums.txt'
 snapshot:
