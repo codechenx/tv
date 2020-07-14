@@ -11,7 +11,7 @@
 
 # Introduction
   **tv is a tool to view the delimited text file(csv,tsv,etc) in terminal.**
- ![Screenshot](screenshots/example.gif)
+[![asciicast](https://asciinema.org/a/347295.svg)](https://asciinema.org/a/347295)
 # Table of Contents
 
 - [Introduction](#introduction)
