@@ -1,4 +1,4 @@
-# tv(table viewer) for delimited file in terminal
+# tv(table viewer) for delimited text file(csv,tsv,etc) in terminal.
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
@@ -10,7 +10,7 @@
 </p>
 
 # Introduction
-  **tv is a tool to view the delimited file in terminal.**
+  **tv is a tool to view the delimited text file(csv,tsv,etc) in terminal.**
  ![Screenshot](screenshots/example.gif)
 # Table of Contents
 
@@ -27,7 +27,7 @@
 
 # Feature
 
-- Spreadsheet-like view for delimited data
+- Spreadsheet-like view for delimited text data
 - Vim-like key binding 
 - Support for gzip compressed file
 - Automatically identify seperator
