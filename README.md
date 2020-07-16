@@ -50,7 +50,7 @@ curl -sSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bas
 
 \* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases) 
 
-#### Homebrew(Linux and macOS, only x86_64)
+#### Homebrew(Linux and macOS, only 64-bit)
 ```bash
 brew install codechenx/tv/tv
 ```
