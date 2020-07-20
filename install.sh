@@ -38,10 +38,10 @@ TAG=`githubLatestTag codechenx/tv`
 tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
 echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz"
 curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz" > $tmp_dir/tv_"$TAG"_"$platform"_"$architecture".tar.gz
-tar -zxf $tmp_dir/tv_"$TAG"_"$platform"_"$architecture".tar.gz
-exit 0
+tar -zxf $tmp_dir/tv_"$TAG"_"$platform"_"$architecture".tar.gz -C $tmp_dir
 mv $tmp_dir/tv $PWD
 chmod +x tv
+exit 0
 echo "#################################################################################
 This script has downloaded tv binary file to current directory
 you need to move tv binary file to any directory which is in the environment variable PATH"
