@@ -44,7 +44,7 @@
 #### Bash(Linux and macOS, best choice for non-root user)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
 \* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 
