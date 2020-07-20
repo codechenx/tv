@@ -30,7 +30,7 @@ echo "Detected platform: $platform"_"$architecture"
 
 FILE=$PWD/tv
 if test -f "$FILE"; then
-    echo "cant't download t, because $FILE exists."
+    echo "cant't download tv, because $FILE exists."
     exit 1
 fi
 
@@ -39,9 +39,9 @@ tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
 echo "Downloading https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz"
 curl -L "https://github.com/codechenx/tv/releases/download/v$TAG/tv_"$TAG"_"$platform"_"$architecture".tar.gz" > $tmp_dir/tv_"$TAG"_"$platform"_"$architecture".tar.gz
 tar -zxf $tmp_dir/tv_"$TAG"_"$platform"_"$architecture".tar.gz
-chmod +x $tmp_dir/tv
 exit 0
 mv $tmp_dir/tv $PWD
+chmod +x tv
 echo "#################################################################################
 This script has downloaded tv binary file to current directory
 you need to move tv binary file to any directory which is in the environment variable PATH"
