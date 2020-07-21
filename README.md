@@ -125,7 +125,7 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-k | Sort data by column(ascend) |
 | Ctrl-l | Sort data by column(descend) |
 | Ctrl-y | Show basic stats of current column, back to data table |
-| q, Ctrl-c | Quit |
+| Ctrl-c | Quit |
 
 # (Extra)Examples for common biological data
 
