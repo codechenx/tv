@@ -28,7 +28,6 @@
 # Feature
 
 - Spreadsheet-like view for delimited text data
-- Vim-like key binding 
 - Support for gzip compressed file
 - Automatically identify seperator
 
