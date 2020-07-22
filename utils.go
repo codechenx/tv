@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 //print fatal error and force quite app
@@ -61,7 +62,7 @@ func getHelpContent() string {
 C == Ctrl
 
 ##Quit##
-ESC                 Quit
+C-c, ESC                 Quit
 
 ##Movement##
 Left-arrow          Move left
