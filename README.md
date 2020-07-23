@@ -82,14 +82,14 @@ go get -u github.com/codechenx/tv
 
 ### Flags:
 ```
-  --s string       Split symbol
-  --nl int         Only display first N line
-  --is strings     Ignore lines with specific prefix(support for multiple arguments, separated by comma
-  --in int         Ignore first N row [default: 0]
-  --dc ints        Only display certain columns(support for multiple arguments, separated by comma)
-  --hc ints        Do not display certain columns(support for multiple arguments, separated by comma)
-  --fi int         -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]
-  --tr             Transpose and view data [default: false]
+  --s string       (optional) Split symbol
+  --nl int         (optional) Only display first N line
+  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma
+  --in int         (optional) Ignore first N row [default: 0]
+  --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
+  --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
+  --fi int         (optional) -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]
+  --tr             (optional) Transpose and view data [default: false]
   -h, --help       help for tv
   -v, --version    version for tv
 ```
@@ -124,7 +124,7 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-k | Sort data by column(ascend) |
 | Ctrl-l | Sort data by column(descend) |
 | Ctrl-y | Show basic stats of current column, back to data table |
-| Ctrl-c | Quit |
+| Ctrl-c, ESC | Quit |
 
 # (Extra)Examples for common biological data
 

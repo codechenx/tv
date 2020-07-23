@@ -65,14 +65,14 @@ func main() {
 		},
 	}
 
-	RootCmd.Flags().StringVar(&args.Sep, "s", "", "Split symbol [default: \"\"]")
-	RootCmd.Flags().IntVar(&args.NLine, "nl", 0, "Only display first N line")
-	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "Ignore lines with specific prefix(support for multiple arguments, separated by comma")
-	RootCmd.Flags().IntVar(&args.SkipNum, "in", 0, "Ignore first N row [default: 0]")
-	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "Only display certain columns(support for multiple arguments, separated by comma)")
-	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "Do not display certain columns(support for multiple arguments, separated by comma)")
-	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "-1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]")
-	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "Transpose and view data [default: false]")
+	RootCmd.Flags().StringVar(&args.Sep, "s", "", "(optional) Split symbol [default: \"\"]")
+	RootCmd.Flags().IntVar(&args.NLine, "nl", 0, "(optional) Only display first N line")
+	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "(optional) Ignore lines with specific prefix(multiple arguments support, separated by comma")
+	RootCmd.Flags().IntVar(&args.SkipNum, "in", 0, "(optional) Ignore first N row [default: 0]")
+	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "(optional) Only display certain columns(multiple parameter support, separated by comma)")
+	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "(optional) Do not display certain columns(multiple arguments support, separated by comma)")
+	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional) -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]")
+	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "(optional) Transpose and view data [default: false]")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
 	fatalError(err)
