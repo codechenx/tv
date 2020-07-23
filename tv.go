@@ -11,7 +11,7 @@ func main() {
 	args.setDefault()
 	RootCmd := &cobra.Command{
 		Use:     "tv {File_Name}",
-		Version: "0.5.1",
+		Version: "0.5.2",
 		Short:   "tv(Table Viewer) for delimited file in terminal",
 		Run: func(cmd *cobra.Command, cmdargs []string) {
 			if args.Sep == "\\t" {
