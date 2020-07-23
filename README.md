@@ -89,7 +89,7 @@ go get -u github.com/codechenx/tv
   --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
   --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
   --fi int         (optional) -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]
-  --tr             (Bool) Transpose and view data
+  --tr             (bool) Transpose and view data
   -h, --help       help for tv
   -v, --version    version for tv
 ```
