@@ -12,7 +12,6 @@
 
 ## Introduction
 
-  **tv is a tool to view the delimited text file(csv,tsv,etc) in terminal.**
 [![asciicast](https://asciinema.org/a/347295.svg)](https://asciinema.org/a/347295)
 
 ## Table of Contents
@@ -47,9 +46,9 @@
 curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
 
-\* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
+\* This command will download tv binary file to your current directory, you need to run `sudo cp tv /usr/local/bin/` or copy tv binary file to any directory which is in the environment variable **PATH**
 
-\* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases)
+\* You also can download tv binaries manually, from [releases](https://github.com/codechenx/tv/releases)
 
 #### Homebrew(Linux and macOS, only 64-bit)
 
@@ -61,7 +60,7 @@ brew install codechenx/tv/tv
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-*you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by ```tv```
+\*you need to run `sudo snap alias codechenx-tv tv`.This makes it possible to launch the application by `tv`
 
 #### Debian package(Ubuntu, Debian, etc)
 
@@ -73,7 +72,7 @@ download from [releases](https://github.com/codechenx/tv/releases)
 
 ### Build from source
 
- Use go get to install and update:
+Use go get to install and update:
 
 ```bash
 go get -u github.com/codechenx/tv
@@ -83,7 +82,7 @@ go get -u github.com/codechenx/tv
 
 ### Usage
 
-  tv {File_Name} [flags]
+tv {File_Name} [flags]
 
 ### Flags
 
@@ -106,9 +105,9 @@ go get -u github.com/codechenx/tv
 
 tv also can recive data form pipe as an input
 
-  ```=
+```=
 cat file.csv | tv
-  ```
+```
 
 ### Sorting and Stats
 
@@ -116,24 +115,24 @@ For tv, there are two data types for every column, **string**, and **number**, w
 
 ## Key binding
 
-| Key               | description              |
-| ----------------- | ------------------------ |
-| ? | Help page |
-| h, left arrow     | Move left |
-| l, right arrow    | Move right |
-| j, down arrow     | Move down|
-| k, up             | Move up     |
-| g, home           | Move to first cell of table        |
-| G, end            | Move to last cell of table      |
-| Ctrl-f, page down | Move down by one page    |
-| Ctrl-b, page up  | Move up by one page      |
-| Ctrl-e | Move to end of current column |
-| Ctrl-h | Move to head of current column |
-| Ctrl-m | Change column data type to string or number |
-| Ctrl-k | Sort data by column(ascend) |
-| Ctrl-l | Sort data by column(descend) |
-| Ctrl-y | Show basic stats of current column, back to data table |
-| Ctrl-c, ESC | Quit |
+| Key               | description                                            |
+| ----------------- | ------------------------------------------------------ |
+| ?                 | Help page                                              |
+| h, left arrow     | Move left                                              |
+| l, right arrow    | Move right                                             |
+| j, down arrow     | Move down                                              |
+| k, up             | Move up                                                |
+| g, home           | Move to first cell of table                            |
+| G, end            | Move to last cell of table                             |
+| Ctrl-f, page down | Move down by one page                                  |
+| Ctrl-b, page up   | Move up by one page                                    |
+| Ctrl-e            | Move to end of current column                          |
+| Ctrl-h            | Move to head of current column                         |
+| Ctrl-m            | Change column data type to string or number            |
+| Ctrl-k            | Sort data by column(ascend)                            |
+| Ctrl-l            | Sort data by column(descend)                           |
+| Ctrl-y            | Show basic stats of current column, back to data table |
+| Ctrl-c, ESC       | Quit                                                   |
 
 ## (Extra)Examples for common biological data
 
@@ -149,4 +148,3 @@ tv file.maf --is "#"
 tv file.interval_list --is "@HD","@SQ"
 tv file.interval_list --is "@"
 ```
-
