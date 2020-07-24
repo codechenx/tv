@@ -5,19 +5,20 @@ import (
 	"sort"
 )
 
-//buffer struct
+//Buffer struct
 type Buffer struct {
-	sep       rune
-	cont      [][]string
-	colType   []int //const colType_str = 0, const colType_int = 0
-	rowLen    int
-	colLen    int
-	rowFreeze int // true:1, false:0
-	colFreeze int // true:1, false:0
+	sep          rune
+	cont         [][]string
+	colType      []int //const colType_str = 0, const colType_int = 0
+	rowLen       int
+	colLen       int
+	rowFreeze    int // true:1, false:0
+	colFreeze    int // true:1, false:0
+	selectedCell [][]int
 }
 
 func createNewBuffer() *Buffer {
-	return &Buffer{sep: 0, cont: [][]string{}, colType: []int{}, rowLen: 0, colLen: 0, rowFreeze: 1, colFreeze: 1}
+	return &Buffer{sep: 0, cont: [][]string{}, colType: []int{}, rowLen: 0, colLen: 0, rowFreeze: 1, colFreeze: 1, selectedCell: [][]int{}}
 }
 
 func createNewBufferWithData(ss [][]string, strict bool) (*Buffer, error) {
@@ -118,4 +119,20 @@ func (b *Buffer) setColType(i int, t int) {
 //get ith column data type
 func (b *Buffer) getColType(i int) int {
 	return b.colType[i]
+}
+
+//clear selectedCell of buffer
+func (b *Buffer) clearSelection() {
+	b.selectedCell = [][]int{}
+}
+
+//search string and add result to selectedCell of buffer
+func (b *Buffer) selectBySearch(s string) {
+	for ii, i := range b.cont {
+		for ji, j := range i {
+			if s == j {
+				b.selectedCell = append(b.selectedCell, []int{ii, ji})
+			}
+		}
+	}
 }
