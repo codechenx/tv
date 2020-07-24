@@ -71,7 +71,7 @@ func main() {
 	RootCmd.Flags().IntVar(&args.SkipNum, "in", 0, "(optional) Ignore first N row [default: 0]")
 	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "(optional) Only display certain columns(multiple parameter support, separated by comma)")
 	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "(optional) Do not display certain columns(multiple arguments support, separated by comma)")
-	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional) -1, Unfreeze first row and first column; 0, Freeze first row and first column; 1, Freeze first row; 2, Freeze first column [default: 0]")
+	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional)\n-1, Unfreeze first row and first column\n 0, Freeze first row and first column\n 1, Freeze first row\n 2, Freeze first column [default: 0]")
 	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "(bool) Transpose and view data")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
