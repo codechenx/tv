@@ -85,14 +85,14 @@ go get -u github.com/codechenx/tv
   --s string       (optional) Split symbol
   --nl int         (optional) Only display first N line
   --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma
-  --in int         (optional) Ignore first N row [default: 0]
+  --in int         (optional) Ignore first N row
   --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
   --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
-  --fi int         (optional) 
+  --fi int         (optional) [default: 0]
                    -1, Unfreeze first row and first column
                     0, Freeze first row and first column
                     1, Freeze first row
-                    2, Freeze first column [default: 0]
+                    2, Freeze first column 
   --tr             (bool) Transpose and view data
   -h, --help       help for tv
   -v, --version    version for tv
