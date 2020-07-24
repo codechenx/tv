@@ -1,4 +1,5 @@
-# tv(table viewer) for delimited text file(csv,tsv,etc) in terminal.
+# tv(table viewer) for delimited text file(csv,tsv,etc) in terminal
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
@@ -9,10 +10,12 @@
    <img src="data/icon-192x192.png" alt="tv icon"/>
 </p>
 
-# Introduction
+## Introduction
+
   **tv is a tool to view the delimited text file(csv,tsv,etc) in terminal.**
 [![asciicast](https://asciinema.org/a/347295.svg)](https://asciinema.org/a/347295)
-# Table of Contents
+
+## Table of Contents
 
 - [Introduction](#introduction)
 - [Feature](#feature)
@@ -24,32 +27,32 @@
 - [Key binding](#key-binding)
 - [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
 
-
-# Feature
+## Feature
 
 - Spreadsheet-like view for delimited text data
 - Support for gzip compressed file
-- Automatically identify seperator
+- Automatically identify separator
 
-
-# To do
+## To do
 
 - [ ] search string
 
-
-# Installation
+## Installation
 
 ### Prebuilt binaries
+
 #### Bash(Linux and macOS, best choice for non-root user)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
+
 \* This command will download tv binary file to your current directory, you need to run ```sudo cp tv /usr/local/bin/```  or copy tv binary file to any directory which is in the environment variable **PATH**
 
-\* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases) 
+\* You also can download  tv binaries manually, from [releases](https://github.com/codechenx/tv/releases)
 
 #### Homebrew(Linux and macOS, only 64-bit)
+
 ```bash
 brew install codechenx/tv/tv
 ```
@@ -60,30 +63,33 @@ brew install codechenx/tv/tv
 
 *you need to run ```sudo snap alias codechenx-tv tv```.This makes it possible to launch the application by ```tv```
 
+#### Debian package(Ubuntu, Debian, etc)
 
-#### Debian package(Ubuntu, Debian, etc) 
-download from [releases](https://github.com/codechenx/tv/releases) 
+download from [releases](https://github.com/codechenx/tv/releases)
 
 #### RPM package(Centos, Fedora, etc)
-download from [releases](https://github.com/codechenx/tv/releases) 
+
+download from [releases](https://github.com/codechenx/tv/releases)
 
 ### Build from source
 
  Use go get to install and update:
+
 ```bash
 go get -u github.com/codechenx/tv
 ```
 
+## Usage
 
-# Usage
+### Usage
 
-### Usage:
   tv {File_Name} [flags]
 
-### Flags:
+### Flags
+
 ```
   --s string       (optional) Split symbol
-  --nl int         (optional) Only display first N line
+  --nl int         (optional) Only display first N lines
   --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma
   --in int         (optional) Ignore first N row
   --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
@@ -92,24 +98,23 @@ go get -u github.com/codechenx/tv
                    -1, Unfreeze first row and first column
                     0, Freeze first row and first column
                     1, Freeze first row
-                    2, Freeze first column 
-  --tr             (optional) Transpose and view data
+                    2, Freeze first column
+  --tr             (optional) Transpose data
   -h, --help       help for tv
   -v, --version    version for tv
 ```
 
-
 tv also can recive data form pipe as an input
 
-  ```bash
-  cat file.csv | tv
+  ```=
+cat file.csv | tv
   ```
 
 ### Sorting and Stats
 
 For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.You can change the data type of current column by Ctrl-m. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
 
-# Key binding
+## Key binding
 
 | Key               | description              |
 | ----------------- | ------------------------ |
@@ -130,7 +135,7 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-y | Show basic stats of current column, back to data table |
 | Ctrl-c, ESC | Quit |
 
-# (Extra)Examples for common biological data
+## (Extra)Examples for common biological data
 
 ```bash
 #vcf or compressed vcf format
@@ -144,3 +149,4 @@ tv file.maf --is "#"
 tv file.interval_list --is "@HD","@SQ"
 tv file.interval_list --is "@"
 ```
+
