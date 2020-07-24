@@ -93,7 +93,7 @@ go get -u github.com/codechenx/tv
                     0, Freeze first row and first column
                     1, Freeze first row
                     2, Freeze first column 
-  --tr             (bool) Transpose and view data
+  --tr             (optional) Transpose and view data
   -h, --help       help for tv
   -v, --version    version for tv
 ```
