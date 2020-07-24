@@ -1,0 +1,46 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod download
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+- env:
+  - CGO_ENABLED=0
+  goarch:
+    - amd64
+    - 386
+    - arm
+    - arm64
+    
+  goarm:
+      - 7
+  ignore:
+      - goos: darwin
+        goarch: 386
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  skip: true
+brews:
+  - github:
+      owner: codechenx
+      name: homebrew-tv
+    commit_author:
+      name: codechenx
+      email: codechenx@gmail.com
+    description: tv is a tool to view the delimited file in terminal.
+    homepage: https://github.com/codechenx/tv
+nfpms:
+  - maintainer: codechenx
+    description: tv is a tool to view the delimited file in terminal.
+    homepage: https://github.com/codechenx/tv
+    license: Apache 2.0
+    formats:
+        - deb
+        - rpm
+    bindir: /usr/bin
