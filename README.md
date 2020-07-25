@@ -1,6 +1,7 @@
 # tv(table viewer) for delimited text file(csv,tsv,etc) in terminal
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
+[![Coverage Status](https://coveralls.io/repos/github/codechenx/tv/badge.svg?branch=master)](https://coveralls.io/github/codechenx/tv?branch=master)
 [![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/codechenx/tv.svg)](http://GitHub.com/codechenx/tv/releases)
