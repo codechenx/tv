@@ -62,7 +62,7 @@ func getHelpContent() string {
 C == Ctrl
 
 ##Quit##
-C-c, ESC                 Quit
+C-c                 Quit
 
 ##Movement##
 Left-arrow          Move left
