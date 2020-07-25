@@ -32,10 +32,7 @@ func usefulInfo(s string) {
 
 //I2B  covert int to bool, if i >0:true, else false
 func I2B(i int) bool {
-	if i > 0 {
-		return true
-	}
-	return false
+	return i > 0
 }
 
 //F2S covert float64 to bool

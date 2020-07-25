@@ -122,9 +122,9 @@ func (b *Buffer) getColType(i int) int {
 }
 
 //clear selectedCell of buffer
-func (b *Buffer) clearSelection() {
-	b.selectedCell = [][]int{}
-}
+//func (b *Buffer) clearSelection() {
+//	b.selectedCell = [][]int{}
+//}
 
 //search string and add result to selectedCell of buffer
 func (b *Buffer) selectBySearch(s string) {
