@@ -104,7 +104,7 @@ tv {File_Name} [flags]
   -v, --version    version for tv
 ```
 
-tv also can recive data form pipe as an input
+tv also can recive data from pipe as an input
 
 ```=
 cat file.csv | tv
