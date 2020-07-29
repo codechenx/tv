@@ -26,6 +26,9 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
   skip: true
+archives:
+  - files:
+    - none*
 brews:
   - github:
       owner: codechenx
