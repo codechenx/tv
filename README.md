@@ -90,7 +90,7 @@ tv {File_Name} [flags]
 ```
   --s string       (optional) Split symbol
   --nl int         (optional) Only display first N lines
-  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma
+  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma)
   --in int         (optional) Ignore first N row
   --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
   --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
