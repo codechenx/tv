@@ -195,6 +195,16 @@ func skipLine(line string, sy []string) bool {
 
 //get suitable scanner(compressed or not)
 func getFileScanner(fn string) (*bufio.Scanner, error) {
+	info, err := os.Stat(fn)
+	if err != nil {
+		_, err := os.Open(fn)
+		return nil, err
+	}
+	//check fn is a directory
+	if info.IsDir() {
+		return nil, errors.New(fn + " is a directory")
+	}
+
 	file, err := os.Open(fn)
 	if err != nil {
 		return nil, err
