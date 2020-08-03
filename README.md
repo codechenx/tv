@@ -100,6 +100,7 @@ tv {File_Name} [flags]
                     1, Freeze first row
                     2, Freeze first column
   --tr             (optional) Transpose data
+  --strict         (optional) Check for missing data
   -h, --help       help for tv
   -v, --version    version for tv
 ```
