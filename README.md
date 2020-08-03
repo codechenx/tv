@@ -1,8 +1,8 @@
 # tv(table viewer) for delimited text file(csv,tsv,etc) in terminal
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
+![test](https://github.com/codechenx/tv/workflows/test/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/codechenx/tv/badge.svg?branch=master)](https://coveralls.io/github/codechenx/tv?branch=master)
-[![GoDoc](https://godoc.org/github.com/codechenx/tv?status.svg)](https://godoc.org/github.com/codechenx/tv)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/codechenx/tv.svg)](http://GitHub.com/codechenx/tv/releases)
 [![codechenx-tv](https://snapcraft.io//codechenx-tv/badge.svg)](https://snapcraft.io/codechenx-tv)
@@ -61,7 +61,7 @@ brew install codechenx/tv/tv
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-\*you need to run `sudo snap alias codechenx-tv tv`.This makes it possible to launch the application by `tv`
+\*After installation, you need to run `sudo snap alias codechenx-tv tv`.This makes it possible to launch the application by `tv`
 
 #### Debian package(Ubuntu, Debian, etc)
 
@@ -90,7 +90,7 @@ tv {File_Name} [flags]
 ```
   --s string       (optional) Split symbol
   --nl int         (optional) Only display first N lines
-  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma
+  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma)
   --in int         (optional) Ignore first N row
   --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
   --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
@@ -104,7 +104,7 @@ tv {File_Name} [flags]
   -v, --version    version for tv
 ```
 
-tv also can recive data form pipe as an input
+tv also can recive data from pipe as an input
 
 ```=
 cat file.csv | tv
