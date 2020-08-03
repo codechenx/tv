@@ -43,7 +43,9 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	}
 
 	b.cont = append(b.cont, s)
-	b.resizeCol(len(s))
+	if b.colLen != len(s) {
+		b.resizeCol(len(s))
+	}
 	b.rowLen++
 
 	return nil
