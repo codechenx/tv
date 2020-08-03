@@ -10,7 +10,8 @@ type Args struct {
 	HideNum    []int    //columns that should be hidden
 	Header     int      //header display mode
 	Transpose  bool
-	NLine      int //Number of lines that should be displayed
+	NLine      int  //number of lines that should be displayed
+	Strict     bool // check for missing data
 }
 
 func (args *Args) setDefault() {
@@ -22,4 +23,5 @@ func (args *Args) setDefault() {
 	args.Header = 0
 	args.Transpose = false
 	args.NLine = 0
+	args.Strict = false
 }

@@ -200,7 +200,7 @@ func getFileScanner(fn string) (*bufio.Scanner, error) {
 		_, err := os.Open(fn)
 		return nil, err
 	}
-	//check fn is a directory
+	//check if fn is a directory
 	if info.IsDir() {
 		return nil, errors.New(fn + " is a directory")
 	}
@@ -300,13 +300,13 @@ func addDRToBuffer(b *Buffer, line string, showNum, hideNum []int) error {
 		for _, i := range visCol {
 			lineSli = append(lineSli, lineCSVParts[i])
 		}
-		err = b.contAppendSli(lineSli, true)
+		err = b.contAppendSli(lineSli, args.Strict)
 		if err != nil {
 			return err
 		}
 
 	} else {
-		err := b.contAppendSli(lineCSVParts, true)
+		err := b.contAppendSli(lineCSVParts, args.Strict)
 		if err != nil {
 			return err
 		}

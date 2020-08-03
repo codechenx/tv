@@ -23,13 +23,19 @@ func TestBuffer_contAppendSli(t *testing.T) {
 		s      []string
 		strict bool
 	}
+	b := createNewBuffer()
+	b.colLen = 2
+	b.rowLen = 1
+	b.cont = [][]string{{"a", "b"}}
 	tests := []struct {
 		name    string
 		b       *Buffer
 		args    args
 		wantErr bool
 	}{
-		{"test", createNewBuffer(), args{s: []string{"a", "1", "2"}, strict: true}, false},
+		{"test", b, args{s: []string{"a", "1"}, strict: true}, false},
+		{"test", b, args{s: []string{"a", "1", "3"}, strict: true}, true},
+		{"test", b, args{s: []string{"a", "1", "2"}, strict: false}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -11,7 +11,7 @@ func main() {
 	args.setDefault()
 	RootCmd := &cobra.Command{
 		Use:     "tv {File_Name}",
-		Version: "0.5.2",
+		Version: "0.5.3",
 		Short:   "tv(Table Viewer) for delimited file in terminal",
 		Run: func(cmd *cobra.Command, cmdargs []string) {
 			if args.Sep == "\\t" {
@@ -73,6 +73,7 @@ func main() {
 	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "(optional) Do not display certain columns(multiple arguments support, separated by comma)")
 	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional) [default: 0]\n-1, Unfreeze first row and first column\n 0, Freeze first row and first column\n 1, Freeze first row\n 2, Freeze first column")
 	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "(optional) Transpose data")
+	RootCmd.Flags().BoolVar(&args.Strict, "strict", false, "(optional) Check for missing data")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
 	fatalError(err)

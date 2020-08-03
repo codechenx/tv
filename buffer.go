@@ -39,13 +39,32 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 		b.colType = make([]int, b.colLen+1)
 	}
 	if strict && len(s) != b.colLen {
-		return errors.New("Row " + I2S(b.rowLen) + " lack some column")
+		return errors.New("Row " + I2S(b.rowLen+b.rowFreeze) + " lack some column")
 	}
 
 	b.cont = append(b.cont, s)
+	b.resizeCol(len(s))
 	b.rowLen++
 
 	return nil
+}
+
+//add empty columns to buffer
+func (b *Buffer) resizeCol(n int) {
+	if n <= 0 {
+		return
+	}
+	lackLen := b.colLen - n
+	if lackLen < 0 {
+		lackLen = n - b.colLen
+		b.colLen = n
+	}
+	for ii := range b.cont {
+		addedValue := "NaN"
+		for m := 0; m < lackLen; m++ {
+			b.cont[ii] = append(b.cont[ii], addedValue)
+		}
+	}
 }
 
 // sort column by string format
@@ -122,9 +141,9 @@ func (b *Buffer) getColType(i int) int {
 }
 
 //clear selectedCell of buffer
-func (b *Buffer) clearSelection() {
-	b.selectedCell = [][]int{}
-}
+//func (b *Buffer) clearSelection() {
+//	b.selectedCell = [][]int{}
+//}
 
 //search string and add result to selectedCell of buffer
 func (b *Buffer) selectBySearch(s string) {
