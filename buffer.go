@@ -39,7 +39,7 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 		b.colType = make([]int, b.colLen+1)
 	}
 	if strict && len(s) != b.colLen {
-		return errors.New("Row " + I2S(b.rowLen+b.rowFreeze) + " lack some column")
+		return errors.New("Row " + I2S(b.rowLen+b.rowFreeze) + " , Missing Data")
 	}
 
 	b.cont = append(b.cont, s)
