@@ -89,11 +89,11 @@ tv {File_Name} [flags]
 
 ```
   --s string       (optional) Split symbol
-  --nl int         (optional) Only display first N lines
   --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma)
   --in int         (optional) Ignore first N lines
-  --dc ints        (optional) Only display certain columns(multiple arguments support, separated by comma)
-  --hc ints        (optional) Do not display certain columns(multiple arguments support, separated by comma)
+  --nl int         (optional) Only display first N lines
+  --dc ints        (optional) Only display specific columns(multiple arguments support, separated by comma)
+  --hc ints        (optional) Do not display specific columns(multiple arguments support, separated by comma)
   --fi int         (optional) [default: 0]
                    -1, Unfreeze first row and first column
                     0, Freeze first row and first column
