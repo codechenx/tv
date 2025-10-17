@@ -114,7 +114,7 @@ Download pre-built binaries from [releases](https://github.com/codechenx/tv/rele
 
 ### Build from Source
 
-Requires Go 1.19 or later:
+Requires Go 1.21 or later:
 
 ```bash
 git clone https://github.com/codechenx/tv.git
