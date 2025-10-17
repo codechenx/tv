@@ -36,6 +36,8 @@
 - **Text wrapping** - Wrap long text in columns for better readability (Ctrl+W)
 - **Search functionality** - Search for text within cells and navigate through results
 - **Column filter** - Filter rows based on column values (Ctrl+F)
+- **Smart column type detection** - Automatically detects String, Number, and Date columns
+- **Fast sorting** - Optimized sorting with pre-parsed values for numbers and dates
 
 ## To do
 
@@ -135,7 +137,20 @@ The footer will show loading progress:
 
 ### Sorting and Stats
 
-For tv, there are two data types for every column, **string**, and **number**, which can affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.You can change the data type of current column by Ctrl-m. the difference of column data type will determine how the column data would be sorted, as string or as number. In addition, for the column with the number data type, tv will show its minimal value, maximal value, and so on. But for the column with string data type. tv will count the number of every string.
+For tv, there are three data types for every column: **string**, **number**, and **date**, which affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.
+
+**Automatic Type Detection**: When you load a file, tv automatically analyzes each column and detects whether it contains strings, numbers, or dates. The detection algorithm samples data intelligently and uses a 90% threshold to classify columns.
+
+**Manual Type Changes**: You can change the data type of the current column by pressing **Ctrl+M**, which cycles through: String → Number → Date → String.
+
+**Column Type Behavior**:
+- **String columns**: Sorted alphabetically
+- **Number columns**: Sorted numerically (handles integers, floats, scientific notation, thousand separators)
+- **Date columns**: Sorted chronologically (supports multiple date formats including ISO-8601, US, EU formats, and more)
+
+**Performance Optimizations**: Sorting is optimized by pre-parsing all values once and caching them, which makes sorting large datasets significantly faster than repeatedly parsing during comparison.
+
+**Statistics**: For number columns, tv shows min/max values, mean, etc. For string columns, tv counts the frequency of each unique value.
 
 ## Key binding
 
@@ -156,9 +171,9 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | n                 | Next search result                                     |
 | N                 | Previous search result                                 |
 | Ctrl-/            | Clear search highlighting                              |
-| f                 | Filter rows by current column value                    |
+| Ctrl-f            | Filter rows by current column value                    |
 | Ctrl-r            | Reset/clear column filter                              |
-| Ctrl-m            | Change column data type to string or number            |
+| Ctrl-m            | Change column data type (cycle: Str -> Num -> Date)   |
 | Ctrl-k            | Sort data by column(ascend)                            |
 | Ctrl-l            | Sort data by column(descend)                           |
 | Ctrl-w            | Toggle text wrapping for current column                |

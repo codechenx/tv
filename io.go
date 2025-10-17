@@ -308,6 +308,10 @@ func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneCha
 	}
 
 	loadProgress.IsComplete = true
+	
+	// Auto-detect column types after loading (async)
+	go b.detectAllColumnTypes()
+	
 	progress.finish()
 	doneChan <- nil
 }
@@ -420,6 +424,9 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		totalAddedLN++
 		progress.increment(int64(len(line) + 1)) // +1 for newline
 	}
+
+	// Auto-detect column types after loading
+	b.detectAllColumnTypes()
 
 	progress.finish()
 	return nil
@@ -605,6 +612,10 @@ func loadPipeToBufferAsync(stdin io.Reader, b *Buffer, updateChan chan<- bool, d
 	}
 
 	loadProgress.IsComplete = true
+	
+	// Auto-detect column types after loading (async)
+	go b.detectAllColumnTypes()
+	
 	progress.finish()
 	doneChan <- nil
 }
@@ -696,6 +707,9 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 		totalAddedLN++
 		progress.increment(int64(len(line) + 1))
 	}
+
+	// Auto-detect column types after loading
+	b.detectAllColumnTypes()
 
 	progress.finish()
 	return nil

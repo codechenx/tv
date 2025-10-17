@@ -3,7 +3,10 @@ package main
 import (
 	"errors"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 )
 
 // Buffer represents a table data structure with concurrent access support
@@ -140,22 +143,135 @@ func (b *Buffer) sortByStr(colIndex int, rev bool) {
 	}
 }
 
-// sort column by number format
+// sortByNum sorts column by number format with optimized numeric conversion
 func (b *Buffer) sortByNum(colIndex int, rev bool) {
-	if rev {
-		if I2B(b.rowFreeze) {
-			sort.SliceStable(b.cont[1:], func(i, j int) bool { return S2F(b.cont[1:][i][colIndex]) > S2F(b.cont[1:][j][colIndex]) })
-		} else {
-			sort.SliceStable(b.cont, func(i, j int) bool { return S2F(b.cont[i][colIndex]) > S2F(b.cont[j][colIndex]) })
-		}
-	} else {
+	hasHeader := I2B(b.rowFreeze)
+	dataRows := b.cont
+	if hasHeader {
+		dataRows = b.cont[1:]
+	}
 
-		if I2B(b.rowFreeze) {
-			sort.SliceStable(b.cont[1:], func(i, j int) bool { return S2F(b.cont[1:][i][colIndex]) < S2F(b.cont[1:][j][colIndex]) })
-		} else {
-			sort.SliceStable(b.cont, func(i, j int) bool { return S2F(b.cont[i][colIndex]) < S2F(b.cont[j][colIndex]) })
+	// Create index-value pairs to sort
+	type numRow struct {
+		row []string
+		num float64
+	}
+	
+	pairs := make([]numRow, len(dataRows))
+	for i := range dataRows {
+		pairs[i] = numRow{
+			row: dataRows[i],
+			num: parseNumericValueFast(dataRows[i][colIndex]),
 		}
 	}
+
+	// Sort the pairs
+	if rev {
+		sort.SliceStable(pairs, func(i, j int) bool {
+			return pairs[i].num > pairs[j].num
+		})
+	} else {
+		sort.SliceStable(pairs, func(i, j int) bool {
+			return pairs[i].num < pairs[j].num
+		})
+	}
+
+	// Copy back sorted rows
+	for i := range pairs {
+		dataRows[i] = pairs[i].row
+	}
+}
+
+// sortByDate sorts column by date format with optimized date parsing
+func (b *Buffer) sortByDate(colIndex int, rev bool) {
+	hasHeader := I2B(b.rowFreeze)
+	dataRows := b.cont
+	if hasHeader {
+		dataRows = b.cont[1:]
+	}
+
+	// Create index-value pairs to sort
+	type dateRow struct {
+		row  []string
+		date int64
+	}
+	
+	pairs := make([]dateRow, len(dataRows))
+	for i := range dataRows {
+		pairs[i] = dateRow{
+			row:  dataRows[i],
+			date: parseDateValueFast(dataRows[i][colIndex]),
+		}
+	}
+
+	// Sort the pairs
+	if rev {
+		sort.SliceStable(pairs, func(i, j int) bool {
+			return pairs[i].date > pairs[j].date
+		})
+	} else {
+		sort.SliceStable(pairs, func(i, j int) bool {
+			return pairs[i].date < pairs[j].date
+		})
+	}
+
+	// Copy back sorted rows
+	for i := range pairs {
+		dataRows[i] = pairs[i].row
+	}
+}
+
+// parseNumericValueFast quickly parses a string to float64
+// Handles commas, underscores, and returns 0 for invalid values
+func parseNumericValueFast(s string) float64 {
+	// Remove common separators
+	s = strings.ReplaceAll(s, ",", "")
+	s = strings.ReplaceAll(s, "_", "")
+	s = strings.TrimSpace(s)
+	
+	if s == "" || s == "NA" || s == "N/A" || s == "NaN" || s == "null" {
+		return 0
+	}
+	
+	val, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0
+	}
+	return val
+}
+
+// parseDateValueFast quickly parses a date string to unix timestamp
+// Returns 0 for invalid dates
+func parseDateValueFast(s string) int64 {
+	s = strings.TrimSpace(s)
+	
+	if s == "" || s == "NA" || s == "N/A" || s == "null" {
+		return 0
+	}
+	
+	// Try common date formats (most common first for performance)
+	formats := []string{
+		"2006-01-02",                // ISO date: 2024-10-17
+		"2006-01-02 15:04:05",       // ISO datetime: 2024-10-17 15:30:00
+		"01/02/2006",                // US date: 10/17/2024
+		"02/01/2006",                // EU date: 17/10/2024
+		"2006/01/02",                // Alt ISO: 2024/10/17
+		time.RFC3339,                // RFC3339: 2024-10-17T15:30:00Z
+		"2006-01-02T15:04:05",       // ISO8601 without timezone
+		"Jan 02, 2006",              // Mon DD, YYYY
+		"January 02, 2006",          // Month DD, YYYY
+		"02-Jan-2006",               // DD-Mon-YYYY
+		"02 Jan 2006",               // DD Mon YYYY
+		"2006.01.02",                // Dotted date
+	}
+	
+	for _, format := range formats {
+		if t, err := time.Parse(format, s); err == nil {
+			return t.Unix()
+		}
+	}
+	
+	return 0
 }
 
 // transpose buffer content
@@ -197,6 +313,193 @@ func (b *Buffer) setColType(i int, t int) {
 // get ith column data type
 func (b *Buffer) getColType(i int) int {
 	return b.colType[i]
+}
+
+// autoDetectColumnType intelligently detects if a column contains numeric, date, or string data
+// Returns colTypeDate for dates, colTypeFloat for numbers, colTypeStr for strings
+func (b *Buffer) autoDetectColumnType(colIndex int) int {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	if colIndex < 0 || colIndex >= b.colLen {
+		return colTypeStr
+	}
+
+	// Sample size for type detection
+	startRow := b.rowFreeze
+	endRow := b.rowLen
+	
+	// For large datasets, sample smartly (first N rows + some middle + last N)
+	sampleSize := 100
+	sampleRows := []int{}
+	
+	if endRow-startRow > sampleSize {
+		// Sample first 50 rows
+		for i := startRow; i < startRow+50 && i < endRow; i++ {
+			sampleRows = append(sampleRows, i)
+		}
+		// Sample middle 25 rows
+		midPoint := (startRow + endRow) / 2
+		for i := midPoint; i < midPoint+25 && i < endRow; i++ {
+			sampleRows = append(sampleRows, i)
+		}
+		// Sample last 25 rows
+		for i := endRow - 25; i < endRow; i++ {
+			if i > startRow {
+				sampleRows = append(sampleRows, i)
+			}
+		}
+	} else {
+		// For small datasets, check all rows
+		for i := startRow; i < endRow; i++ {
+			sampleRows = append(sampleRows, i)
+		}
+	}
+
+	// Analyze samples
+	dateCount := 0
+	numericCount := 0
+	totalCount := 0
+
+	for _, rowIdx := range sampleRows {
+		if rowIdx >= b.rowLen || colIndex >= len(b.cont[rowIdx]) {
+			continue
+		}
+		
+		value := strings.TrimSpace(b.cont[rowIdx][colIndex])
+		
+		// Skip empty/null cells
+		if value == "" || value == "NA" || value == "N/A" || value == "NaN" || value == "null" {
+			continue
+		}
+		
+		totalCount++
+		
+		// Check if it's a date (dates are more specific than numbers)
+		if isDateValue(value) {
+			dateCount++
+		} else if isNumericValue(value) {
+			numericCount++
+		}
+	}
+
+	// If no valid values, treat as string
+	if totalCount == 0 {
+		return colTypeStr
+	}
+
+	// Threshold: 90% of values must match type
+	threshold := float64(totalCount) * 0.90
+
+	// Priority: Date > Number > String
+	if float64(dateCount) >= threshold {
+		return colTypeDate
+	} else if float64(numericCount) >= threshold {
+		return colTypeFloat
+	}
+	
+	return colTypeStr
+}
+
+// isDateValue checks if a string represents a valid date
+func isDateValue(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+
+	// Quick heuristic checks before trying to parse
+	// Dates typically contain: -, /, :, or T
+	hasDateSep := strings.ContainsAny(s, "-/.:T")
+	if !hasDateSep {
+		return false
+	}
+
+	// Common date formats (most common first for performance)
+	formats := []string{
+		"2006-01-02",                // ISO date: 2024-10-17
+		"2006-01-02 15:04:05",       // ISO datetime: 2024-10-17 15:30:00
+		"01/02/2006",                // US date: 10/17/2024
+		"02/01/2006",                // EU date: 17/10/2024
+		"2006/01/02",                // Alt ISO: 2024/10/17
+		time.RFC3339,                // RFC3339: 2024-10-17T15:30:00Z
+		"2006-01-02T15:04:05",       // ISO8601 without timezone
+		"Jan 02, 2006",              // Mon DD, YYYY
+		"January 02, 2006",          // Month DD, YYYY
+		"02-Jan-2006",               // DD-Mon-YYYY
+		"02 Jan 2006",               // DD Mon YYYY
+		"2006.01.02",                // Dotted date
+	}
+
+	for _, format := range formats {
+		if _, err := time.Parse(format, s); err == nil {
+			return true
+		}
+	}
+
+	return false
+}
+
+// isNumericValue checks if a string represents a valid number
+// Handles: integers, floats, scientific notation, negative numbers
+func isNumericValue(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+
+	// Quick check for common patterns
+	hasDigit := false
+	hasDot := false
+	hasE := false
+	i := 0
+
+	// Handle sign
+	if s[i] == '+' || s[i] == '-' {
+		i++
+		if i >= len(s) {
+			return false
+		}
+	}
+
+	// Parse number
+	for i < len(s) {
+		c := s[i]
+		
+		if c >= '0' && c <= '9' {
+			hasDigit = true
+		} else if c == '.' {
+			if hasDot || hasE {
+				return false // Multiple dots or dot after E
+			}
+			hasDot = true
+		} else if c == 'e' || c == 'E' {
+			if !hasDigit || hasE {
+				return false // E without digits or multiple E
+			}
+			hasE = true
+			hasDigit = false // Reset for exponent part
+			
+			// Check for sign after E
+			if i+1 < len(s) && (s[i+1] == '+' || s[i+1] == '-') {
+				i++
+			}
+		} else if c == '_' || c == ',' {
+			// Allow thousand separators (common in data files)
+			// Skip validation, just continue
+		} else {
+			return false // Invalid character
+		}
+		i++
+	}
+
+	return hasDigit
+}
+
+// detectAllColumnTypes automatically detects types for all columns
+func (b *Buffer) detectAllColumnTypes() {
+	for i := 0; i < b.colLen; i++ {
+		detectedType := b.autoDetectColumnType(i)
+		b.setColType(i, detectedType)
+	}
 }
 
 //clear selectedCell of buffer

@@ -92,7 +92,7 @@ f                   Filter rows by current column value
 C-r                 Reset/clear column filter
 
 ##Data Type##
-C-m 				Change column data type to string or number
+C-m 				Change column data type (cycle: String -> Number -> Date -> String)
 
 ##Sort##
 C-k                 Sort data by column(ascend)

@@ -464,9 +464,13 @@ func drawUI(b *Buffer, trs bool) error {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
-			if b.getColType(column) == colTypeFloat {
+			colType := b.getColType(column)
+			switch colType {
+			case colTypeFloat:
 				b.sortByNum(column, false)
-			} else {
+			case colTypeDate:
+				b.sortByDate(column, false)
+			default:
 				b.sortByStr(column, false)
 			}
 			drawBuffer(b, bufferTable, trs)
@@ -477,9 +481,13 @@ func drawUI(b *Buffer, trs bool) error {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
-			if b.getColType(column) == colTypeFloat {
+			colType := b.getColType(column)
+			switch colType {
+			case colTypeFloat:
 				b.sortByNum(column, true)
-			} else {
+			case colTypeDate:
+				b.sortByDate(column, true)
+			default:
 				b.sortByStr(column, true)
 			}
 			drawBuffer(b, bufferTable, trs)
@@ -509,17 +517,25 @@ func drawUI(b *Buffer, trs bool) error {
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
-		//change column data type
+		//change column data type (cycle through Str -> Num -> Date -> Str)
 		if event.Key() == tcell.KeyCtrlM {
 			row, column := bufferTable.GetSelection()
-			var colType int
-			if b.getColType(column) == colTypeFloat {
-				colType = colTypeStr
-			} else {
-				colType = colTypeFloat
+			currentType := b.getColType(column)
+			
+			// Cycle through types: Str -> Num -> Date -> Str
+			var newType int
+			switch currentType {
+			case colTypeStr:
+				newType = colTypeFloat
+			case colTypeFloat:
+				newType = colTypeDate
+			case colTypeDate:
+				newType = colTypeStr
+			default:
+				newType = colTypeStr
 			}
 
-			b.setColType(column, colType)
+			b.setColType(column, newType)
 			cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
 			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 		}

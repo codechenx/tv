@@ -8,13 +8,20 @@ import (
 // column data type
 const colTypeStr = 0
 const colTypeFloat = 1
+const colTypeDate = 2
 
-// get column data type name. s: string, n: number
+// get column data type name. s: string, n: number, d: date
 func type2name(i int) string {
-	if i == 0 {
+	switch i {
+	case colTypeStr:
+		return "Str"
+	case colTypeFloat:
+		return "Num"
+	case colTypeDate:
+		return "Date"
+	default:
 		return "Str"
 	}
-	return "Num"
 }
 
 var app *tview.Application
