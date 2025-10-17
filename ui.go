@@ -25,17 +25,30 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 			if c < b.colFreeze || r < b.rowFreeze {
 				color = tcell.ColorYellow
 			}
+			
+			// Get cell content
+			cellText := b.cont[r][c]
+			
+			// Apply text wrapping if column is marked for wrapping
+			if maxWidth, isWrapped := wrappedColumns[c]; isWrapped {
+				cellText = wrapText(cellText, maxWidth)
+			}
+			
 			if r == 0 && args.Header != -1 && args.Header != 2 {
 				t.SetCell(r, c,
-					tview.NewTableCell(b.cont[r][c]).
+					tview.NewTableCell(cellText).
 						SetTextColor(color).
-						SetAlign(tview.AlignLeft))
+						SetAlign(tview.AlignLeft).
+						SetMaxWidth(0). // 0 means no limit, allows wrapping
+						SetExpansion(1))
 				continue
 			}
 			t.SetCell(r, c,
-				tview.NewTableCell(b.cont[r][c]).
+				tview.NewTableCell(cellText).
 					SetTextColor(color).
-					SetAlign(tview.AlignLeft))
+					SetAlign(tview.AlignLeft).
+					SetMaxWidth(0).
+					SetExpansion(1))
 		}
 	}
 }
@@ -233,6 +246,22 @@ func drawUI(b *Buffer, trs bool) error {
 			b.setColType(column, colType)
 			cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
 			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
+		}
+
+		//toggle text wrapping for current column
+		if event.Key() == tcell.KeyCtrlW {
+			_, column := bufferTable.GetSelection()
+			
+			if _, isWrapped := wrappedColumns[column]; isWrapped {
+				// Unwrap: remove from wrapped columns
+				delete(wrappedColumns, column)
+			} else {
+				// Wrap: add to wrapped columns with default width
+				wrappedColumns[column] = 25 // Default wrap width (25 characters)
+			}
+			
+			// Redraw the table with updated wrapping
+			drawBuffer(b, bufferTable, args.Transpose)
 		}
 
 		//go to head of current column

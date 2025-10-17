@@ -33,6 +33,7 @@
 - Support for gzip compressed file
 - Automatically identify separator
 - **Progressive loading for large files** - View data immediately as it loads, with responsive UI even for massive datasets
+- **Text wrapping** - Wrap long text in columns for better readability (Ctrl+W)
 
 ## To do
 
@@ -152,8 +153,19 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-m            | Change column data type to string or number            |
 | Ctrl-k            | Sort data by column(ascend)                            |
 | Ctrl-l            | Sort data by column(descend)                           |
+| Ctrl-w            | Toggle text wrapping for current column                |
 | Ctrl-y            | Show basic stats of current column, back to data table |
 | Ctrl-c            | Quit                                                   |
+
+### Text Wrapping
+
+For columns with long text content, press **Ctrl+W** to toggle text wrapping:
+- **First press**: Wraps text at 25 characters with smart word breaking
+- **Second press**: Unwraps to original single-line view
+- **Per-column**: Each column can be wrapped independently
+- **Smart wrapping**: Breaks at spaces/hyphens when possible
+
+Example use case: Reading long descriptions or comments without horizontal scrolling.
 
 ## (Extra)Examples for common biological data
 

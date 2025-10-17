@@ -29,6 +29,7 @@ var fileNameStr string         // Store filename for footer
 var cursorPosStr string        // Store cursor position for footer
 var loadProgress LoadProgress  // Track loading progress
 var userMovedCursor bool       // Track if user has moved the cursor
+var wrappedColumns map[int]int // Track which columns are wrapped and their max width
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -53,6 +54,7 @@ func (lp *LoadProgress) GetPercentage() float64 {
 func initView() {
 	app = tview.NewApplication()
 	b = createNewBuffer()
+	wrappedColumns = make(map[int]int) // Initialize wrapped columns map
 }
 
 //stop UI

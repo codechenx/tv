@@ -61,6 +61,18 @@ func main() {
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
 					
+					// Check if file is empty (no data rows)
+					dataRows := b.rowLen - b.rowFreeze
+					if b.rowLen == 0 || dataRows <= 0 {
+						stopView()
+						if b.rowLen == 0 {
+							fmt.Println("⚠️  File is empty (no rows)")
+						} else {
+							fmt.Println("⚠️  File is empty (only header, no data rows)")
+						}
+						os.Exit(0)
+					}
+					
 					// Draw initial UI
 					err = drawUI(b, args.Transpose)
 					fatalError(err)
@@ -132,6 +144,18 @@ func main() {
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
+					
+					// Check if file is empty (no data rows)
+					dataRows := b.rowLen - b.rowFreeze
+					if b.rowLen == 0 || dataRows <= 0 {
+						stopView()
+						if b.rowLen == 0 {
+							fmt.Println("⚠️  File is empty (no rows)")
+						} else {
+							fmt.Println("⚠️  File is empty (only header, no data rows)")
+						}
+						os.Exit(0)
+					}
 					err = drawUI(b, args.Transpose)
 					fatalError(err)
 					if !debug {
@@ -163,6 +187,18 @@ func main() {
 						b.rowFreeze, b.colFreeze = 1, 0
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					
+					// Check if pipe is empty (no data rows)
+					dataRows := b.rowLen - b.rowFreeze
+					if b.rowLen == 0 || dataRows <= 0 {
+						stopView()
+						if b.rowLen == 0 {
+							fmt.Println("⚠️  No data received from pipe (empty input)")
+						} else {
+							fmt.Println("⚠️  No data received from pipe (only header, no data rows)")
+						}
+						os.Exit(0)
 					}
 					
 					// Draw initial UI
@@ -235,6 +271,18 @@ func main() {
 						b.rowFreeze, b.colFreeze = 1, 0
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					
+					// Check if pipe is empty (no data rows)
+					dataRows := b.rowLen - b.rowFreeze
+					if b.rowLen == 0 || dataRows <= 0 {
+						stopView()
+						if b.rowLen == 0 {
+							fmt.Println("⚠️  No data received from pipe (empty input)")
+						} else {
+							fmt.Println("⚠️  No data received from pipe (only header, no data rows)")
+						}
+						os.Exit(0)
 					}
 					err = drawUI(b, args.Transpose)
 					fatalError(err)

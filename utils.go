@@ -88,8 +88,74 @@ C-m 				Change column data type to string or number
 C-k                 Sort data by column(ascend)
 C-l                 Sort data by column(descend)
 
+##Text Wrapping##
+C-w                 Toggle text wrapping for current column
+
 ##Stats##
 C-y                 Show basic stats of current column, back to data table
 `
 	return helpContent
+}
+
+// wrapText wraps text to fit within maxWidth characters
+// Returns the wrapped text with newlines
+func wrapText(text string, maxWidth int) string {
+	if maxWidth <= 0 || len(text) <= maxWidth {
+		return text
+	}
+	
+	var result []rune
+	runes := []rune(text)
+	lineStart := 0
+	
+	for i := 0; i < len(runes); i++ {
+		// Check if we've reached the wrap point
+		if i - lineStart >= maxWidth {
+			// Find last space before maxWidth for word wrap
+			wrapPoint := i
+			for j := i; j > lineStart; j-- {
+				if runes[j] == ' ' || runes[j] == '\t' || runes[j] == '-' {
+					wrapPoint = j + 1
+					break
+				}
+			}
+			
+			// If no good wrap point found, hard wrap at maxWidth
+			if wrapPoint == i && i > lineStart {
+				wrapPoint = lineStart + maxWidth
+			}
+			
+			// Add the wrapped line
+			result = append(result, runes[lineStart:wrapPoint]...)
+			result = append(result, '\n')
+			
+			// Skip trailing spaces on new line
+			for wrapPoint < len(runes) && (runes[wrapPoint] == ' ' || runes[wrapPoint] == '\t') {
+				wrapPoint++
+			}
+			
+			lineStart = wrapPoint
+			i = wrapPoint - 1 // -1 because loop will increment
+		}
+	}
+	
+	// Add remaining text
+	if lineStart < len(runes) {
+		result = append(result, runes[lineStart:]...)
+	}
+	
+	return string(result)
+}
+
+// getColumnMaxWidth determines the maximum width for a column
+func getColumnMaxWidth(colIndex int) int {
+	// Default wrap width (25 characters)
+	defaultWidth := 25
+	
+	// Check if custom width is set
+	if width, exists := wrappedColumns[colIndex]; exists {
+		return width
+	}
+	
+	return defaultWidth
 }
