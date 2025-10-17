@@ -30,6 +30,11 @@ var cursorPosStr string        // Store cursor position for footer
 var loadProgress LoadProgress  // Track loading progress
 var userMovedCursor bool       // Track if user has moved the cursor
 var wrappedColumns map[int]int // Track which columns are wrapped and their max width
+var searchResults []SearchResult // Store search results
+var currentSearchIndex int     // Current position in search results
+var searchQuery string         // Current search query
+var searchModal tview.Primitive // Search modal dialog
+var modal *tview.Modal          // Generic modal reference
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -50,11 +55,20 @@ func (lp *LoadProgress) GetPercentage() float64 {
 	return percent
 }
 
+// SearchResult represents a cell that matches search query
+type SearchResult struct {
+	Row int
+	Col int
+}
+
 // initialize tview, buffer
 func initView() {
 	app = tview.NewApplication()
 	b = createNewBuffer()
 	wrappedColumns = make(map[int]int) // Initialize wrapped columns map
+	searchResults = []SearchResult{}
+	currentSearchIndex = -1
+	searchQuery = ""
 }
 
 // stop UI

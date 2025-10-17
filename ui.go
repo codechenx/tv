@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -22,12 +23,40 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 	for r := 0; r < rows; r++ {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
+			backgroundColor := tcell.ColorDefault
 			if c < b.colFreeze || r < b.rowFreeze {
 				color = tcell.ColorYellow
 			}
 
 			// Get cell content
 			cellText := b.cont[r][c]
+			
+			// Check if this cell is a search result and highlight it
+			isSearchMatch := false
+			if searchQuery != "" && len(searchResults) > 0 {
+				for _, result := range searchResults {
+					if result.Row == r && result.Col == c {
+						isSearchMatch = true
+						break
+					}
+				}
+			}
+			
+			// Highlight search matches
+			if isSearchMatch {
+				// Check if this is the current search result
+				if currentSearchIndex >= 0 && currentSearchIndex < len(searchResults) &&
+					searchResults[currentSearchIndex].Row == r && 
+					searchResults[currentSearchIndex].Col == c {
+					// Current match: bright highlight
+					backgroundColor = tcell.ColorDarkCyan
+					color = tcell.ColorBlack
+				} else {
+					// Other matches: subtle highlight
+					backgroundColor = tcell.ColorDarkGray
+					color = tcell.ColorWhite
+				}
+			}
 
 			// Apply text wrapping if column is marked for wrapping
 			if maxWidth, isWrapped := wrappedColumns[c]; isWrapped {
@@ -38,6 +67,7 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 				t.SetCell(r, c,
 					tview.NewTableCell(cellText).
 						SetTextColor(color).
+						SetBackgroundColor(backgroundColor).
 						SetAlign(tview.AlignLeft).
 						SetMaxWidth(0). // 0 means no limit, allows wrapping
 						SetExpansion(1))
@@ -46,6 +76,7 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 			t.SetCell(r, c,
 				tview.NewTableCell(cellText).
 					SetTextColor(color).
+					SetBackgroundColor(backgroundColor).
 					SetAlign(tview.AlignLeft).
 					SetMaxWidth(0).
 					SetExpansion(1))
@@ -118,8 +149,8 @@ func drawUI(b *Buffer, trs bool) error {
 		SetWordWrap(true).SetText(getHelpContent())
 	//UI init
 	UI = tview.NewPages()
-	UI.AddPage("help", helpPage, true, true)
-	UI.AddPage("stats", statsPage, true, true)
+	UI.AddPage("help", helpPage, true, false)
+	UI.AddPage("stats", statsPage, true, false)
 	UI.AddPage("main", mainPage, true, true)
 
 	//helpPage HotKey Event
@@ -181,6 +212,134 @@ func drawUI(b *Buffer, trs bool) error {
 			event.Key() == tcell.KeyHome || event.Key() == tcell.KeyEnd ||
 			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn {
 			userMovedCursor = true
+		}
+
+		//search functionality
+		if event.Key() == tcell.KeyRune && event.Rune() == '/' {
+			// Create search form
+			var form *tview.Form
+			form = tview.NewForm()
+			form.AddInputField("Search:", "", 40, nil, nil)
+			form.AddButton("Search", func() {
+				query := form.GetFormItem(0).(*tview.InputField).GetText()
+				if query != "" {
+					searchQuery = query
+					searchResults = performSearch(b, query, false)
+					
+					if len(searchResults) > 0 {
+						currentSearchIndex = 0
+						bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
+						drawBuffer(b, bufferTable, args.Transpose)
+						drawFooterText(fileNameStr, 
+							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)), 
+							cursorPosStr)
+					} else {
+						currentSearchIndex = -1
+						drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+					}
+				}
+				UI.HidePage("searchModal")
+				app.SetFocus(bufferTable)
+			})
+			form.AddButton("Cancel", func() {
+				UI.HidePage("searchModal")
+				app.SetFocus(bufferTable)
+			})
+			form.SetButtonsAlign(tview.AlignCenter)
+			form.SetBorder(true)
+			form.SetTitle(" Search (case-insensitive) - Enter to search, Esc to cancel ")
+			form.SetTitleAlign(tview.AlignCenter)
+			
+			// Handle Escape and Enter keys on form
+			form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				if event.Key() == tcell.KeyEscape {
+					UI.HidePage("searchModal")
+					app.SetFocus(bufferTable)
+					return nil
+				}
+				if event.Key() == tcell.KeyEnter {
+					query := form.GetFormItem(0).(*tview.InputField).GetText()
+					if query != "" {
+						searchQuery = query
+						searchResults = performSearch(b, query, false)
+						
+						if len(searchResults) > 0 {
+							currentSearchIndex = 0
+							bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
+							drawBuffer(b, bufferTable, args.Transpose)
+							drawFooterText(fileNameStr, 
+								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)), 
+								cursorPosStr)
+						} else {
+							currentSearchIndex = -1
+							drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+						}
+					}
+					UI.HidePage("searchModal")
+					app.SetFocus(bufferTable)
+					return nil
+				}
+				return event
+			})
+			
+			// Create centered modal overlay
+			searchModal = tview.NewFlex().
+				AddItem(nil, 0, 1, false).
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(nil, 0, 1, false).
+					AddItem(form, 9, 1, true).
+					AddItem(nil, 0, 1, false), 60, 1, true).
+				AddItem(nil, 0, 1, false)
+			
+			UI.AddPage("searchModal", searchModal, true, true)
+			UI.ShowPage("searchModal")
+			app.SetFocus(form)
+			return nil
+		}
+
+		// Navigate to next search result
+		if event.Key() == tcell.KeyRune && event.Rune() == 'n' {
+			if len(searchResults) > 0 && currentSearchIndex >= 0 {
+				currentSearchIndex = (currentSearchIndex + 1) % len(searchResults)
+				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
+				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
+				drawFooterText(fileNameStr, 
+					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)), 
+					cursorPosStr)
+			} else if searchQuery != "" {
+				drawFooterText(fileNameStr, "No search results. Press / to search", cursorPosStr)
+			}
+			return nil
+		}
+
+		// Navigate to previous search result
+		if event.Key() == tcell.KeyRune && event.Rune() == 'N' {
+			if len(searchResults) > 0 && currentSearchIndex >= 0 {
+				currentSearchIndex--
+				if currentSearchIndex < 0 {
+					currentSearchIndex = len(searchResults) - 1
+				}
+				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
+				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
+				drawFooterText(fileNameStr, 
+					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)), 
+					cursorPosStr)
+			} else if searchQuery != "" {
+				drawFooterText(fileNameStr, "No search results. Press / to search", cursorPosStr)
+			}
+			return nil
+		}
+
+		// Clear search highlighting (Ctrl+/)
+		if event.Key() == tcell.KeyCtrlUnderscore { // Ctrl+/ is often mapped to Ctrl+_
+			if searchQuery != "" {
+				searchQuery = ""
+				searchResults = []SearchResult{}
+				currentSearchIndex = -1
+				drawBuffer(b, bufferTable, args.Transpose)
+				drawFooterText(fileNameStr, "Search cleared", cursorPosStr)
+			}
+			return nil
 		}
 
 		//sort by column, ascend

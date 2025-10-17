@@ -34,10 +34,11 @@
 - Automatically identify separator
 - **Progressive loading for large files** - View data immediately as it loads, with responsive UI even for massive datasets
 - **Text wrapping** - Wrap long text in columns for better readability (Ctrl+W)
+- **Search functionality** - Search for text within cells and navigate through results
 
 ## To do
 
-- [ ] search string
+- [x] search string
 
 ## Installation
 
@@ -150,6 +151,10 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | Ctrl-b, page up   | Move up by one page                                    |
 | Ctrl-e            | Move to end of current column                          |
 | Ctrl-h            | Move to head of current column                         |
+| /                 | Search for text (case-insensitive)                     |
+| n                 | Next search result                                     |
+| N                 | Previous search result                                 |
+| Ctrl-/            | Clear search highlighting                              |
 | Ctrl-m            | Change column data type to string or number            |
 | Ctrl-k            | Sort data by column(ascend)                            |
 | Ctrl-l            | Sort data by column(descend)                           |
@@ -166,6 +171,28 @@ For columns with long text content, press **Ctrl+W** to toggle text wrapping:
 - **Smart wrapping**: Breaks at spaces/hyphens when possible
 
 Example use case: Reading long descriptions or comments without horizontal scrolling.
+
+### Search
+
+Search for text within the table and navigate through results with highlighting:
+- **Press `/`**: Opens search input dialog
+- **Type your query**: Search is case-insensitive by default
+- **Press Enter**: Executes the search and shows the number of matches
+- **Press `n`**: Jump to next search result
+- **Press `N`**: Jump to previous search result (capital N)
+- **Press `Ctrl+/`**: Clear search highlighting
+
+**Highlighting:**
+- **Current match**: Highlighted with bright cyan background
+- **Other matches**: Highlighted with gray background
+- The footer shows your current position in the search results (e.g., "Match 1/5")
+
+Example workflow:
+1. Press `/` to open search
+2. Type "error" and press Enter
+3. All cells containing "error" are highlighted, cursor jumps to the first match
+4. Use `n` and `N` to navigate through all cells containing "error"
+5. Press `Ctrl+/` to clear the highlighting when done
 
 ## (Extra)Examples for common biological data
 

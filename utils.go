@@ -81,6 +81,12 @@ C-h                 Move to head of current column
 G                   Move to last cell of table
 g                   Move to first cell of table
 
+##Search##
+/                   Search for text
+n                   Next search result
+N                   Previous search result
+C-/                 Clear search highlighting
+
 ##Data Type##
 C-m 				Change column data type to string or number
 
@@ -158,4 +164,67 @@ func getColumnMaxWidth(colIndex int) int {
 	}
 
 	return defaultWidth
+}
+
+// performSearch searches for a query string in the buffer and stores results
+func performSearch(b *Buffer, query string, caseSensitive bool) []SearchResult {
+	results := []SearchResult{}
+	
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	
+	searchQuery := query
+	if !caseSensitive {
+		searchQuery = toLower(query)
+	}
+	
+	for r := 0; r < b.rowLen; r++ {
+		for c := 0; c < b.colLen; c++ {
+			cellText := b.cont[r][c]
+			if !caseSensitive {
+				cellText = toLower(cellText)
+			}
+			
+			if stringContains(cellText, searchQuery) {
+				results = append(results, SearchResult{Row: r, Col: c})
+			}
+		}
+	}
+	
+	return results
+}
+
+// toLower converts a string to lowercase
+func toLower(s string) string {
+	runes := []rune(s)
+	for i, r := range runes {
+		if r >= 'A' && r <= 'Z' {
+			runes[i] = r + 32
+		}
+	}
+	return string(runes)
+}
+
+// stringContains checks if s contains substr
+func stringContains(s, substr string) bool {
+	if len(substr) == 0 {
+		return true
+	}
+	if len(substr) > len(s) {
+		return false
+	}
+	
+	for i := 0; i <= len(s)-len(substr); i++ {
+		match := true
+		for j := 0; j < len(substr); j++ {
+			if s[i+j] != substr[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return true
+		}
+	}
+	return false
 }
