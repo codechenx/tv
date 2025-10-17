@@ -109,6 +109,10 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	var err error
 	scanner := bufio.NewScanner(stdin)
+	//increase buffer size for large files and long lines
+	const maxScanTokenSize = 1024 * 1024
+	buf := make([]byte, maxScanTokenSize)
+	scanner.Buffer(buf, maxScanTokenSize)
 	//read 10 lines to detect separator
 	lineNumber := 10
 	var detectLines []string //lines as detect separator data
@@ -140,6 +144,7 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 	if b.sep == 0 {
 		fatalError(errors.New("tv can't identify separator, you need to set it manual"))
 	}
+
 	//add detectLines to buffer
 	for _, line := range detectLines {
 		//parse and add line to buffer
@@ -210,16 +215,25 @@ func getFileScanner(fn string) (*bufio.Scanner, error) {
 		return nil, err
 	}
 
+	var scanner *bufio.Scanner
 	//if input is a gzip file
 	if strings.HasSuffix(fn, ".gz") {
 		gzCont, err := gzip.NewReader(file)
 		if err != nil {
 			return nil, err
 		}
-		return bufio.NewScanner(gzCont), nil
+		scanner = bufio.NewScanner(gzCont)
+	} else {
+		scanner = bufio.NewScanner(file)
 	}
 
-	return bufio.NewScanner(file), nil
+	//increase buffer size for large files and long lines
+	//default is 64KB, we set to 1MB for better performance
+	const maxScanTokenSize = 1024 * 1024
+	buf := make([]byte, maxScanTokenSize)
+	scanner.Buffer(buf, maxScanTokenSize)
+
+	return scanner, nil
 }
 
 //check columns that should be displayed
@@ -279,9 +293,16 @@ func lineCSVParse(s string, sep rune) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(s))
 	r.Comma = sep
 	r.LazyQuotes = true
+	r.ReuseRecord = true //reuse backing array for performance
 	//r.TrimLeadingSpace = true //disable, because it will remove NULL item and cause issue.
 	record, err := r.Read()
-	return record, err
+	if err != nil {
+		return nil, err
+	}
+	//make a copy since ReuseRecord=true reuses the backing array
+	result := make([]string, len(record))
+	copy(result, record)
+	return result, err
 }
 
 //add displayable(according to user's input argument) RowArray(covert line to array) To Buffer

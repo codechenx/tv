@@ -37,6 +37,10 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	if b.rowLen == 0 {
 		b.colLen = len(s)
 		b.colType = make([]int, b.colLen+1)
+		//pre-allocate reasonable capacity to reduce reallocation
+		if cap(b.cont) == 0 {
+			b.cont = make([][]string, 0, 1000) //pre-allocate for 1000 rows
+		}
 	}
 	if strict && len(s) != b.colLen {
 		return errors.New("Row " + I2S(b.rowLen+b.rowFreeze) + " lack some column")
