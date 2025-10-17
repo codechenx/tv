@@ -42,9 +42,9 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	if b.rowLen == 0 {
 		b.colLen = len(s)
 		b.colType = make([]int, b.colLen+1)
-		//pre-allocate reasonable capacity to reduce reallocation
+		//pre-allocate larger capacity to reduce reallocation
 		if cap(b.cont) == 0 {
-			b.cont = make([][]string, 0, 1000) //pre-allocate for 1000 rows
+			b.cont = make([][]string, 0, 10000) //pre-allocate for 10000 rows (was 1000)
 		}
 	}
 	if strict && len(s) != b.colLen {

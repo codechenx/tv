@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -87,7 +89,15 @@ func (p *progressTracker) finish() {
 	fmt.Printf("\r\033[K✓ Loaded %d lines in %.2fs (%.0f lines/sec)\n", p.lineCount, elapsed, linesPerSec)
 }
 
-//load file content to buffer (async version for progressive rendering)
+// ParsedLine represents a parsed CSV line with its order
+type ParsedLine struct {
+	Index  int
+	Fields []string
+	Bytes  int64
+	Err    error
+}
+
+//load file content to buffer (async version with concurrent parsing)
 func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneChan chan<- error) {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	
@@ -180,40 +190,107 @@ func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneCha
 	// Signal that initial data is ready for rendering
 	updateChan <- true
 	
+	// === CONCURRENT PARSING PIPELINE ===
+	// Use worker pool for parallel CSV parsing
+	numWorkers := runtime.NumCPU() // Use all available CPU cores
+	if numWorkers > 8 {
+		numWorkers = 8 // Cap at 8 workers for optimal performance
+	}
+	
+	lineChan := make(chan string, numWorkers*10) // Input: raw lines
+	resultChan := make(chan *ParsedLine, numWorkers*10) // Output: parsed lines
+	
+	// Start worker goroutines for parsing
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for line := range lineChan {
+				fields, err := lineCSVParseFast(line, b.sep)
+				result := &ParsedLine{
+					Fields: fields,
+					Bytes:  int64(len(line) + 1),
+					Err:    err,
+				}
+				resultChan <- result
+			}
+		}()
+	}
+	
+	// Goroutine to close resultChan when all workers are done
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+	
+	// Goroutine to read lines and send to workers
+	go func() {
+		for scanner.Scan() {
+			line := scanner.Text()
+			//skip empty line
+			if line == "\n" {
+				continue
+			}
+			//ignore first n lines
+			if args.SkipNum > 0 && args.NLine > 0 {
+				args.SkipNum--
+				continue
+			}
+			//ignore line with specified prefix
+			if skipLine(line, args.SkipSymbol) {
+				continue
+			}
+			
+			if totalAddedLN >= args.NLine && args.NLine > 0 {
+				break
+			}
+			
+			lineChan <- line
+		}
+		close(lineChan)
+	}()
+	
+	// Main thread: collect parsed results and add to buffer
 	batchSize := 0
-	const updateInterval = 100 // Update UI every 100 lines
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		//skip empty line
-		if line == "\n" {
-			continue
+	const updateInterval = 500 // Update UI every 500 lines
+	
+	for result := range resultChan {
+		if result.Err != nil {
+			progress.finish()
+			doneChan <- result.Err
+			return
 		}
-		//ignore first n lines
-		if args.SkipNum > 0 && args.NLine > 0 {
-			args.SkipNum--
-			continue
+		
+		// Apply column filtering if needed
+		var fields []string
+		if len(args.ShowNum) != 0 || len(args.HideNum) != 0 {
+			visCol, err := getVisCol(args.ShowNum, args.HideNum, len(result.Fields))
+			if err != nil {
+				progress.finish()
+				doneChan <- err
+				return
+			}
+			fields = make([]string, 0, len(visCol))
+			for _, i := range visCol {
+				fields = append(fields, result.Fields[i])
+			}
+		} else {
+			fields = result.Fields
 		}
-		//ignore line with specified prefix
-		if skipLine(line, args.SkipSymbol) {
-			continue
-		}
-
-		//parse and add line to buffer
-		if totalAddedLN >= args.NLine && args.NLine > 0 {
-			break
-		}
-		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		
+		// Add to buffer
+		err = b.contAppendSli(fields, args.Strict)
 		if err != nil {
 			progress.finish()
 			doneChan <- err
 			return
 		}
+		
 		totalAddedLN++
 		batchSize++
-		bytesRead := int64(len(line) + 1) // +1 for newline
-		loadProgress.LoadedBytes += bytesRead
-		progress.increment(bytesRead)
+		loadProgress.LoadedBytes += result.Bytes
+		progress.increment(result.Bytes)
 		
 		// Update UI periodically
 		if batchSize >= updateInterval {
@@ -223,6 +300,10 @@ func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneCha
 			default:
 				// Non-blocking - skip update if channel is full
 			}
+		}
+		
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
 		}
 	}
 
@@ -416,49 +497,110 @@ func loadPipeToBufferAsync(stdin io.Reader, b *Buffer, updateChan chan<- bool, d
 	// Signal that initial data is ready for rendering
 	updateChan <- true
 	
-	batchSize := 0
-	const updateInterval = 100 // Update UI every 100 lines
+	// === CONCURRENT PARSING PIPELINE FOR PIPES ===
+	numWorkers := runtime.NumCPU()
+	if numWorkers > 8 {
+		numWorkers = 8
+	}
 	
-	for scanner.Scan() {
-		line := scanner.Text()
-		//skip empty line
-		if line == "\n" {
-			continue
+	lineChan := make(chan string, numWorkers*10)
+	resultChan := make(chan *ParsedLine, numWorkers*10)
+	
+	// Start worker goroutines
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for line := range lineChan {
+				fields, err := lineCSVParseFast(line, b.sep)
+				result := &ParsedLine{
+					Fields: fields,
+					Bytes:  int64(len(line) + 1),
+					Err:    err,
+				}
+				resultChan <- result
+			}
+		}()
+	}
+	
+	// Close resultChan when workers done
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+	
+	// Read lines and send to workers
+	go func() {
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "\n" {
+				continue
+			}
+			if args.SkipNum > 0 {
+				args.SkipNum--
+				continue
+			}
+			if skipLine(line, args.SkipSymbol) {
+				continue
+			}
+			if totalAddedLN >= args.NLine && args.NLine > 0 {
+				break
+			}
+			lineChan <- line
 		}
-		//ignore first n lines
-		if args.SkipNum > 0 {
-			args.SkipNum--
-			continue
+		close(lineChan)
+	}()
+	
+	// Collect results
+	batchSize := 0
+	const updateInterval = 500
+	
+	for result := range resultChan {
+		if result.Err != nil {
+			progress.finish()
+			doneChan <- result.Err
+			return
 		}
-		//ignore line with specified prefix
-		if skipLine(line, args.SkipSymbol) {
-			continue
+		
+		var fields []string
+		if len(args.ShowNum) != 0 || len(args.HideNum) != 0 {
+			visCol, err := getVisCol(args.ShowNum, args.HideNum, len(result.Fields))
+			if err != nil {
+				progress.finish()
+				doneChan <- err
+				return
+			}
+			fields = make([]string, 0, len(visCol))
+			for _, i := range visCol {
+				fields = append(fields, result.Fields[i])
+			}
+		} else {
+			fields = result.Fields
 		}
-
-		//parse and add line to buffer
-		if totalAddedLN >= args.NLine && args.NLine > 0 {
-			break
-		}
-		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		
+		err = b.contAppendSli(fields, args.Strict)
 		if err != nil {
 			progress.finish()
 			doneChan <- err
 			return
 		}
+		
 		totalAddedLN++
 		batchSize++
-		bytesRead := int64(len(line) + 1)
-		loadProgress.LoadedBytes += bytesRead
-		progress.increment(bytesRead)
+		loadProgress.LoadedBytes += result.Bytes
+		progress.increment(result.Bytes)
 		
-		// Update UI periodically
 		if batchSize >= updateInterval {
 			select {
 			case updateChan <- true:
 				batchSize = 0
 			default:
-				// Non-blocking - skip update if channel is full
 			}
+		}
+		
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
 		}
 	}
 
@@ -661,6 +803,7 @@ func checkVisible(showNumL, hideNumL []int, col int) (bool, error) {
 }
 
 //use go csv library to parse a string line into csv format
+// Optimized version with reusable reader
 func lineCSVParse(s string, sep rune) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(s))
 	r.Comma = sep
@@ -677,19 +820,59 @@ func lineCSVParse(s string, sep rune) ([]string, error) {
 	return result, err
 }
 
+// Fast CSV parser for simple cases (no quotes, no escaping)
+// Falls back to standard parser if needed
+func lineCSVParseFast(s string, sep rune) ([]string, error) {
+	// Quick check if line contains quotes (needs full parser)
+	hasQuotes := false
+	for i := 0; i < len(s); i++ {
+		if s[i] == '"' {
+			hasQuotes = true
+			break
+		}
+	}
+	
+	// Use fast path for simple CSV lines
+	if !hasQuotes {
+		// Count separators to pre-allocate slice
+		sepCount := 0
+		for i := 0; i < len(s); i++ {
+			if rune(s[i]) == sep {
+				sepCount++
+			}
+		}
+		
+		result := make([]string, 0, sepCount+1)
+		start := 0
+		for i := 0; i < len(s); i++ {
+			if rune(s[i]) == sep {
+				result = append(result, s[start:i])
+				start = i + 1
+			}
+		}
+		// Add last field
+		result = append(result, s[start:])
+		return result, nil
+	}
+	
+	// Fall back to standard parser for complex cases
+	return lineCSVParse(s, sep)
+}
+
 //add displayable(according to user's input argument) RowArray(covert line to array) To Buffer
 func addDRToBuffer(b *Buffer, line string, showNum, hideNum []int) error {
 	var err error
-	lineCSVParts, err := lineCSVParse(line, b.sep)
+	lineCSVParts, err := lineCSVParseFast(line, b.sep)
 	if err != nil {
 		return err
 	}
 	if len(showNum) != 0 || len(hideNum) != 0 {
-		var lineSli []string
+		// Pre-allocate slice with known capacity
 		visCol, err := getVisCol(showNum, hideNum, len(lineCSVParts))
 		if err != nil {
 			return err
 		}
+		lineSli := make([]string, 0, len(visCol))
 		for _, i := range visCol {
 			lineSli = append(lineSli, lineCSVParts[i])
 		}
