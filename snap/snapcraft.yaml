@@ -7,15 +7,18 @@ description: |
 base: core24
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
+
 parts:
-  codechenx-tv:
+  woke:
     plugin: go
     build-snaps: [go/latest/stable]
-    go-importpath: https://github.com/codechenx/tv
     source: https://github.com/codechenx/tv.git
     source-type: git
-    build-packages:
-      - gcc
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version \
+      "$(git describe --long --tags --always --match=v*.*.* | sed 's/v//')"
+
 apps:
   codechenx-tv:
     command: bin/tv
