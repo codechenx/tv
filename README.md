@@ -32,16 +32,9 @@
 - Spreadsheet-like view for delimited text data
 - Support for gzip compressed file
 - Automatically identify separator
-- **Progressive loading for large files** - View data immediately as it loads, with responsive UI even for massive datasets
-- **Text wrapping** - Wrap long text in columns for better readability (Ctrl+W)
-- **Search functionality** - Search for text within cells and navigate through results
-- **Column filter** - Filter rows based on column values (Ctrl+F)
-- **Smart column type detection** - Automatically detects String, Number, and Date columns
-- **Fast sorting** - Optimized sorting with pre-parsed values for numbers and dates
+- Search for text within cells and navigate through results
+- Filter rows based on column values
 
-## To do
-
-- [x] search string
 
 ## Installation
 
@@ -56,12 +49,6 @@ curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | ba
 \* This command will download tv binary file to your current directory, you need to run `sudo cp tv /usr/local/bin/` or copy tv binary file to any directory which is in the environment variable **PATH**
 
 \* You also can download tv binaries manually, from [releases](https://github.com/codechenx/tv/releases)
-
-#### Homebrew(Linux and macOS, only 64-bit)
-
-```bash
-brew install codechenx/tv/tv
-```
 
 #### Snap(Linux)
 
@@ -141,7 +128,7 @@ For tv, there are three data types for every column: **string**, **number**, and
 
 **Automatic Type Detection**: When you load a file, tv automatically analyzes each column and detects whether it contains strings, numbers, or dates. The detection algorithm samples data intelligently and uses a 90% threshold to classify columns.
 
-**Manual Type Changes**: You can change the data type of the current column by pressing **Ctrl+M**, which cycles through: String → Number → Date → String.
+**Manual Type Changes**: You can change the data type of the current column by pressing **t**, which cycles through: String → Number → Date → String.
 
 **Column Type Behavior**:
 - **String columns**: Sorted alphabetically
@@ -186,7 +173,7 @@ All key bindings follow vim-like conventions for intuitive navigation and operat
 
 ### Text Wrapping
 
-For columns with long text content, press **Ctrl+W** to toggle text wrapping:
+For columns with long text content, press **W** (capital W) to toggle text wrapping:
 - **First press**: Wraps text at 25 characters with smart word breaking
 - **Second press**: Unwraps to original single-line view
 - **Per-column**: Each column can be wrapped independently
@@ -222,21 +209,21 @@ Filter table rows based on column values to focus on specific data:
 - **Press `f`**: Opens column filter dialog for the current column
 - **Type your filter text**: Filter is case-insensitive and matches partial text
 - **Press Enter**: Apply the filter - only rows where the column contains the filter text are displayed
-- **Press `Ctrl+R`**: Reset/clear the filter and show all rows again
+- **Press `r`**: Reset/clear the filter and show all rows again
 
 **Features:**
 - **Case-insensitive**: Filter matches are not case-sensitive
 - **Partial matching**: Shows rows where the column value contains your filter text
 - **Header preserved**: The header row is always visible, even when filtered
 - **Status indication**: Footer shows how many rows match the filter
-- **Easy reset**: Press `Ctrl+R` to return to the full dataset
+- **Easy reset**: Press `r` to return to the full dataset
 
 Example workflow:
 1. Navigate to a column you want to filter (e.g., a "Status" column)
 2. Press `f` to open the filter dialog
 3. Type "active" and press Enter
 4. Only rows where that column contains "active" are displayed
-5. Press `Ctrl+R` to show all rows again
+5. Press `r` to show all rows again
 
 ## (Extra)Examples for common biological data
 

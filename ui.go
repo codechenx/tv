@@ -119,7 +119,7 @@ func drawUI(b *Buffer, trs bool) error {
 		statusMessage = "All Done"
 	}
 	shorFileName := filepath.Base(args.FileName)
-	fileNameStr = shorFileName + "  |  " + "? help page" //footer left
+	fileNameStr = shorFileName + "  |  " + "? help" //footer left
 	mainPage = tview.NewFrame(bufferTable).
 		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText(fileNameStr, false, tview.AlignLeft, tcell.ColorDarkOrange).
@@ -492,7 +492,7 @@ func drawUI(b *Buffer, trs bool) error {
 						bufferTable.Select(0, 0)
 						matchCount := b.rowLen - b.rowFreeze
 						drawFooterText(fileNameStr, 
-							fmt.Sprintf("Filtered: %d rows match (Ctrl+R to reset)", matchCount), 
+							fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount), 
 							cursorPosStr)
 					}
 				}
@@ -539,7 +539,7 @@ func drawUI(b *Buffer, trs bool) error {
 							bufferTable.Select(0, 0)
 							matchCount := b.rowLen - b.rowFreeze
 							drawFooterText(fileNameStr, 
-								fmt.Sprintf("Filtered: %d rows match (Ctrl+R to reset)", matchCount), 
+								fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount), 
 								cursorPosStr)
 						}
 					}
