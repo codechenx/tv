@@ -408,8 +408,8 @@ func isDateValue(s string) bool {
 	}
 
 	// Quick heuristic checks before trying to parse
-	// Dates typically contain: -, /, :, or T
-	hasDateSep := strings.ContainsAny(s, "-/.:T")
+	// Dates typically contain: -, /, :, T, or spaces with commas (for month names)
+	hasDateSep := strings.ContainsAny(s, "-/.:T") || (strings.Contains(s, " ") && strings.Contains(s, ","))
 	if !hasDateSep {
 		return false
 	}
