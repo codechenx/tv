@@ -156,7 +156,7 @@ func (b *Buffer) sortByNum(colIndex int, rev bool) {
 		row []string
 		num float64
 	}
-	
+
 	pairs := make([]numRow, len(dataRows))
 	for i := range dataRows {
 		pairs[i] = numRow{
@@ -195,7 +195,7 @@ func (b *Buffer) sortByDate(colIndex int, rev bool) {
 		row  []string
 		date int64
 	}
-	
+
 	pairs := make([]dateRow, len(dataRows))
 	for i := range dataRows {
 		pairs[i] = dateRow{
@@ -228,11 +228,11 @@ func parseNumericValueFast(s string) float64 {
 	s = strings.ReplaceAll(s, ",", "")
 	s = strings.ReplaceAll(s, "_", "")
 	s = strings.TrimSpace(s)
-	
+
 	if s == "" || s == "NA" || s == "N/A" || s == "NaN" || s == "null" {
 		return 0
 	}
-	
+
 	val, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return 0
@@ -244,33 +244,33 @@ func parseNumericValueFast(s string) float64 {
 // Returns 0 for invalid dates
 func parseDateValueFast(s string) int64 {
 	s = strings.TrimSpace(s)
-	
+
 	if s == "" || s == "NA" || s == "N/A" || s == "null" {
 		return 0
 	}
-	
+
 	// Try common date formats (most common first for performance)
 	formats := []string{
-		"2006-01-02",                // ISO date: 2024-10-17
-		"2006-01-02 15:04:05",       // ISO datetime: 2024-10-17 15:30:00
-		"01/02/2006",                // US date: 10/17/2024
-		"02/01/2006",                // EU date: 17/10/2024
-		"2006/01/02",                // Alt ISO: 2024/10/17
-		time.RFC3339,                // RFC3339: 2024-10-17T15:30:00Z
-		"2006-01-02T15:04:05",       // ISO8601 without timezone
-		"Jan 02, 2006",              // Mon DD, YYYY
-		"January 02, 2006",          // Month DD, YYYY
-		"02-Jan-2006",               // DD-Mon-YYYY
-		"02 Jan 2006",               // DD Mon YYYY
-		"2006.01.02",                // Dotted date
+		"2006-01-02",          // ISO date: 2024-10-17
+		"2006-01-02 15:04:05", // ISO datetime: 2024-10-17 15:30:00
+		"01/02/2006",          // US date: 10/17/2024
+		"02/01/2006",          // EU date: 17/10/2024
+		"2006/01/02",          // Alt ISO: 2024/10/17
+		time.RFC3339,          // RFC3339: 2024-10-17T15:30:00Z
+		"2006-01-02T15:04:05", // ISO8601 without timezone
+		"Jan 02, 2006",        // Mon DD, YYYY
+		"January 02, 2006",    // Month DD, YYYY
+		"02-Jan-2006",         // DD-Mon-YYYY
+		"02 Jan 2006",         // DD Mon YYYY
+		"2006.01.02",          // Dotted date
 	}
-	
+
 	for _, format := range formats {
 		if t, err := time.Parse(format, s); err == nil {
 			return t.Unix()
 		}
 	}
-	
+
 	return 0
 }
 
@@ -328,11 +328,11 @@ func (b *Buffer) autoDetectColumnType(colIndex int) int {
 	// Sample size for type detection
 	startRow := b.rowFreeze
 	endRow := b.rowLen
-	
+
 	// For large datasets, sample smartly (first N rows + some middle + last N)
 	sampleSize := 100
 	sampleRows := []int{}
-	
+
 	if endRow-startRow > sampleSize {
 		// Sample first 50 rows
 		for i := startRow; i < startRow+50 && i < endRow; i++ {
@@ -365,16 +365,16 @@ func (b *Buffer) autoDetectColumnType(colIndex int) int {
 		if rowIdx >= b.rowLen || colIndex >= len(b.cont[rowIdx]) {
 			continue
 		}
-		
+
 		value := strings.TrimSpace(b.cont[rowIdx][colIndex])
-		
+
 		// Skip empty/null cells
 		if value == "" || value == "NA" || value == "N/A" || value == "NaN" || value == "null" {
 			continue
 		}
-		
+
 		totalCount++
-		
+
 		// Check if it's a date (dates are more specific than numbers)
 		if isDateValue(value) {
 			dateCount++
@@ -397,7 +397,7 @@ func (b *Buffer) autoDetectColumnType(colIndex int) int {
 	} else if float64(numericCount) >= threshold {
 		return colTypeFloat
 	}
-	
+
 	return colTypeStr
 }
 
@@ -416,18 +416,18 @@ func isDateValue(s string) bool {
 
 	// Common date formats (most common first for performance)
 	formats := []string{
-		"2006-01-02",                // ISO date: 2024-10-17
-		"2006-01-02 15:04:05",       // ISO datetime: 2024-10-17 15:30:00
-		"01/02/2006",                // US date: 10/17/2024
-		"02/01/2006",                // EU date: 17/10/2024
-		"2006/01/02",                // Alt ISO: 2024/10/17
-		time.RFC3339,                // RFC3339: 2024-10-17T15:30:00Z
-		"2006-01-02T15:04:05",       // ISO8601 without timezone
-		"Jan 02, 2006",              // Mon DD, YYYY
-		"January 02, 2006",          // Month DD, YYYY
-		"02-Jan-2006",               // DD-Mon-YYYY
-		"02 Jan 2006",               // DD Mon YYYY
-		"2006.01.02",                // Dotted date
+		"2006-01-02",          // ISO date: 2024-10-17
+		"2006-01-02 15:04:05", // ISO datetime: 2024-10-17 15:30:00
+		"01/02/2006",          // US date: 10/17/2024
+		"02/01/2006",          // EU date: 17/10/2024
+		"2006/01/02",          // Alt ISO: 2024/10/17
+		time.RFC3339,          // RFC3339: 2024-10-17T15:30:00Z
+		"2006-01-02T15:04:05", // ISO8601 without timezone
+		"Jan 02, 2006",        // Mon DD, YYYY
+		"January 02, 2006",    // Month DD, YYYY
+		"02-Jan-2006",         // DD-Mon-YYYY
+		"02 Jan 2006",         // DD Mon YYYY
+		"2006.01.02",          // Dotted date
 	}
 
 	for _, format := range formats {
@@ -463,7 +463,7 @@ func isNumericValue(s string) bool {
 	// Parse number
 	for i < len(s) {
 		c := s[i]
-		
+
 		if c >= '0' && c <= '9' {
 			hasDigit = true
 		} else if c == '.' {
@@ -477,7 +477,7 @@ func isNumericValue(s string) bool {
 			}
 			hasE = true
 			hasDigit = false // Reset for exponent part
-			
+
 			// Check for sign after E
 			if i+1 < len(s) && (s[i+1] == '+' || s[i+1] == '-') {
 				i++
@@ -544,15 +544,15 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		if colIndex >= len(b.cont[i]) {
 			continue
 		}
-		
+
 		cellValue := b.cont[i][colIndex]
 		queryStr := query
-		
+
 		if !caseSensitive {
 			cellValue = toLowerSimple(cellValue)
 			queryStr = toLowerSimple(query)
 		}
-		
+
 		if containsStr(cellValue, queryStr) {
 			filtered.cont = append(filtered.cont, b.cont[i])
 			filtered.rowLen++

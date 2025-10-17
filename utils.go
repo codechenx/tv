@@ -181,28 +181,28 @@ func getColumnMaxWidth(colIndex int) int {
 // performSearch searches for a query string in the buffer and stores results
 func performSearch(b *Buffer, query string, caseSensitive bool) []SearchResult {
 	results := []SearchResult{}
-	
+
 	b.mu.RLock()
 	defer b.mu.RUnlock()
-	
+
 	searchQuery := query
 	if !caseSensitive {
 		searchQuery = toLower(query)
 	}
-	
+
 	for r := 0; r < b.rowLen; r++ {
 		for c := 0; c < b.colLen; c++ {
 			cellText := b.cont[r][c]
 			if !caseSensitive {
 				cellText = toLower(cellText)
 			}
-			
+
 			if stringContains(cellText, searchQuery) {
 				results = append(results, SearchResult{Row: r, Col: c})
 			}
 		}
 	}
-	
+
 	return results
 }
 
@@ -225,7 +225,7 @@ func stringContains(s, substr string) bool {
 	if len(substr) > len(s) {
 		return false
 	}
-	
+
 	for i := 0; i <= len(s)-len(substr); i++ {
 		match := true
 		for j := 0; j < len(substr); j++ {
@@ -260,7 +260,7 @@ func containsStr(s, substr string) bool {
 	if len(substr) > len(s) {
 		return false
 	}
-	
+
 	for i := 0; i <= len(s)-len(substr); i++ {
 		match := true
 		for j := 0; j < len(substr); j++ {

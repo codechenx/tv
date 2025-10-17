@@ -29,24 +29,24 @@ var UI *tview.Pages
 var b *Buffer
 var args Args
 var debug bool
-var statusMessage string       // Track status message for footer updates
-var mainPage *tview.Frame      // Reference to main page for footer updates
-var bufferTable *tview.Table   // Reference to buffer table
-var fileNameStr string         // Store filename for footer
-var cursorPosStr string        // Store cursor position for footer
-var loadProgress LoadProgress  // Track loading progress
-var userMovedCursor bool       // Track if user has moved the cursor
-var wrappedColumns map[int]int // Track which columns are wrapped and their max width
+var statusMessage string         // Track status message for footer updates
+var mainPage *tview.Frame        // Reference to main page for footer updates
+var bufferTable *tview.Table     // Reference to buffer table
+var fileNameStr string           // Store filename for footer
+var cursorPosStr string          // Store cursor position for footer
+var loadProgress LoadProgress    // Track loading progress
+var userMovedCursor bool         // Track if user has moved the cursor
+var wrappedColumns map[int]int   // Track which columns are wrapped and their max width
 var searchResults []SearchResult // Store search results
-var currentSearchIndex int     // Current position in search results
-var searchQuery string         // Current search query
-var searchModal tview.Primitive // Search modal dialog
-var modal *tview.Modal          // Generic modal reference
-var originalBuffer *Buffer     // Store original buffer before filtering
-var isFiltered bool            // Track if filter is active
-var filterColumn int           // Column index being filtered
-var filterQuery string         // Filter query string
-var lastKeyWasG bool           // Track if last key pressed was 'g' for gg navigation
+var currentSearchIndex int       // Current position in search results
+var searchQuery string           // Current search query
+var searchModal tview.Primitive  // Search modal dialog
+var modal *tview.Modal           // Generic modal reference
+var originalBuffer *Buffer       // Store original buffer before filtering
+var isFiltered bool              // Track if filter is active
+var filterColumn int             // Column index being filtered
+var filterQuery string           // Filter query string
+var lastKeyWasG bool             // Track if last key pressed was 'g' for gg navigation
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {

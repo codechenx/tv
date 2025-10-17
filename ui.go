@@ -31,7 +31,7 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 
 			// Get cell content
 			cellText := b.cont[r][c]
-			
+
 			// Check if this cell is a search result and highlight it
 			isSearchMatch := false
 			if searchQuery != "" && len(searchResults) > 0 {
@@ -42,12 +42,12 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 					}
 				}
 			}
-			
+
 			// Highlight search matches
 			if isSearchMatch {
 				// Check if this is the current search result
 				if currentSearchIndex >= 0 && currentSearchIndex < len(searchResults) &&
-					searchResults[currentSearchIndex].Row == r && 
+					searchResults[currentSearchIndex].Row == r &&
 					searchResults[currentSearchIndex].Col == c {
 					// Current match: bright highlight
 					backgroundColor = tcell.ColorDarkCyan
@@ -133,7 +133,7 @@ func drawUI(b *Buffer, trs bool) error {
 			AddText(cstr, false, tview.AlignCenter, tcell.ColorDarkOrange).
 			AddText(rstr, false, tview.AlignRight, tcell.ColorDarkOrange)
 	}
-	
+
 	//UI init - add pages to UI container
 	UI = tview.NewPages()
 	UI.AddPage("main", mainPage, true, true)
@@ -156,8 +156,8 @@ func drawUI(b *Buffer, trs bool) error {
 			event.Key() == tcell.KeyLeft || event.Key() == tcell.KeyRight ||
 			event.Key() == tcell.KeyHome || event.Key() == tcell.KeyEnd ||
 			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn ||
-			(event.Key() == tcell.KeyRune && (event.Rune() == 'h' || event.Rune() == 'j' || 
-			 event.Rune() == 'k' || event.Rune() == 'l')) {
+			(event.Key() == tcell.KeyRune && (event.Rune() == 'h' || event.Rune() == 'j' ||
+				event.Rune() == 'k' || event.Rune() == 'l')) {
 			userMovedCursor = true
 		}
 
@@ -288,13 +288,13 @@ func drawUI(b *Buffer, trs bool) error {
 				if query != "" {
 					searchQuery = query
 					searchResults = performSearch(b, query, false)
-					
+
 					if len(searchResults) > 0 {
 						currentSearchIndex = 0
 						bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
 						drawBuffer(b, bufferTable, args.Transpose)
-						drawFooterText(fileNameStr, 
-							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)), 
+						drawFooterText(fileNameStr,
+							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
 							cursorPosStr)
 					} else {
 						currentSearchIndex = -1
@@ -312,7 +312,7 @@ func drawUI(b *Buffer, trs bool) error {
 			form.SetBorder(true)
 			form.SetTitle(" Search (case-insensitive) - Enter to search, Esc to cancel ")
 			form.SetTitleAlign(tview.AlignCenter)
-			
+
 			// Handle Escape and Enter keys on form
 			form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 				if event.Key() == tcell.KeyEscape {
@@ -325,13 +325,13 @@ func drawUI(b *Buffer, trs bool) error {
 					if query != "" {
 						searchQuery = query
 						searchResults = performSearch(b, query, false)
-						
+
 						if len(searchResults) > 0 {
 							currentSearchIndex = 0
 							bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
 							drawBuffer(b, bufferTable, args.Transpose)
-							drawFooterText(fileNameStr, 
-								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)), 
+							drawFooterText(fileNameStr,
+								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
 								cursorPosStr)
 						} else {
 							currentSearchIndex = -1
@@ -344,7 +344,7 @@ func drawUI(b *Buffer, trs bool) error {
 				}
 				return event
 			})
-			
+
 			// Create centered modal overlay
 			searchModal = tview.NewFlex().
 				AddItem(nil, 0, 1, false).
@@ -353,7 +353,7 @@ func drawUI(b *Buffer, trs bool) error {
 					AddItem(form, 9, 1, true).
 					AddItem(nil, 0, 1, false), 60, 1, true).
 				AddItem(nil, 0, 1, false)
-			
+
 			UI.AddPage("searchModal", searchModal, true, true)
 			UI.ShowPage("searchModal")
 			app.SetFocus(form)
@@ -366,8 +366,8 @@ func drawUI(b *Buffer, trs bool) error {
 				currentSearchIndex = (currentSearchIndex + 1) % len(searchResults)
 				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
 				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
-				drawFooterText(fileNameStr, 
-					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)), 
+				drawFooterText(fileNameStr,
+					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)),
 					cursorPosStr)
 			} else if searchQuery != "" {
 				drawFooterText(fileNameStr, "No search results. Press / to search", cursorPosStr)
@@ -384,8 +384,8 @@ func drawUI(b *Buffer, trs bool) error {
 				}
 				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
 				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
-				drawFooterText(fileNameStr, 
-					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)), 
+				drawFooterText(fileNameStr,
+					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)),
 					cursorPosStr)
 			} else if searchQuery != "" {
 				drawFooterText(fileNameStr, "No search results. Press / to search", cursorPosStr)
@@ -408,7 +408,7 @@ func drawUI(b *Buffer, trs bool) error {
 		// f - column filter functionality
 		if event.Key() == tcell.KeyRune && event.Rune() == 'f' {
 			_, column := bufferTable.GetSelection()
-			
+
 			// Create filter form
 			var filterForm *tview.Form
 			filterForm = tview.NewForm()
@@ -418,10 +418,10 @@ func drawUI(b *Buffer, trs bool) error {
 				if query != "" {
 					drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
 					app.ForceDraw()
-					
+
 					// Apply filter
 					filteredBuffer := b.filterByColumn(column, query, false)
-					
+
 					// Update display with filtered data
 					if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
 						drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
@@ -432,12 +432,12 @@ func drawUI(b *Buffer, trs bool) error {
 						isFiltered = true
 						filterColumn = column
 						filterQuery = query
-						
+
 						drawBuffer(b, bufferTable, args.Transpose)
 						bufferTable.Select(0, 0)
 						matchCount := b.rowLen - b.rowFreeze
-						drawFooterText(fileNameStr, 
-							fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount), 
+						drawFooterText(fileNameStr,
+							fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount),
 							cursorPosStr)
 					}
 				}
@@ -452,7 +452,7 @@ func drawUI(b *Buffer, trs bool) error {
 			filterForm.SetBorder(true)
 			filterForm.SetTitle(fmt.Sprintf(" Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
 			filterForm.SetTitleAlign(tview.AlignCenter)
-			
+
 			// Handle Escape and Enter keys on form
 			filterForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 				if event.Key() == tcell.KeyEscape {
@@ -465,10 +465,10 @@ func drawUI(b *Buffer, trs bool) error {
 					if query != "" {
 						drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
 						app.ForceDraw()
-						
+
 						// Apply filter
 						filteredBuffer := b.filterByColumn(column, query, false)
-						
+
 						// Update display with filtered data
 						if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
 							drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
@@ -479,12 +479,12 @@ func drawUI(b *Buffer, trs bool) error {
 							isFiltered = true
 							filterColumn = column
 							filterQuery = query
-							
+
 							drawBuffer(b, bufferTable, args.Transpose)
 							bufferTable.Select(0, 0)
 							matchCount := b.rowLen - b.rowFreeze
-							drawFooterText(fileNameStr, 
-								fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount), 
+							drawFooterText(fileNameStr,
+								fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount),
 								cursorPosStr)
 						}
 					}
@@ -494,7 +494,7 @@ func drawUI(b *Buffer, trs bool) error {
 				}
 				return event
 			})
-			
+
 			// Create centered modal overlay
 			filterModal := tview.NewFlex().
 				AddItem(nil, 0, 1, false).
@@ -503,7 +503,7 @@ func drawUI(b *Buffer, trs bool) error {
 					AddItem(filterForm, 9, 1, true).
 					AddItem(nil, 0, 1, false), 70, 1, true).
 				AddItem(nil, 0, 1, false)
-			
+
 			UI.AddPage("filterModal", filterModal, true, true)
 			UI.ShowPage("filterModal")
 			app.SetFocus(filterForm)
@@ -539,7 +539,7 @@ func drawUI(b *Buffer, trs bool) error {
 			drawBuffer(b, bufferTable, trs)
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
-		
+
 		// S - sort by column, descending (capital S for reverse sort)
 		if event.Key() == tcell.KeyRune && event.Rune() == 'S' {
 			_, column := bufferTable.GetSelection()
@@ -563,17 +563,17 @@ func drawUI(b *Buffer, trs bool) error {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Calculating statistics...", cursorPosStr)
 			app.ForceDraw()
-			
+
 			var statsS statsSummary
 			summaryArray := b.getCol(column)
 			columnName := "Column " + I2S(column)
-			
+
 			// Get column name from header if available
 			if b.rowFreeze > 0 && len(b.cont) > 0 && column < len(b.cont[0]) {
 				columnName = b.cont[0][column]
 				summaryArray = summaryArray[1:]
 			}
-			
+
 			// Determine statistics type
 			if b.getColType(column) == colTypeFloat {
 				statsS = &ContinuousStats{}
@@ -581,7 +581,7 @@ func drawUI(b *Buffer, trs bool) error {
 				statsS = &DiscreteStats{}
 			}
 			statsS.summary(summaryArray)
-			
+
 			// Show statistics as a modal dialog
 			showStatsDialog(statsS, columnName, b.getColType(column))
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
@@ -592,7 +592,7 @@ func drawUI(b *Buffer, trs bool) error {
 		if event.Key() == tcell.KeyRune && event.Rune() == 't' {
 			row, column := bufferTable.GetSelection()
 			currentType := b.getColType(column)
-			
+
 			// Cycle through types: Str -> Num -> Date -> Str
 			var newType int
 			switch currentType {
@@ -661,7 +661,7 @@ func showHelpDialog() {
 		SetText(getHelpContent()).
 		SetTextAlign(tview.AlignLeft).
 		SetWordWrap(true)
-	
+
 	// Make help text scrollable
 	helpText.SetScrollable(true)
 	helpText.SetBorder(true)
@@ -671,8 +671,8 @@ func showHelpDialog() {
 
 	// Handle key events to close dialog
 	helpText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyEscape || 
-		   (event.Key() == tcell.KeyRune && (event.Rune() == '?' || event.Rune() == 'q')) {
+		if event.Key() == tcell.KeyEscape ||
+			(event.Key() == tcell.KeyRune && (event.Rune() == '?' || event.Rune() == 'q')) {
 			UI.RemovePage("helpDialog")
 			app.SetFocus(bufferTable)
 			return nil
@@ -749,19 +749,19 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 	statsTable.SetSelectable(true, true)
 	statsTable.SetBorders(false)
 	statsTable.Select(0, 0)
-	
+
 	// Draw statistics
 	drawStats(statsS, statsTable)
-	
+
 	// Create border with title
 	statsTable.SetBorder(true)
 	statsTable.SetBorderColor(tcell.ColorDarkOrange)
-	
+
 	typeName := type2name(colType)
 	title := fmt.Sprintf(" Statistics: %s [%s] - Press q or Esc to close ", columnName, typeName)
 	statsTable.SetTitle(title)
 	statsTable.SetTitleAlign(tview.AlignCenter)
-	
+
 	// Handle key events
 	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		// Escape or q - close dialog
@@ -770,7 +770,7 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 			app.SetFocus(bufferTable)
 			return nil
 		}
-		
+
 		// gg - go to top
 		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
 			if lastKeyWasG {
@@ -795,7 +795,7 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 			statsTable.ScrollToEnd()
 			return nil
 		}
-		
+
 		// j/k navigation
 		if event.Key() == tcell.KeyRune && event.Rune() == 'j' {
 			row, col := statsTable.GetSelection()
@@ -811,7 +811,7 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 			}
 			return nil
 		}
-		
+
 		// Ctrl-d/u for page scrolling
 		if event.Key() == tcell.KeyCtrlD {
 			row, col := statsTable.GetSelection()
@@ -831,10 +831,10 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 			statsTable.Select(newRow, col)
 			return nil
 		}
-		
+
 		return event
 	})
-	
+
 	// Create a centered modal with the stats table
 	// Modal dimensions: 60% width, 70% height
 	statsModal := tview.NewFlex().
@@ -849,4 +849,3 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 	UI.AddPage("statsDialog", statsModal, true, true)
 	app.SetFocus(statsTable)
 }
-

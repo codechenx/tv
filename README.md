@@ -55,21 +55,20 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 
 ## Installation
 
-### Quick Install (Linux/macOS)
+### Recommended: Install Script (Linux/macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
+sudo mv tv /usr/local/bin/
 ```
-
-This downloads the `tv` binary to your current directory. To make it globally accessible:
-
-```bash
-sudo cp tv /usr/local/bin/
-```
-
-Alternatively, download binaries manually from [releases](https://github.com/codechenx/tv/releases).
 
 ### Package Managers
+
+**Homebrew (macOS/Linux)**
+
+```bash
+brew install codechenx/tv/tv
+```
 
 **Snap (Linux)**
 
@@ -80,36 +79,60 @@ sudo snap install codechenx-tv
 sudo snap alias codechenx-tv tv
 ```
 
-**Debian/Ubuntu (.deb)**
+**Scoop (Windows)**
 
-Download from [releases](https://github.com/codechenx/tv/releases)
-
-```bash
-sudo dpkg -i tv_*.deb
+```powershell
+scoop bucket add codechenx https://github.com/codechenx/scoop-bucket
+scoop install tv
 ```
 
-**CentOS/Fedora (.rpm)**
-
-Download from [releases](https://github.com/codechenx/tv/releases)
-
-```bash
-sudo rpm -i tv_*.rpm
-```
-
-### Build from Source
-
-Requires Go 1.16 or later:
+**Go Install**
 
 ```bash
 go install github.com/codechenx/tv@latest
 ```
 
-Or clone and build:
+### Linux Package Managers
+
+**Debian/Ubuntu (.deb)**
+
+```bash
+# Download from releases page
+wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.deb
+sudo dpkg -i tv_*.deb
+```
+
+**CentOS/Fedora (.rpm)**
+
+```bash
+# Download from releases page
+wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.rpm
+sudo rpm -i tv_*.rpm
+```
+
+**Alpine (apk)**
+
+```bash
+# Download from releases page
+wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.apk
+sudo apk add --allow-untrusted tv_*.apk
+```
+
+### Manual Download
+
+Download pre-built binaries from [releases](https://github.com/codechenx/tv/releases) for:
+- Linux (x86_64, ARM, ARM64)
+- macOS (Intel, Apple Silicon)
+- Windows (x86_64, i386)
+
+### Build from Source
+
+Requires Go 1.19 or later:
 
 ```bash
 git clone https://github.com/codechenx/tv.git
 cd tv
-go build
+go build -ldflags="-s -w" -o tv
 ```
 
 ## Quick Start
@@ -429,7 +452,37 @@ tv data.txt -s "  "
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/codechenx/tv).
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### Quick Development Setup
+
+```bash
+# Clone and build
+git clone https://github.com/codechenx/tv.git
+cd tv
+make build
+
+# Run tests
+make test
+
+# Install locally
+make install
+```
+
+For maintainers publishing releases:
+
+```bash
+# Tag a new version
+git tag -a v1.2.3 -m "Release v1.2.3"
+git push origin v1.2.3
+
+# GitHub Actions will automatically build and publish to:
+# - GitHub Releases (binaries for all platforms)
+# - Homebrew
+# - Snap Store
+# - Scoop (Windows)
+# - Package managers (.deb, .rpm, .apk)
+```
 
 ## License
 

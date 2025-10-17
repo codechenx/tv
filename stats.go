@@ -47,12 +47,12 @@ func (s *ContinuousStats) summary(a []string) {
 	s.data = data
 	s.count = len(data)
 	s.missing = originalCount - s.count
-	
+
 	if s.count == 0 {
 		s.summaryData = [][]string{{"Total values", I2S(originalCount)}, {"Missing/Invalid", I2S(s.missing)}, {"No numeric data", ""}}
 		return
 	}
-	
+
 	s.min, _ = stats.Min(data)
 	s.max, _ = stats.Max(data)
 	s.mean, _ = stats.Mean(data)
@@ -60,14 +60,14 @@ func (s *ContinuousStats) summary(a []string) {
 	s.sd, _ = stats.StandardDeviation(data)
 	s.variance, _ = stats.Variance(data)
 	s.sum, _ = stats.Sum(data)
-	
+
 	q, _ := stats.Quartile(data)
 	s.q1, s.q2, s.q3 = q.Q1, q.Q2, q.Q3
 	s.iqr = s.q3 - s.q1
-	
+
 	// Calculate mode
 	s.mode, s.modeCount = calculateMode(data)
-	
+
 	summaryArray := [][]string{
 		{"Total values", I2S(originalCount)},
 		{"Valid numbers", I2S(s.count)},
@@ -97,12 +97,12 @@ func calculateMode(data []float64) (float64, int) {
 	if len(data) == 0 {
 		return 0, 0
 	}
-	
+
 	freq := make(map[float64]int)
 	for _, v := range data {
 		freq[v]++
 	}
-	
+
 	var mode float64
 	maxCount := 0
 	for k, v := range freq {
@@ -111,7 +111,7 @@ func calculateMode(data []float64) (float64, int) {
 			mode = k
 		}
 	}
-	
+
 	return mode, maxCount
 }
 
@@ -136,20 +136,20 @@ func (s *ContinuousStats) getSummaryStr(a []string) string {
 func (s *DiscreteStats) summary(a []string) {
 	s.data = a
 	s.count = len(a)
-	
+
 	// Count empty/missing values
 	s.missing = 0
 	s.counter = make(map[string]int)
-	
+
 	for _, row := range a {
 		if row == "" {
 			s.missing++
 		}
 		s.counter[row]++
 	}
-	
+
 	s.unique = len(s.counter)
-	
+
 	type kv struct {
 		Key   string
 		Value int
@@ -174,7 +174,7 @@ func (s *DiscreteStats) summary(a []string) {
 		{"Value", "Frequency"},
 		{"─────", "─────────"},
 	}
-	
+
 	// Add top values (limit to prevent excessive display)
 	maxDisplay := 50
 	for i, kv := range ss {
@@ -183,7 +183,7 @@ func (s *DiscreteStats) summary(a []string) {
 			s.summaryData = append(s.summaryData, []string{"...", "(" + I2S(remaining) + " more)"})
 			break
 		}
-		
+
 		displayKey := kv.Key
 		if displayKey == "" {
 			displayKey = "(empty)"
@@ -192,10 +192,10 @@ func (s *DiscreteStats) summary(a []string) {
 		if len(displayKey) > 40 {
 			displayKey = displayKey[:37] + "..."
 		}
-		
+
 		percent := float64(kv.Value) / float64(s.count) * 100
 		s.summaryData = append(s.summaryData, []string{
-			displayKey, 
+			displayKey,
 			I2S(kv.Value) + " (" + F2S(percent) + "%)",
 		})
 	}

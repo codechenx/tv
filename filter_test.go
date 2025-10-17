@@ -45,9 +45,9 @@ func TestBuffer_filterByColumn(t *testing.T) {
 				{"Bob", "inactive", "25"},
 				{"Charlie", "Active", "35"},
 			},
-			colIndex:     1,     // Status column
+			colIndex:     1, // Status column
 			query:        "active",
-			expectedRows: 4,     // header + all 3 rows (case insensitive)
+			expectedRows: 4, // header + all 3 rows (case insensitive)
 		},
 		{
 			name: "Filter no matches",
