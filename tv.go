@@ -30,7 +30,7 @@ func main() {
 			useAsync := args.AsyncLoad
 
 			//check whether from a console pipe
-			if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
+			if info.Mode()&os.ModeCharDevice != 0 {
 				if len(cmdargs) < 1 {
 					stopView()
 					_ = cmd.Help()
@@ -39,6 +39,17 @@ func main() {
 				//get file name form console
 				args.FileName = cmdargs[0]
 
+				// Check if file exists before attempting to load
+				if _, err := os.Stat(args.FileName); os.IsNotExist(err) {
+					stopView()
+					fmt.Printf("⚠️  File not found: %s\n", args.FileName)
+					os.Exit(1)
+				} else if err != nil {
+					stopView()
+					fmt.Printf("⚠️  Cannot access file: %s\n", err)
+					os.Exit(1)
+				}
+
 				if useAsync {
 					// Start async loading
 					userMovedCursor = false // Reset cursor tracking
@@ -46,8 +57,15 @@ func main() {
 					doneChan := make(chan error, 1)
 					go loadFileToBufferAsync(args.FileName, b, updateChan, doneChan)
 
-					// Wait for initial data
-					<-updateChan
+					// Wait for initial data or error
+					select {
+					case <-updateChan:
+						// Initial data ready
+					case err := <-doneChan:
+						// Error during initial loading
+						fatalError(err)
+						return
+					}
 
 					// Process freeze mode
 					switch args.Header {
@@ -174,8 +192,15 @@ func main() {
 					doneChan := make(chan error, 1)
 					go loadPipeToBufferAsync(os.Stdin, b, updateChan, doneChan)
 
-					// Wait for initial data
-					<-updateChan
+					// Wait for initial data or error
+					select {
+					case <-updateChan:
+						// Initial data ready
+					case err := <-doneChan:
+						// Error during initial loading
+						fatalError(err)
+						return
+					}
 
 					// Process freeze mode
 					switch args.Header {

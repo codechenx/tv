@@ -64,12 +64,6 @@ sudo mv tv /usr/local/bin/
 
 ### Package Managers
 
-**Homebrew (macOS/Linux)**
-
-```bash
-brew install codechenx/tv/tv
-```
-
 **Snap (Linux)**
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
@@ -77,13 +71,6 @@ brew install codechenx/tv/tv
 ```bash
 sudo snap install codechenx-tv
 sudo snap alias codechenx-tv tv
-```
-
-**Scoop (Windows)**
-
-```powershell
-scoop bucket add codechenx https://github.com/codechenx/scoop-bucket
-scoop install tv
 ```
 
 **Go Install**
@@ -98,7 +85,7 @@ go install github.com/codechenx/tv@latest
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.deb
+wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.deb
 sudo dpkg -i tv_*.deb
 ```
 
@@ -106,7 +93,7 @@ sudo dpkg -i tv_*.deb
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.rpm
+wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.rpm
 sudo rpm -i tv_*.rpm
 ```
 
@@ -114,7 +101,7 @@ sudo rpm -i tv_*.rpm
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_<version>_Linux_x86_64.apk
+wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.apk
 sudo apk add --allow-untrusted tv_*.apk
 ```
 

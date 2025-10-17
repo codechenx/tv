@@ -730,7 +730,6 @@ func skipLine(line string, sy []string) bool {
 func getFileScanner(fn string) (*bufio.Scanner, error) {
 	info, err := os.Stat(fn)
 	if err != nil {
-		_, err := os.Open(fn)
 		return nil, err
 	}
 	//check if fn is a directory

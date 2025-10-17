@@ -60,21 +60,6 @@ changelog:
       - '^chore:'
       - 'typo'
 
-brews:
-  - repository:
-      owner: codechenx
-      name: homebrew-tv
-    commit_author:
-      name: codechenx
-      email: codechenx@gmail.com
-    description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
-    homepage: https://github.com/codechenx/tv
-    license: MIT
-    install: |
-      bin.install "tv"
-    test: |
-      system "#{bin}/tv", "--version"
-
 nfpms:
   - maintainer: codechenx <codechenx@gmail.com>
     description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
@@ -85,14 +70,3 @@ nfpms:
       - rpm
       - apk
     bindir: /usr/bin
-
-scoops:
-  - repository:
-      owner: codechenx
-      name: scoop-bucket
-    commit_author:
-      name: codechenx
-      email: codechenx@gmail.com
-    description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
-    homepage: https://github.com/codechenx/tv
-    license: MIT
