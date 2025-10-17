@@ -10,6 +10,9 @@ import (
 
 //add buffer data to buffer table
 func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	
 	t.Clear()
 	if trs {
 		b.transpose()
@@ -58,7 +61,7 @@ func drawStats(s statsSummary, t *tview.Table) {
 func drawUI(b *Buffer, trs bool) error {
 
 	//bufferTable init
-	bufferTable := tview.NewTable()
+	bufferTable = tview.NewTable()
 	bufferTable.SetSelectable(true, true)
 	bufferTable.SetBorders(false)
 	bufferTable.SetFixed(b.rowFreeze, b.colFreeze)
@@ -66,20 +69,22 @@ func drawUI(b *Buffer, trs bool) error {
 	drawBuffer(b, bufferTable, trs)
 
 	//main page init
-	cursorPosStr := "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
-	infoStr := "All Done"                                                       //footer middle
+	cursorPosStr = "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
+	if statusMessage == "" {
+		statusMessage = "All Done"
+	}
 	shorFileName := filepath.Base(args.FileName)
-	fileNameStr := shorFileName + "  |  " + "? help page" //footer left
-	mainPage := tview.NewFrame(bufferTable).
+	fileNameStr = shorFileName + "  |  " + "? help page" //footer left
+	mainPage = tview.NewFrame(bufferTable).
 		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText(fileNameStr, false, tview.AlignLeft, tcell.ColorDarkOrange).
-		AddText(infoStr, false, tview.AlignCenter, tcell.ColorDarkOrange).
+		AddText(statusMessage, false, tview.AlignCenter, tcell.ColorDarkOrange).
 		AddText(cursorPosStr, false, tview.AlignRight, tcell.ColorDarkOrange)
 
 	drawFooterText := func(lstr, cstr, rstr string) {
+		statusMessage = cstr // Update global status
 		mainPage.Clear()
-		mainPage = mainPage.
-			AddText(lstr, false, tview.AlignLeft, tcell.ColorDarkOrange).
+		mainPage.AddText(lstr, false, tview.AlignLeft, tcell.ColorDarkOrange).
 			AddText(cstr, false, tview.AlignCenter, tcell.ColorDarkOrange).
 			AddText(rstr, false, tview.AlignRight, tcell.ColorDarkOrange)
 	}
@@ -147,17 +152,28 @@ func drawUI(b *Buffer, trs bool) error {
 	//bufferTable Event
 	//bufferTable update cursor position
 	bufferTable.SetSelectionChangedFunc(func(row int, column int) {
+		// Mark that user has moved cursor if they moved from initial position (0,0)
+		if !userMovedCursor && (row != 0 || column != 0) {
+			userMovedCursor = true
+		}
 		cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
-		drawFooterText(fileNameStr, infoStr, cursorPosStr)
+		drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 	})
 
 	//bufferTable HotKey Event
 	bufferTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Mark that user is interacting with cursor movement keys
+		if event.Key() == tcell.KeyUp || event.Key() == tcell.KeyDown ||
+			event.Key() == tcell.KeyLeft || event.Key() == tcell.KeyRight ||
+			event.Key() == tcell.KeyHome || event.Key() == tcell.KeyEnd ||
+			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn {
+			userMovedCursor = true
+		}
+		
 		//sort by column, ascend
 		if event.Key() == tcell.KeyCtrlK {
 			_, column := bufferTable.GetSelection()
-			infoStr = "Sorting..."
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
 			if b.getColType(column) == colTypeFloat {
 				b.sortByNum(column, false)
@@ -165,14 +181,12 @@ func drawUI(b *Buffer, trs bool) error {
 				b.sortByStr(column, false)
 			}
 			drawBuffer(b, bufferTable, trs)
-			infoStr = "All Done"
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 		//sort by column, descend
 		if event.Key() == tcell.KeyCtrlL {
 			_, column := bufferTable.GetSelection()
-			infoStr = "Sorting..."
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
 			if b.getColType(column) == colTypeFloat {
 				b.sortByNum(column, true)
@@ -180,15 +194,13 @@ func drawUI(b *Buffer, trs bool) error {
 				b.sortByStr(column, true)
 			}
 			drawBuffer(b, bufferTable, trs)
-			infoStr = "All Done"
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
 		//show current column's stats info
 		if event.Key() == tcell.KeyCtrlY {
 			_, column := bufferTable.GetSelection()
-			infoStr = "Calculating"
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "Calculating", cursorPosStr)
 			var statsS statsSummary
 			summaryArray := b.getCol(column)
 			if I2B(b.colFreeze) {
@@ -205,8 +217,7 @@ func drawUI(b *Buffer, trs bool) error {
 			statsTable.ScrollToBeginning()
 			drawStats(statsS, statsTable)
 			UI.SwitchToPage("stats")
-			infoStr = "All Done"
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
 		//change column data type
@@ -221,7 +232,7 @@ func drawUI(b *Buffer, trs bool) error {
 
 			b.setColType(column, colType)
 			cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
-			drawFooterText(fileNameStr, infoStr, cursorPosStr)
+			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 		}
 
 		//go to head of current column

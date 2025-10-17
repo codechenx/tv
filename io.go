@@ -87,7 +87,151 @@ func (p *progressTracker) finish() {
 	fmt.Printf("\r\033[K✓ Loaded %d lines in %.2fs (%.0f lines/sec)\n", p.lineCount, elapsed, linesPerSec)
 }
 
-//load file content to buffer
+//load file content to buffer (async version for progressive rendering)
+func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneChan chan<- error) {
+	totalAddedLN := 0 //the number of lines has been added into buffer
+	
+	// Get file size for progress tracking
+	fileInfo, err := os.Stat(fn)
+	if err != nil {
+		doneChan <- err
+		return
+	}
+	var fileSize int64
+	if !fileInfo.IsDir() {
+		fileSize = fileInfo.Size()
+	}
+	
+	// Initialize load progress
+	loadProgress.TotalBytes = fileSize
+	loadProgress.LoadedBytes = 0
+	loadProgress.IsComplete = false
+	
+	// Create progress tracker (disabled for async loading since UI will show it)
+	progress := newProgressTracker(fileSize, false)
+	
+	scanner, err := getFileScanner(fn)
+	if err != nil {
+		doneChan <- err
+		return
+	}
+	scanner.Split(bufio.ScanLines)
+	//set separator, if user does not provide it.
+	var detectLines []string //lines as detect separator data
+	if b.sep == 0 {
+		//read 10 lines to detect separator
+		lineNumber := 10
+		for scanner.Scan() {
+			line := scanner.Text()
+			//skip empty line
+			if line == "\n" {
+				continue
+			}
+			//ignore first n lines
+			if args.SkipNum > 0 {
+				args.SkipNum--
+				continue
+			}
+			//ignore line with specified prefix
+			if skipLine(line, args.SkipSymbol) {
+				continue
+			}
+			detectLines = append(detectLines, line)
+			if len(detectLines) >= lineNumber {
+				break
+			}
+		}
+		//if the suffix of file name is ".csv", set separator to ",".
+		//if the suffix of file name is "tsv", set separator to "\t".
+		if strings.HasSuffix(fn, ".csv") {
+			b.sep = ','
+		} else if strings.HasSuffix(fn, ".tsv") {
+			b.sep = '\t'
+		} else {
+			sd := sepDetecor{}
+			b.sep = sd.sepDetect(detectLines)
+		}
+
+	}
+	//check final separator
+	if b.sep == 0 {
+		doneChan <- errors.New("tv can't identify separator, you need to set it manual")
+		return
+	}
+
+	//add detectLines to buffer
+	for _, line := range detectLines {
+		//parse and add line to buffer
+		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		if err != nil {
+			progress.finish()
+			doneChan <- err
+			return
+		}
+		totalAddedLN++
+		bytesRead := int64(len(line) + 1) // +1 for newline
+		loadProgress.LoadedBytes += bytesRead
+		progress.increment(bytesRead)
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
+	}
+	
+	// Signal that initial data is ready for rendering
+	updateChan <- true
+	
+	batchSize := 0
+	const updateInterval = 100 // Update UI every 100 lines
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		//skip empty line
+		if line == "\n" {
+			continue
+		}
+		//ignore first n lines
+		if args.SkipNum > 0 && args.NLine > 0 {
+			args.SkipNum--
+			continue
+		}
+		//ignore line with specified prefix
+		if skipLine(line, args.SkipSymbol) {
+			continue
+		}
+
+		//parse and add line to buffer
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
+		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		if err != nil {
+			progress.finish()
+			doneChan <- err
+			return
+		}
+		totalAddedLN++
+		batchSize++
+		bytesRead := int64(len(line) + 1) // +1 for newline
+		loadProgress.LoadedBytes += bytesRead
+		progress.increment(bytesRead)
+		
+		// Update UI periodically
+		if batchSize >= updateInterval {
+			select {
+			case updateChan <- true:
+				batchSize = 0
+			default:
+				// Non-blocking - skip update if channel is full
+			}
+		}
+	}
+
+	loadProgress.IsComplete = true
+	progress.finish()
+	doneChan <- nil
+}
+
+//load file content to buffer (synchronous version for small files or when preferred)
 func loadFileToBuffer(fn string, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	
@@ -200,7 +344,130 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 	return nil
 }
 
-//load console pipe content to buffer
+//load console pipe content to buffer (async version for progressive rendering)
+func loadPipeToBufferAsync(stdin io.Reader, b *Buffer, updateChan chan<- bool, doneChan chan<- error) {
+	totalAddedLN := 0 //the number of lines has been added into buffer
+	var err error
+	
+	// For pipes, we don't know the total size
+	loadProgress.TotalBytes = 0
+	loadProgress.LoadedBytes = 0
+	loadProgress.IsComplete = false
+	
+	// Create progress tracker (disabled for async loading)
+	progress := newProgressTracker(0, false)
+	
+	scanner := bufio.NewScanner(stdin)
+	//increase buffer size for large files and long lines
+	const maxScanTokenSize = 1024 * 1024
+	buf := make([]byte, maxScanTokenSize)
+	scanner.Buffer(buf, maxScanTokenSize)
+	//read 10 lines to detect separator
+	lineNumber := 10
+	var detectLines []string //lines as detect separator data
+	if b.sep == 0 {
+		for scanner.Scan() {
+			line := scanner.Text()
+			//skip empty line
+			if line == "\n" {
+				continue
+			}
+			//ignore first n lines
+			if args.SkipNum > 0 {
+				args.SkipNum--
+				continue
+			}
+			//ignore line with specified prefix
+			if skipLine(line, args.SkipSymbol) {
+				continue
+			}
+			detectLines = append(detectLines, line)
+			if len(detectLines) >= lineNumber {
+				break
+			}
+		}
+		sd := sepDetecor{}
+		b.sep = sd.sepDetect(detectLines)
+	}
+	//check final separator
+	if b.sep == 0 {
+		doneChan <- errors.New("tv can't identify separator, you need to set it manual")
+		return
+	}
+
+	//add detectLines to buffer
+	for _, line := range detectLines {
+		//parse and add line to buffer
+		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		if err != nil {
+			progress.finish()
+			doneChan <- err
+			return
+		}
+		totalAddedLN++
+		bytesRead := int64(len(line) + 1)
+		loadProgress.LoadedBytes += bytesRead
+		progress.increment(bytesRead)
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
+	}
+	
+	// Signal that initial data is ready for rendering
+	updateChan <- true
+	
+	batchSize := 0
+	const updateInterval = 100 // Update UI every 100 lines
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		//skip empty line
+		if line == "\n" {
+			continue
+		}
+		//ignore first n lines
+		if args.SkipNum > 0 {
+			args.SkipNum--
+			continue
+		}
+		//ignore line with specified prefix
+		if skipLine(line, args.SkipSymbol) {
+			continue
+		}
+
+		//parse and add line to buffer
+		if totalAddedLN >= args.NLine && args.NLine > 0 {
+			break
+		}
+		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
+		if err != nil {
+			progress.finish()
+			doneChan <- err
+			return
+		}
+		totalAddedLN++
+		batchSize++
+		bytesRead := int64(len(line) + 1)
+		loadProgress.LoadedBytes += bytesRead
+		progress.increment(bytesRead)
+		
+		// Update UI periodically
+		if batchSize >= updateInterval {
+			select {
+			case updateChan <- true:
+				batchSize = 0
+			default:
+				// Non-blocking - skip update if channel is full
+			}
+		}
+	}
+
+	loadProgress.IsComplete = true
+	progress.finish()
+	doneChan <- nil
+}
+
+//load console pipe content to buffer (synchronous version)
 func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	var err error

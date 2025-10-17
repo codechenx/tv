@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -22,6 +25,10 @@ func main() {
 			}
 			info, err := os.Stdin.Stat()
 			fatalError(err)
+			
+			// Determine if we should use async loading
+			useAsync := args.AsyncLoad
+			
 			//check whether from a console pipe
 			if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
 				if len(cmdargs) < 1 {
@@ -31,31 +38,211 @@ func main() {
 				}
 				//get file name form console
 				args.FileName = cmdargs[0]
-				err = loadFileToBuffer(args.FileName, b)
-				fatalError(err)
+				
+				if useAsync {
+					// Start async loading
+					userMovedCursor = false // Reset cursor tracking
+					updateChan := make(chan bool, 10)
+					doneChan := make(chan error, 1)
+					go loadFileToBufferAsync(args.FileName, b, updateChan, doneChan)
+					
+					// Wait for initial data
+					<-updateChan
+					
+					// Process freeze mode
+					switch args.Header {
+					case -1:
+						b.rowFreeze, b.colFreeze = 0, 0
+					case 0:
+						b.rowFreeze, b.colFreeze = 1, 1
+					case 1:
+						b.rowFreeze, b.colFreeze = 1, 0
+					case 2:
+						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					
+					// Draw initial UI
+					err = drawUI(b, args.Transpose)
+					fatalError(err)
+					
+					// Start update handler in background
+					go func() {
+						ticker := time.NewTicker(20 * time.Millisecond)
+						defer ticker.Stop()
+						
+						loadComplete := false
+						for !loadComplete {
+							select {
+							case <-updateChan:
+								// Update available - will be handled by ticker
+							case err := <-doneChan:
+								loadComplete = true
+								if err != nil {
+									fatalError(err)
+								}
+								// Final update
+								app.QueueUpdateDraw(func() {
+									drawBuffer(b, bufferTable, args.Transpose)
+									updateFooterWithStatus("Loaded " + strconv.Itoa(b.rowLen) + " rows")
+								})
+							case <-ticker.C:
+								// Periodic UI update
+								app.QueueUpdateDraw(func() {
+									drawBuffer(b, bufferTable, args.Transpose)
+
+								// Keep cursor on first row if user hasn't moved it
+								if !userMovedCursor {
+									row, col := bufferTable.GetSelection()
+									if row != 0 {
+										bufferTable.Select(0, col)
+									}
+								}
+
+								if loadProgress.TotalBytes > 0 {
+// Show percentage for files
+									percent := loadProgress.GetPercentage()
+									updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+								} else {
+									// Show row count for pipes (no file size)
+									updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
+								}
+								})
+							}
+						}
+					}()
+					
+					if !debug {
+						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
+							fatalError(err)
+						}
+					}
+				} else {
+					// Synchronous loading (original behavior)
+					err = loadFileToBuffer(args.FileName, b)
+					fatalError(err)
+					
+					//process freeze mode
+					switch args.Header {
+					case -1:
+						b.rowFreeze, b.colFreeze = 0, 0
+					case 0:
+						b.rowFreeze, b.colFreeze = 1, 1
+					case 1:
+						b.rowFreeze, b.colFreeze = 1, 0
+					case 2:
+						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					err = drawUI(b, args.Transpose)
+					fatalError(err)
+					if !debug {
+						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
+							fatalError(err)
+						}
+					}
+				}
 			} else {
 				args.FileName = "From Shell Pipe"
-				err = loadPipeToBuffer(os.Stdin, b)
-				fatalError(err)
-			}
-
-			//process freeze mode
-			switch args.Header {
-			case -1:
-				b.rowFreeze, b.colFreeze = 0, 0
-			case 0:
-				b.rowFreeze, b.colFreeze = 1, 1
-			case 1:
-				b.rowFreeze, b.colFreeze = 1, 0
-			case 2:
-				b.rowFreeze, b.colFreeze = 0, 1
-
-			}
-			err = drawUI(b, args.Transpose)
-			fatalError(err)
-			if !debug {
-				if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
+				
+				if useAsync {
+					// Start async loading
+					userMovedCursor = false // Reset cursor tracking
+					updateChan := make(chan bool, 10)
+					doneChan := make(chan error, 1)
+					go loadPipeToBufferAsync(os.Stdin, b, updateChan, doneChan)
+					
+					// Wait for initial data
+					<-updateChan
+					
+					// Process freeze mode
+					switch args.Header {
+					case -1:
+						b.rowFreeze, b.colFreeze = 0, 0
+					case 0:
+						b.rowFreeze, b.colFreeze = 1, 1
+					case 1:
+						b.rowFreeze, b.colFreeze = 1, 0
+					case 2:
+						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					
+					// Draw initial UI
+					err = drawUI(b, args.Transpose)
 					fatalError(err)
+					
+					// Start update handler in background
+					go func() {
+						ticker := time.NewTicker(20 * time.Millisecond)
+						defer ticker.Stop()
+						
+						loadComplete := false
+						for !loadComplete {
+							select {
+							case <-updateChan:
+								// Update available - will be handled by ticker
+							case err := <-doneChan:
+								loadComplete = true
+								if err != nil {
+									fatalError(err)
+								}
+								// Final update
+								app.QueueUpdateDraw(func() {
+									drawBuffer(b, bufferTable, args.Transpose)
+									updateFooterWithStatus("Loaded " + strconv.Itoa(b.rowLen) + " rows")
+								})
+							case <-ticker.C:
+								// Periodic UI update
+								app.QueueUpdateDraw(func() {
+									drawBuffer(b, bufferTable, args.Transpose)
+									
+								// Keep cursor on first row if user hasn't moved it
+								if !userMovedCursor {
+									row, col := bufferTable.GetSelection()
+									if row != 0 {
+										bufferTable.Select(0, col)
+									}
+								}
+
+								if loadProgress.TotalBytes > 0 {
+									// Show percentage for files
+									percent := loadProgress.GetPercentage()
+									updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+									} else {
+									// Show row count for pipes (no file size)
+									updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
+									}
+								})
+							}
+						}
+					}()
+					
+					if !debug {
+						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
+							fatalError(err)
+						}
+					}
+				} else {
+					// Synchronous loading (original behavior)
+					err = loadPipeToBuffer(os.Stdin, b)
+					fatalError(err)
+					
+					//process freeze mode
+					switch args.Header {
+					case -1:
+						b.rowFreeze, b.colFreeze = 0, 0
+					case 0:
+						b.rowFreeze, b.colFreeze = 1, 1
+					case 1:
+						b.rowFreeze, b.colFreeze = 1, 0
+					case 2:
+						b.rowFreeze, b.colFreeze = 0, 1
+					}
+					err = drawUI(b, args.Transpose)
+					fatalError(err)
+					if !debug {
+						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
+							fatalError(err)
+						}
+					}
 				}
 			}
 		},
@@ -70,6 +257,7 @@ func main() {
 	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional) [default: 0]\n-1, Unfreeze first row and first column\n 0, Freeze first row and first column\n 1, Freeze first row\n 2, Freeze first column")
 	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "(optional) Transpose data")
 	RootCmd.Flags().BoolVar(&args.Strict, "strict", false, "(optional) Check for missing data")
+	RootCmd.Flags().BoolVar(&args.AsyncLoad, "async", true, "(optional) Load data asynchronously for progressive rendering (default: true)")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
 	fatalError(err)

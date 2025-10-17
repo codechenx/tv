@@ -12,6 +12,7 @@ type Args struct {
 	Transpose  bool
 	NLine      int  //number of lines that should be displayed
 	Strict     bool // check for missing data
+	AsyncLoad  bool // enable async loading for progressive rendering
 }
 
 func (args *Args) setDefault() {
@@ -24,4 +25,5 @@ func (args *Args) setDefault() {
 	args.Transpose = false
 	args.NLine = 0
 	args.Strict = false
+	args.AsyncLoad = true // default to async loading
 }

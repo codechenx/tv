@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"sort"
+	"sync"
 )
 
 //Buffer struct
@@ -15,6 +16,7 @@ type Buffer struct {
 	rowFreeze    int // true:1, false:0
 	colFreeze    int // true:1, false:0
 	selectedCell [][]int
+	mu           sync.RWMutex // mutex for concurrent access
 }
 
 func createNewBuffer() *Buffer {
@@ -34,6 +36,9 @@ func createNewBufferWithData(ss [][]string, strict bool) (*Buffer, error) {
 
 //add []string to buffer
 func (b *Buffer) contAppendSli(s []string, strict bool) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	
 	if b.rowLen == 0 {
 		b.colLen = len(s)
 		b.colType = make([]int, b.colLen+1)
@@ -48,15 +53,15 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 
 	b.cont = append(b.cont, s)
 	if b.colLen != len(s) {
-		b.resizeCol(len(s))
+		b.resizeColUnsafe(len(s))
 	}
 	b.rowLen++
 
 	return nil
 }
 
-//add empty columns to buffer
-func (b *Buffer) resizeCol(n int) {
+//add empty columns to buffer (unsafe - must be called with lock held)
+func (b *Buffer) resizeColUnsafe(n int) {
 	if n <= 0 {
 		return
 	}
@@ -71,6 +76,13 @@ func (b *Buffer) resizeCol(n int) {
 			b.cont[ii] = append(b.cont[ii], addedValue)
 		}
 	}
+}
+
+//add empty columns to buffer
+func (b *Buffer) resizeCol(n int) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.resizeColUnsafe(n)
 }
 
 // sort column by string format

@@ -32,6 +32,7 @@
 - Spreadsheet-like view for delimited text data
 - Support for gzip compressed file
 - Automatically identify separator
+- **Progressive loading for large files** - View data immediately as it loads, with responsive UI even for massive datasets
 
 ## To do
 
@@ -101,6 +102,7 @@ tv {File_Name} [flags]
                     2, Freeze first column
   --tr             (optional) Transpose data
   --strict         (optional) Check for missing data
+  --async          (optional) Load data asynchronously for progressive rendering (default: true)
   -h, --help       help for tv
   -v, --version    version for tv
 ```
@@ -110,6 +112,23 @@ tv also can recive data from pipe as an input
 ```=
 cat file.csv | tv
 ```
+
+#### Progressive Loading
+
+By default, tv uses asynchronous loading to display data as it's being read. This provides immediate feedback when viewing large files:
+
+```bash
+# Async loading (default) - UI appears immediately
+tv large_file.csv
+
+# Disable async loading if needed (original behavior)
+tv --async=false large_file.csv
+```
+
+The footer will show loading progress:
+- **For files**: Shows percentage: `Loading... 45.2%` → `Loading... 87.8%` → `Loaded N rows`
+- **For pipes**: Shows row count: `Loading... 5234 rows` → `Loaded N rows`
+- **Update frequency**: Table refreshes every 20ms (50 FPS) for ultra-smooth progressive rendering
 
 ### Sorting and Stats
 
