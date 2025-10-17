@@ -342,6 +342,123 @@ func drawUI(b *Buffer, trs bool) error {
 			return nil
 		}
 
+		// Column filter functionality (f key)
+		if event.Key() == tcell.KeyRune && event.Rune() == 'f' {
+			_, column := bufferTable.GetSelection()
+			
+			// Create filter form
+			var filterForm *tview.Form
+			filterForm = tview.NewForm()
+			filterForm.AddInputField("Filter column by value:", "", 40, nil, nil)
+			filterForm.AddButton("Filter", func() {
+				query := filterForm.GetFormItem(0).(*tview.InputField).GetText()
+				if query != "" {
+					drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
+					app.ForceDraw()
+					
+					// Apply filter
+					filteredBuffer := b.filterByColumn(column, query, false)
+					
+					// Update display with filtered data
+					if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
+						drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
+					} else {
+						// Replace current buffer with filtered buffer
+						originalBuffer = b // Save original buffer
+						b = filteredBuffer
+						isFiltered = true
+						filterColumn = column
+						filterQuery = query
+						
+						drawBuffer(b, bufferTable, args.Transpose)
+						bufferTable.Select(0, 0)
+						matchCount := b.rowLen - b.rowFreeze
+						drawFooterText(fileNameStr, 
+							fmt.Sprintf("Filtered: %d rows match (Ctrl+R to reset)", matchCount), 
+							cursorPosStr)
+					}
+				}
+				UI.HidePage("filterModal")
+				app.SetFocus(bufferTable)
+			})
+			filterForm.AddButton("Cancel", func() {
+				UI.HidePage("filterModal")
+				app.SetFocus(bufferTable)
+			})
+			filterForm.SetButtonsAlign(tview.AlignCenter)
+			filterForm.SetBorder(true)
+			filterForm.SetTitle(fmt.Sprintf(" Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
+			filterForm.SetTitleAlign(tview.AlignCenter)
+			
+			// Handle Escape and Enter keys on form
+			filterForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+				if event.Key() == tcell.KeyEscape {
+					UI.HidePage("filterModal")
+					app.SetFocus(bufferTable)
+					return nil
+				}
+				if event.Key() == tcell.KeyEnter {
+					query := filterForm.GetFormItem(0).(*tview.InputField).GetText()
+					if query != "" {
+						drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
+						app.ForceDraw()
+						
+						// Apply filter
+						filteredBuffer := b.filterByColumn(column, query, false)
+						
+						// Update display with filtered data
+						if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
+							drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
+						} else {
+							// Replace current buffer with filtered buffer
+							originalBuffer = b // Save original buffer
+							b = filteredBuffer
+							isFiltered = true
+							filterColumn = column
+							filterQuery = query
+							
+							drawBuffer(b, bufferTable, args.Transpose)
+							bufferTable.Select(0, 0)
+							matchCount := b.rowLen - b.rowFreeze
+							drawFooterText(fileNameStr, 
+								fmt.Sprintf("Filtered: %d rows match (Ctrl+R to reset)", matchCount), 
+								cursorPosStr)
+						}
+					}
+					UI.HidePage("filterModal")
+					app.SetFocus(bufferTable)
+					return nil
+				}
+				return event
+			})
+			
+			// Create centered modal overlay
+			filterModal := tview.NewFlex().
+				AddItem(nil, 0, 1, false).
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(nil, 0, 1, false).
+					AddItem(filterForm, 9, 1, true).
+					AddItem(nil, 0, 1, false), 70, 1, true).
+				AddItem(nil, 0, 1, false)
+			
+			UI.AddPage("filterModal", filterModal, true, true)
+			UI.ShowPage("filterModal")
+			app.SetFocus(filterForm)
+			return nil
+		}
+
+		// Reset filter (Ctrl+R)
+		if event.Key() == tcell.KeyCtrlR {
+			if isFiltered && originalBuffer != nil {
+				b = originalBuffer
+				isFiltered = false
+				drawBuffer(b, bufferTable, args.Transpose)
+				bufferTable.Select(0, 0)
+				drawFooterText(fileNameStr, "Filter cleared - showing all rows", cursorPosStr)
+			}
+			return nil
+		}
+
 		//sort by column, ascend
 		if event.Key() == tcell.KeyCtrlK {
 			_, column := bufferTable.GetSelection()

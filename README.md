@@ -35,6 +35,7 @@
 - **Progressive loading for large files** - View data immediately as it loads, with responsive UI even for massive datasets
 - **Text wrapping** - Wrap long text in columns for better readability (Ctrl+W)
 - **Search functionality** - Search for text within cells and navigate through results
+- **Column filter** - Filter rows based on column values (Ctrl+F)
 
 ## To do
 
@@ -155,6 +156,8 @@ For tv, there are two data types for every column, **string**, and **number**, w
 | n                 | Next search result                                     |
 | N                 | Previous search result                                 |
 | Ctrl-/            | Clear search highlighting                              |
+| f                 | Filter rows by current column value                    |
+| Ctrl-r            | Reset/clear column filter                              |
 | Ctrl-m            | Change column data type to string or number            |
 | Ctrl-k            | Sort data by column(ascend)                            |
 | Ctrl-l            | Sort data by column(descend)                           |
@@ -193,6 +196,28 @@ Example workflow:
 3. All cells containing "error" are highlighted, cursor jumps to the first match
 4. Use `n` and `N` to navigate through all cells containing "error"
 5. Press `Ctrl+/` to clear the highlighting when done
+
+### Column Filter
+
+Filter table rows based on column values to focus on specific data:
+- **Press `f`**: Opens column filter dialog for the current column
+- **Type your filter text**: Filter is case-insensitive and matches partial text
+- **Press Enter**: Apply the filter - only rows where the column contains the filter text are displayed
+- **Press `Ctrl+R`**: Reset/clear the filter and show all rows again
+
+**Features:**
+- **Case-insensitive**: Filter matches are not case-sensitive
+- **Partial matching**: Shows rows where the column value contains your filter text
+- **Header preserved**: The header row is always visible, even when filtered
+- **Status indication**: Footer shows how many rows match the filter
+- **Easy reset**: Press `Ctrl+R` to return to the full dataset
+
+Example workflow:
+1. Navigate to a column you want to filter (e.g., a "Status" column)
+2. Press `f` to open the filter dialog
+3. Type "active" and press Enter
+4. Only rows where that column contains "active" are displayed
+5. Press `Ctrl+R` to show all rows again
 
 ## (Extra)Examples for common biological data
 

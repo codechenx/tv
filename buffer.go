@@ -214,3 +214,47 @@ func (b *Buffer) selectBySearch(s string) {
 		}
 	}
 }
+
+// filterByColumn filters rows based on column value containing the search string
+// Returns a new filtered buffer
+func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) *Buffer {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	filtered := createNewBuffer()
+	filtered.sep = b.sep
+	filtered.colLen = b.colLen
+	filtered.rowFreeze = b.rowFreeze
+	filtered.colFreeze = b.colFreeze
+	filtered.colType = make([]int, len(b.colType))
+	copy(filtered.colType, b.colType)
+
+	// Add header row if present
+	if b.rowFreeze > 0 {
+		filtered.cont = append(filtered.cont, b.cont[0])
+		filtered.rowLen = 1
+	}
+
+	// Filter data rows
+	startRow := b.rowFreeze
+	for i := startRow; i < b.rowLen; i++ {
+		if colIndex >= len(b.cont[i]) {
+			continue
+		}
+		
+		cellValue := b.cont[i][colIndex]
+		queryStr := query
+		
+		if !caseSensitive {
+			cellValue = toLowerSimple(cellValue)
+			queryStr = toLowerSimple(query)
+		}
+		
+		if containsStr(cellValue, queryStr) {
+			filtered.cont = append(filtered.cont, b.cont[i])
+			filtered.rowLen++
+		}
+	}
+
+	return filtered
+}

@@ -35,6 +35,10 @@ var currentSearchIndex int     // Current position in search results
 var searchQuery string         // Current search query
 var searchModal tview.Primitive // Search modal dialog
 var modal *tview.Modal          // Generic modal reference
+var originalBuffer *Buffer     // Store original buffer before filtering
+var isFiltered bool            // Track if filter is active
+var filterColumn int           // Column index being filtered
+var filterQuery string         // Filter query string
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -69,6 +73,10 @@ func initView() {
 	searchResults = []SearchResult{}
 	currentSearchIndex = -1
 	searchQuery = ""
+	originalBuffer = nil // Initialize filter variables
+	isFiltered = false
+	filterColumn = -1
+	filterQuery = ""
 }
 
 // stop UI
