@@ -1,4 +1,6 @@
-# tv(table viewer) for delimited text file(csv,tsv,etc) in terminal
+# tv - Table Viewer for Terminal
+
+**A fast, feature-rich CSV/TSV/delimited file viewer for the command line**
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
 ![test](https://github.com/codechenx/tv/workflows/test/badge.svg)
@@ -11,231 +13,424 @@
    <img src="data/icon-192x192.png" alt="tv icon"/>
 </p>
 
-## Introduction
+## Demo
 
 [![asciicast](https://asciinema.org/a/347295.svg)](https://asciinema.org/a/347295)
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Feature](#feature)
-- [To do](#to-do)
+- [Features](#features)
 - [Installation](#installation)
-  - [Prebuilt binaries](#prebuilt-binaries)
-  - [Build from source](#build-from-source)
-- [Usage](#usage)
-- [Key binding](#key-binding)
-- [(Extra)Examples for common biological data](#extraexamples-for-common-biological-data)
+  - [Quick Install (Linux/macOS)](#quick-install-linuxmacos)
+  - [Package Managers](#package-managers)
+  - [Build from Source](#build-from-source)
+- [Quick Start](#quick-start)
+- [Command Line Flags](#command-line-flags)
+- [Key Bindings](#key-bindings)
+- [Features in Detail](#features-in-detail)
+  - [Progressive Loading](#progressive-loading)
+  - [Data Types and Sorting](#data-types-and-sorting)
+  - [Search](#search)
+  - [Column Filter](#column-filter)
+  - [Text Wrapping](#text-wrapping)
+- [Advanced Examples](#advanced-examples)
+  - [Biological Data Formats](#biological-data-formats)
 
-## Feature
+## Features
 
-- Spreadsheet-like view for delimited text data
-- Support for gzip compressed file
-- Automatically identify separator
-- Search for text within cells and navigate through results
-- Filter rows based on column values
+tv brings spreadsheet-like functionality to your terminal with vim-inspired controls.
+
+- **Spreadsheet interface** - Navigate and view tabular data with frozen headers
+- **Smart parsing** - Automatically detects delimiters (CSV, TSV, custom separators)
+- **Progressive loading** - Start viewing large files immediately while they load
+- **Gzip support** - Read compressed files directly
+- **Powerful search** - Find text across all cells with highlighting
+- **Column filtering** - Show only rows matching specific criteria
+- **Flexible sorting** - Sort by any column with intelligent type detection
+- **Text wrapping** - Wrap long cell content for better readability
+- **Statistics** - View column stats (min/max, mean for numbers; frequency for strings)
+- **Vim keybindings** - Navigate naturally with h/j/k/l and more
+- **Pipe support** - Read from stdin for seamless integration with shell pipelines
 
 
 ## Installation
 
-### Prebuilt binaries
-
-#### Bash(Linux and macOS, best choice for non-root user)
+### Quick Install (Linux/macOS)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
 ```
 
-\* This command will download tv binary file to your current directory, you need to run `sudo cp tv /usr/local/bin/` or copy tv binary file to any directory which is in the environment variable **PATH**
+This downloads the `tv` binary to your current directory. To make it globally accessible:
 
-\* You also can download tv binaries manually, from [releases](https://github.com/codechenx/tv/releases)
+```bash
+sudo cp tv /usr/local/bin/
+```
 
-#### Snap(Linux)
+Alternatively, download binaries manually from [releases](https://github.com/codechenx/tv/releases).
+
+### Package Managers
+
+**Snap (Linux)**
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
-\*After installation, you need to run `sudo snap alias codechenx-tv tv`.This makes it possible to launch the application by `tv`
+```bash
+sudo snap install codechenx-tv
+sudo snap alias codechenx-tv tv
+```
 
-#### Debian package(Ubuntu, Debian, etc)
+**Debian/Ubuntu (.deb)**
 
-download from [releases](https://github.com/codechenx/tv/releases)
-
-#### RPM package(Centos, Fedora, etc)
-
-download from [releases](https://github.com/codechenx/tv/releases)
-
-### Build from source
-
-Use go get to install and update:
+Download from [releases](https://github.com/codechenx/tv/releases)
 
 ```bash
-go get -u github.com/codechenx/tv
+sudo dpkg -i tv_*.deb
 ```
 
-## Usage
+**CentOS/Fedora (.rpm)**
 
-### Usage
-
-tv {File_Name} [flags]
-
-### Flags
-
-```
-  --s string       (optional) Split symbol
-  --is strings     (optional) Ignore lines with specific prefix(multiple arguments support, separated by comma)
-  --in int         (optional) Ignore first N lines
-  --nl int         (optional) Only display first N lines
-  --dc ints        (optional) Only display specific columns(multiple arguments support, separated by comma)
-  --hc ints        (optional) Do not display specific columns(multiple arguments support, separated by comma)
-  --fi int         (optional) [default: 0]
-                   -1, Unfreeze first row and first column
-                    0, Freeze first row and first column
-                    1, Freeze first row
-                    2, Freeze first column
-  --tr             (optional) Transpose data
-  --strict         (optional) Check for missing data
-  --async          (optional) Load data asynchronously for progressive rendering (default: true)
-  -h, --help       help for tv
-  -v, --version    version for tv
-```
-
-tv also can recive data from pipe as an input
-
-```=
-cat file.csv | tv
-```
-
-#### Progressive Loading
-
-By default, tv uses asynchronous loading to display data as it's being read. This provides immediate feedback when viewing large files:
+Download from [releases](https://github.com/codechenx/tv/releases)
 
 ```bash
-# Async loading (default) - UI appears immediately
-tv large_file.csv
-
-# Disable async loading if needed (original behavior)
-tv --async=false large_file.csv
+sudo rpm -i tv_*.rpm
 ```
 
-The footer will show loading progress:
-- **For files**: Shows percentage: `Loading... 45.2%` → `Loading... 87.8%` → `Loaded N rows`
-- **For pipes**: Shows row count: `Loading... 5234 rows` → `Loaded N rows`
-- **Update frequency**: Table refreshes every 20ms (50 FPS) for ultra-smooth progressive rendering
+### Build from Source
 
-### Sorting and Stats
+Requires Go 1.16 or later:
 
-For tv, there are three data types for every column: **string**, **number**, and **date**, which affect the sorting function and the stats. The data type of the current column is shown on the right of the footer bar.
+```bash
+go install github.com/codechenx/tv@latest
+```
 
-**Automatic Type Detection**: When you load a file, tv automatically analyzes each column and detects whether it contains strings, numbers, or dates. The detection algorithm samples data intelligently and uses a 90% threshold to classify columns.
+Or clone and build:
 
-**Manual Type Changes**: You can change the data type of the current column by pressing **t**, which cycles through: String → Number → Date → String.
+```bash
+git clone https://github.com/codechenx/tv.git
+cd tv
+go build
+```
 
-**Column Type Behavior**:
-- **String columns**: Sorted alphabetically
-- **Number columns**: Sorted numerically (handles integers, floats, scientific notation, thousand separators)
-- **Date columns**: Sorted chronologically (supports multiple date formats including ISO-8601, US, EU formats, and more)
+## Quick Start
 
-**Performance Optimizations**: Sorting is optimized by pre-parsing all values once and caching them, which makes sorting large datasets significantly faster than repeatedly parsing during comparison.
+View a CSV file:
 
-**Statistics**: For number columns, tv shows min/max values, mean, etc. For string columns, tv counts the frequency of each unique value.
+```bash
+tv data.csv
+```
 
-## Key binding
+View a TSV file (tab-separated):
 
-All key bindings follow vim-like conventions for intuitive navigation and operation.
+```bash
+tv data.tsv
+```
 
-| Key               | description                                            |
-| ----------------- | ------------------------------------------------------ |
-| ?                 | Show help dialog (modal overlay)                       |
-| q                 | Quit                                                   |
-| Esc               | Close help/stats dialog, or clear search              |
-| h                 | Move left                                              |
-| l                 | Move right                                             |
-| j                 | Move down                                              |
-| k                 | Move up                                                |
-| w                 | Move to next column (word forward)                     |
-| b                 | Move to previous column (word backward)                |
-| gg                | Go to first row (press g twice)                        |
-| G                 | Go to last row                                         |
-| 0                 | Go to first column                                     |
-| $                 | Go to last column                                      |
-| Ctrl-d            | Page down (half page)                                  |
-| Ctrl-u            | Page up (half page)                                    |
-| /                 | Search for text (case-insensitive)                     |
-| n                 | Next search result                                     |
-| N                 | Previous search result                                 |
-| f                 | Filter rows by current column value                    |
-| r                 | Reset/clear column filter                              |
-| t                 | Toggle column data type (Str -> Num -> Date)          |
-| s                 | Sort data by column (ascending)                        |
-| S                 | Sort data by column (descending)                       |
-| W                 | Toggle text wrapping for current column                |
-| i                 | Show stats info for current column                     |
+Read from stdin:
 
-### Text Wrapping
+```bash
+cat data.csv | tv
+ps aux | tv
+```
 
-For columns with long text content, press **W** (capital W) to toggle text wrapping:
-- **First press**: Wraps text at 25 characters with smart word breaking
-- **Second press**: Unwraps to original single-line view
-- **Per-column**: Each column can be wrapped independently
-- **Smart wrapping**: Breaks at spaces/hyphens when possible
+Specify a custom delimiter:
 
-Example use case: Reading long descriptions or comments without horizontal scrolling.
+```bash
+tv data.txt -s "|"
+```
+
+View only specific columns:
+
+```bash
+tv data.csv --columns 1,3,5
+```
+
+Skip header lines (e.g., for VCF files):
+
+```bash
+tv file.vcf --skip-prefix "##"
+```
+
+## Command Line Flags
+
+## Command Line Flags
+
+**Syntax:** `tv [FILE] [flags]`
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--separator` | `-s` | Delimiter character (use `\t` for tab) |
+| `--lines` | `-n` | Display only first N lines |
+| `--skip-prefix` | | Skip lines starting with prefix (comma-separated) |
+| `--skip-lines` | | Skip first N lines |
+| `--columns` | | Show only specified columns (comma-separated) |
+| `--hide-columns` | | Hide specified columns (comma-separated) |
+| `--freeze` | `-f` | Freeze mode: `-1`=none, `0`=row+col, `1`=row only, `2`=col only |
+| `--transpose` | `-t` | Transpose rows and columns |
+| `--strict` | | Strict mode: fail on missing/inconsistent data |
+| `--async` | | Progressive rendering while loading (default: `true`) |
+| `--help` | `-h` | Show help |
+| `--version` | `-v` | Show version |
+
+**Examples:**
+
+```bash
+# Use custom delimiter
+tv data.txt -s ","
+
+# View only columns 1, 3, and 5
+tv data.csv --columns 1,3,5
+
+# Skip lines starting with "#"
+tv data.txt --skip-prefix "#"
+
+# Disable header freezing
+tv data.csv -f -1
+
+# Transpose data (swap rows and columns)
+tv data.csv -t
+
+# Disable async loading for slow systems
+tv large.csv --async=false
+```
+
+## Key Bindings
+
+tv uses vim-inspired keybindings for intuitive navigation.
+
+### Navigation
+
+| Key | Action |
+|-----|--------|
+| `h` / `←` | Move left |
+| `l` / `→` | Move right |
+| `j` / `↓` | Move down |
+| `k` / `↑` | Move up |
+| `w` | Jump to next column |
+| `b` | Jump to previous column |
+| `gg` | Go to first row |
+| `G` | Go to last row |
+| `0` | Go to first column |
+| `$` | Go to last column |
+| `Ctrl-d` | Page down (half page) |
+| `Ctrl-u` | Page up (half page) |
+
+### Operations
+
+| Key | Action |
+|-----|--------|
+| `/` | Search |
+| `n` | Next search result |
+| `N` | Previous search result |
+| `Ctrl-/` | Clear search |
+| `f` | Filter by column value |
+| `r` | Reset/clear filter |
+| `s` | Sort ascending |
+| `S` | Sort descending |
+| `t` | Toggle column type (String → Number → Date) |
+| `W` | Toggle text wrapping |
+| `i` | Show column statistics |
+| `?` | Show help |
+| `Esc` | Close dialogs / clear search |
+| `q` | Quit |
+
+## Features in Detail
+
+### Progressive Loading
+
+### Progressive Loading
+
+Start viewing large files instantly without waiting for them to fully load. The UI appears immediately and updates as data streams in.
+
+```bash
+# Default behavior - UI appears instantly
+tv huge_dataset.csv
+
+# Disable if you prefer traditional loading
+tv huge_dataset.csv --async=false
+```
+
+**Progress indicators:**
+- Files show percentage: `Loading... 45.2%` → `Loaded 1,000,000 rows`
+- Pipes show row count: `Loading... 5,234 rows` → `Loaded 10,000 rows`
+- Updates at 50 FPS for smooth rendering
+
+### Data Types and Sorting
+
+tv automatically detects column types and provides intelligent sorting.
+
+**Type Detection:** When loading data, tv analyzes each column to determine if it contains strings, numbers, or dates using a 90% confidence threshold.
+
+**Manual Type Toggle:** Press `t` to cycle through types for the current column:
+- String → Number → Date → String
+
+**Sorting Behavior:**
+- **Strings:** Alphabetical order
+- **Numbers:** Numeric order (supports integers, floats, scientific notation, thousands separators)
+- **Dates:** Chronological order (supports ISO-8601, US format, EU format, and more)
+
+**View Statistics:** Press `i` to open a comprehensive statistics dialog showing:
+- **For numeric columns:** count, min, max, range, sum, mean, median, mode, standard deviation, variance, quartiles (Q1, Q2, Q3), and IQR
+- **For string columns:** total values, unique values, frequency distribution with percentages for each value
 
 ### Search
 
-Search for text within the table and navigate through results with highlighting:
-- **Press `/`**: Opens search input dialog
-- **Type your query**: Search is case-insensitive by default
-- **Press Enter**: Executes the search and shows the number of matches
-- **Press `n`**: Jump to next search result
-- **Press `N`**: Jump to previous search result (capital N)
-- **Press `Ctrl+/`**: Clear search highlighting
+### Search
 
-**Highlighting:**
-- **Current match**: Highlighted with bright cyan background
-- **Other matches**: Highlighted with gray background
-- The footer shows your current position in the search results (e.g., "Match 1/5")
+Find text anywhere in your table with full highlighting support.
 
-Example workflow:
-1. Press `/` to open search
-2. Type "error" and press Enter
-3. All cells containing "error" are highlighted, cursor jumps to the first match
-4. Use `n` and `N` to navigate through all cells containing "error"
-5. Press `Ctrl+/` to clear the highlighting when done
+**How to search:**
+
+1. Press `/` to open the search dialog
+2. Type your search term (case-insensitive)
+3. Press Enter to execute
+4. Navigate results with `n` (next) and `N` (previous)
+5. Press `Ctrl-/` to clear highlighting
+
+**Visual feedback:**
+- Current match: bright cyan highlight
+- Other matches: gray highlight
+- Footer shows position: `Match 3/12`
+
+**Example:**
+```
+/ → type "error" → Enter → n → n → N → Ctrl-/
+```
 
 ### Column Filter
 
-Filter table rows based on column values to focus on specific data:
-- **Press `f`**: Opens column filter dialog for the current column
-- **Type your filter text**: Filter is case-insensitive and matches partial text
-- **Press Enter**: Apply the filter - only rows where the column contains the filter text are displayed
-- **Press `r`**: Reset/clear the filter and show all rows again
+Show only rows where a specific column matches your criteria.
+
+**How to filter:**
+
+1. Navigate to the column you want to filter
+2. Press `f` to open the filter dialog
+3. Type filter text (case-insensitive, partial match)
+4. Press Enter to apply
+5. Press `r` to reset and show all rows
 
 **Features:**
-- **Case-insensitive**: Filter matches are not case-sensitive
-- **Partial matching**: Shows rows where the column value contains your filter text
-- **Header preserved**: The header row is always visible, even when filtered
-- **Status indication**: Footer shows how many rows match the filter
-- **Easy reset**: Press `r` to return to the full dataset
+- Partial matching: "act" matches "active", "action", "react"
+- Header always visible
+- Footer shows filtered row count
 
-Example workflow:
-1. Navigate to a column you want to filter (e.g., a "Status" column)
-2. Press `f` to open the filter dialog
-3. Type "active" and press Enter
-4. Only rows where that column contains "active" are displayed
-5. Press `r` to show all rows again
-
-## (Extra)Examples for common biological data
-
-```bash
-#vcf or compressed vcf format
-tv file.vcf --is "##"
-tv file.vcf.gz --is "##"
-#qiime otu table
-tv file.txt --is "# "
-#maf format
-tv file.maf --is "#"
-#interval list
-tv file.interval_list --is "@HD","@SQ"
-tv file.interval_list --is "@"
+**Example:**
 ```
+Navigate to "Status" column → f → type "pending" → Enter
+```
+
+Now only rows where Status contains "pending" are displayed.
+
+### Text Wrapping
+
+Handle long cell content without horizontal scrolling.
+
+**How to wrap:**
+- Press `W` (capital W) on any column to toggle wrapping
+- First press: wraps at 25 characters with smart word breaks
+- Second press: unwraps back to single line
+
+**Smart wrapping:**
+- Breaks at spaces and hyphens when possible
+- Each column can be wrapped independently
+- Useful for comments, descriptions, URLs
+
+## Advanced Examples
+
+### Biological Data Formats
+
+tv handles common bioinformatics file formats with comment/header prefixes.
+
+**VCF files:**
+```bash
+# Skip VCF metadata lines
+tv sample.vcf --skip-prefix "##"
+tv sample.vcf.gz --skip-prefix "##"
+```
+
+**QIIME OTU tables:**
+```bash
+tv otu_table.txt --skip-prefix "# "
+```
+
+**MAF (Mutation Annotation Format):**
+```bash
+tv mutations.maf --skip-prefix "#"
+```
+
+**Interval lists:**
+```bash
+# Skip SAM header lines
+tv intervals.interval_list --skip-prefix "@HD","@SQ"
+
+# Or skip all @ lines
+tv intervals.interval_list --skip-prefix "@"
+```
+
+**BED files with headers:**
+```bash
+tv peaks.bed --skip-prefix "track","browser"
+```
+
+### General Examples
+
+**Large log files:**
+```bash
+# View first 1000 lines only
+tv app.log -n 1000
+
+# Skip timestamp lines
+tv app.log --skip-prefix "2024"
+```
+
+**CSV with specific columns:**
+```bash
+# Show only columns 1, 3, and 5
+tv data.csv --columns 1,3,5
+
+# Hide sensitive columns 2 and 4
+tv data.csv --hide-columns 2,4
+```
+
+**Pipeline integration:**
+```bash
+# View process list
+ps aux | tv
+
+# View git log as table
+git log --pretty=format:"%h,%an,%ar,%s" | tv -s ","
+
+# Parse JSON with jq, view as table
+cat data.json | jq -r '.[] | [.id, .name, .value] | @csv' | tv
+```
+
+**Custom delimiters:**
+```bash
+# Pipe-separated
+tv data.txt -s "|"
+
+# Semicolon-separated
+tv data.txt -s ";"
+
+# Multiple spaces
+tv data.txt -s "  "
+```
+
+---
+
+## Tips and Tricks
+
+- **Large files?** Let async loading work its magic - the UI appears instantly
+- **Can't find data?** Use `/` to search across all cells
+- **Too many columns?** Use `--columns` to show only what you need
+- **Long text?** Press `W` to wrap the current column
+- **Wrong sort order?** Press `t` to change the column type, then `s` to re-sort
+- **Need stats?** Press `i` for comprehensive statistics including mean, median, quartiles, std dev, and frequency distributions
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/codechenx/tv).
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.

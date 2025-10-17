@@ -133,65 +133,10 @@ func drawUI(b *Buffer, trs bool) error {
 			AddText(cstr, false, tview.AlignCenter, tcell.ColorDarkOrange).
 			AddText(rstr, false, tview.AlignRight, tcell.ColorDarkOrange)
 	}
-	//statsTable init
-	statsTable := tview.NewTable()
-	statsTable.SetSelectable(true, true)
-	statsTable.SetBorders(false)
-	statsTable.Select(0, 0)
-
-	// stats page init
-	statsPage := tview.NewFrame(statsTable).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText("Basic Stats", true, tview.AlignCenter, tcell.ColorDarkOrange)
 	
 	//UI init - add pages to UI container
 	UI = tview.NewPages()
-	UI.AddPage("stats", statsPage, true, false)
 	UI.AddPage("main", mainPage, true, true)
-
-	//statsPage HotKey Event
-	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-
-		// Escape or q - back to main page
-		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == 'q') {
-			UI.SwitchToPage("main")
-			app.SetFocus(bufferTable)
-			return nil
-		}
-
-		// gg - go to top
-		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
-			if lastKeyWasG {
-				_, column := statsTable.GetSelection()
-				statsTable.Select(0, column)
-				statsTable.ScrollToBeginning()
-				lastKeyWasG = false
-				return nil
-			}
-			lastKeyWasG = true
-			go func() {
-				time.Sleep(500 * time.Millisecond)
-				lastKeyWasG = false
-			}()
-			return nil
-		}
-
-		// G - go to bottom
-		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
-			_, column := statsTable.GetSelection()
-			statsTable.Select(statsTable.GetRowCount()-1, column)
-			statsTable.ScrollToEnd()
-			return nil
-		}
-		
-		return event
-	})
-
-	statsTable.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEscape {
-			app.Stop()
-		}
-	})
 
 	//bufferTable Event
 	//bufferTable update cursor position
@@ -616,24 +561,31 @@ func drawUI(b *Buffer, trs bool) error {
 		// i - show stats info for current column
 		if event.Key() == tcell.KeyRune && event.Rune() == 'i' {
 			_, column := bufferTable.GetSelection()
-			drawFooterText(fileNameStr, "Calculating", cursorPosStr)
+			drawFooterText(fileNameStr, "Calculating statistics...", cursorPosStr)
+			app.ForceDraw()
+			
 			var statsS statsSummary
 			summaryArray := b.getCol(column)
-			if I2B(b.colFreeze) {
+			columnName := "Column " + I2S(column)
+			
+			// Get column name from header if available
+			if b.rowFreeze > 0 && len(b.cont) > 0 && column < len(b.cont[0]) {
+				columnName = b.cont[0][column]
 				summaryArray = summaryArray[1:]
 			}
+			
+			// Determine statistics type
 			if b.getColType(column) == colTypeFloat {
 				statsS = &ContinuousStats{}
 			} else {
 				statsS = &DiscreteStats{}
 			}
 			statsS.summary(summaryArray)
-			statsTable.Select(0, 0)
-			app.SetFocus(statsTable)
-			statsTable.ScrollToBeginning()
-			drawStats(statsS, statsTable)
-			UI.SwitchToPage("stats")
+			
+			// Show statistics as a modal dialog
+			showStatsDialog(statsS, columnName, b.getColType(column))
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
+			return nil
 		}
 
 		// t - toggle/change column data type (t for type)
@@ -789,3 +741,112 @@ func showHelpDialog() {
 	UI.AddPage("helpDialog", helpModal, true, true)
 	app.SetFocus(helpText)
 }
+
+// showStatsDialog displays column statistics as a centered modal dialog
+func showStatsDialog(statsS statsSummary, columnName string, colType int) {
+	// Create stats table
+	statsTable := tview.NewTable()
+	statsTable.SetSelectable(true, true)
+	statsTable.SetBorders(false)
+	statsTable.Select(0, 0)
+	
+	// Draw statistics
+	drawStats(statsS, statsTable)
+	
+	// Create border with title
+	statsTable.SetBorder(true)
+	statsTable.SetBorderColor(tcell.ColorDarkOrange)
+	
+	typeName := type2name(colType)
+	title := fmt.Sprintf(" Statistics: %s [%s] - Press q or Esc to close ", columnName, typeName)
+	statsTable.SetTitle(title)
+	statsTable.SetTitleAlign(tview.AlignCenter)
+	
+	// Handle key events
+	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Escape or q - close dialog
+		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == 'q') {
+			UI.RemovePage("statsDialog")
+			app.SetFocus(bufferTable)
+			return nil
+		}
+		
+		// gg - go to top
+		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
+			if lastKeyWasG {
+				_, column := statsTable.GetSelection()
+				statsTable.Select(0, column)
+				statsTable.ScrollToBeginning()
+				lastKeyWasG = false
+				return nil
+			}
+			lastKeyWasG = true
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				lastKeyWasG = false
+			}()
+			return nil
+		}
+
+		// G - go to bottom
+		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
+			_, column := statsTable.GetSelection()
+			statsTable.Select(statsTable.GetRowCount()-1, column)
+			statsTable.ScrollToEnd()
+			return nil
+		}
+		
+		// j/k navigation
+		if event.Key() == tcell.KeyRune && event.Rune() == 'j' {
+			row, col := statsTable.GetSelection()
+			if row < statsTable.GetRowCount()-1 {
+				statsTable.Select(row+1, col)
+			}
+			return nil
+		}
+		if event.Key() == tcell.KeyRune && event.Rune() == 'k' {
+			row, col := statsTable.GetSelection()
+			if row > 0 {
+				statsTable.Select(row-1, col)
+			}
+			return nil
+		}
+		
+		// Ctrl-d/u for page scrolling
+		if event.Key() == tcell.KeyCtrlD {
+			row, col := statsTable.GetSelection()
+			newRow := row + 10
+			if newRow >= statsTable.GetRowCount() {
+				newRow = statsTable.GetRowCount() - 1
+			}
+			statsTable.Select(newRow, col)
+			return nil
+		}
+		if event.Key() == tcell.KeyCtrlU {
+			row, col := statsTable.GetSelection()
+			newRow := row - 10
+			if newRow < 0 {
+				newRow = 0
+			}
+			statsTable.Select(newRow, col)
+			return nil
+		}
+		
+		return event
+	})
+	
+	// Create a centered modal with the stats table
+	// Modal dimensions: 60% width, 70% height
+	statsModal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(statsTable, 0, 70, true).
+			AddItem(nil, 0, 1, false), 0, 60, true).
+		AddItem(nil, 0, 1, false)
+
+	// Add and show the stats dialog
+	UI.AddPage("statsDialog", statsModal, true, true)
+	app.SetFocus(statsTable)
+}
+

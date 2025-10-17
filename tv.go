@@ -296,16 +296,16 @@ func main() {
 		},
 	}
 
-	RootCmd.Flags().StringVar(&args.Sep, "s", "", "(optional) Split symbol")
-	RootCmd.Flags().IntVar(&args.NLine, "nl", 0, "(optional) Only display first N lines")
-	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "is", []string{}, "(optional) Ignore lines with specific prefix (multiple arguments support, separated by comma)")
-	RootCmd.Flags().IntVar(&args.SkipNum, "in", 0, "(optional) Ignore first N rows")
-	RootCmd.Flags().IntSliceVar(&args.ShowNum, "dc", []int{}, "(optional) Only display certain columns (multiple arguments support, separated by comma)")
-	RootCmd.Flags().IntSliceVar(&args.HideNum, "hc", []int{}, "(optional) Do not display certain columns (multiple arguments support, separated by comma)")
-	RootCmd.Flags().IntVar(&args.Header, "fi", 0, "(optional) [default: 0]\n-1, Unfreeze first row and first column\n 0, Freeze first row and first column\n 1, Freeze first row\n 2, Freeze first column")
-	RootCmd.Flags().BoolVar(&args.Transpose, "tr", false, "(optional) Transpose data")
-	RootCmd.Flags().BoolVar(&args.Strict, "strict", false, "(optional) Check for missing data")
-	RootCmd.Flags().BoolVar(&args.AsyncLoad, "async", true, "(optional) Load data asynchronously for progressive rendering (default: true)")
+	RootCmd.Flags().StringVarP(&args.Sep, "separator", "s", "", "Delimiter/separator character (use \\t for tab)")
+	RootCmd.Flags().IntVarP(&args.NLine, "lines", "n", 0, "Display only first N lines")
+	RootCmd.Flags().StringSliceVar(&args.SkipSymbol, "skip-prefix", []string{}, "Skip lines starting with prefix (comma-separated)")
+	RootCmd.Flags().IntVar(&args.SkipNum, "skip-lines", 0, "Skip first N lines")
+	RootCmd.Flags().IntSliceVar(&args.ShowNum, "columns", []int{}, "Show only specified columns (comma-separated)")
+	RootCmd.Flags().IntSliceVar(&args.HideNum, "hide-columns", []int{}, "Hide specified columns (comma-separated)")
+	RootCmd.Flags().IntVarP(&args.Header, "freeze", "f", 0, "Freeze mode: -1=none, 0=row+col, 1=row only, 2=col only")
+	RootCmd.Flags().BoolVarP(&args.Transpose, "transpose", "t", false, "Transpose rows and columns")
+	RootCmd.Flags().BoolVar(&args.Strict, "strict", false, "Strict mode: fail on missing/inconsistent data")
+	RootCmd.Flags().BoolVar(&args.AsyncLoad, "async", true, "Progressive rendering while loading")
 	RootCmd.Flags().SortFlags = false
 	err := RootCmd.Execute()
 	fatalError(err)
