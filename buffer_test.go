@@ -20,6 +20,7 @@ func Test_createNewBuffer(t *testing.T) {
 			buf := createNewBuffer()
 			if buf == nil {
 				t.Error("createNewBuffer() returned nil")
+				return
 			}
 			if buf.rowLen != 0 || buf.colLen != 0 {
 				t.Error("New buffer should be empty")

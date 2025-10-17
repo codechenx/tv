@@ -280,8 +280,7 @@ func drawUI(b *Buffer, trs bool) error {
 		// / - search functionality
 		if event.Key() == tcell.KeyRune && event.Rune() == '/' {
 			// Create search form
-			var form *tview.Form
-			form = tview.NewForm()
+			form := tview.NewForm()
 			form.AddInputField("Search:", "", 40, nil, nil)
 			form.AddButton("Search", func() {
 				query := form.GetFormItem(0).(*tview.InputField).GetText()
@@ -410,8 +409,7 @@ func drawUI(b *Buffer, trs bool) error {
 			_, column := bufferTable.GetSelection()
 
 			// Create filter form
-			var filterForm *tview.Form
-			filterForm = tview.NewForm()
+			filterForm := tview.NewForm()
 			filterForm.AddInputField("Filter column by value:", "", 40, nil, nil)
 			filterForm.AddButton("Filter", func() {
 				query := filterForm.GetFormItem(0).(*tview.InputField).GetText()
@@ -430,8 +428,6 @@ func drawUI(b *Buffer, trs bool) error {
 						originalBuffer = b // Save original buffer
 						b = filteredBuffer
 						isFiltered = true
-						filterColumn = column
-						filterQuery = query
 
 						drawBuffer(b, bufferTable, args.Transpose)
 						bufferTable.Select(0, 0)
@@ -477,8 +473,6 @@ func drawUI(b *Buffer, trs bool) error {
 							originalBuffer = b // Save original buffer
 							b = filteredBuffer
 							isFiltered = true
-							filterColumn = column
-							filterQuery = query
 
 							drawBuffer(b, bufferTable, args.Transpose)
 							bufferTable.Select(0, 0)

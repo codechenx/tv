@@ -450,40 +450,6 @@ tv data.txt -s "  "
 - **Wrong sort order?** Press `t` to change the column type, then `s` to re-sort
 - **Need stats?** Press `i` for comprehensive statistics including mean, median, quartiles, std dev, and frequency distributions
 
-## Contributing
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-### Quick Development Setup
-
-```bash
-# Clone and build
-git clone https://github.com/codechenx/tv.git
-cd tv
-make build
-
-# Run tests
-make test
-
-# Install locally
-make install
-```
-
-For maintainers publishing releases:
-
-```bash
-# Tag a new version
-git tag -a v1.2.3 -m "Release v1.2.3"
-git push origin v1.2.3
-
-# GitHub Actions will automatically build and publish to:
-# - GitHub Releases (binaries for all platforms)
-# - Homebrew
-# - Snap Store
-# - Scoop (Windows)
-# - Package managers (.deb, .rpm, .apk)
-```
-
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.

@@ -1,14 +1,11 @@
 package main
 
 import (
-	"errors"
 	"strings"
 	"unicode"
 )
 
 type sepDetecor struct {
-	char []rune
-	freq map[rune][]int
 }
 
 // Fast separator detection algorithm with improved heuristics
@@ -200,27 +197,6 @@ func (sd *sepDetecor) scoreSeparator(sep rune, count int) int {
 	}
 
 	return score
-}
-
-// Legacy method for backward compatibility (now just a wrapper)
-func (sd *sepDetecor) calFreq(s []string) {
-	if len(s) < 1 {
-		fatalError(errors.New("tv can't identify separator, you need to set it manual"))
-	}
-	if sd.freq == nil {
-		sd.freq = map[rune][]int{}
-	}
-
-	// Simplified calculation for backward compatibility
-	charArray := []rune(s[0])
-	sd.char = uniqueChar(charArray[:len(charArray)-1])
-	for _, char := range sd.char {
-		var charFreq []int
-		for _, line := range s {
-			charFreq = append(charFreq, countRuneFast(line, char))
-		}
-		sd.freq[char] = charFreq
-	}
 }
 
 // remove duplication item in []rune
