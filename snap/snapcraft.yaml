@@ -14,10 +14,6 @@ parts:
     build-snaps: [go/latest/stable]
     source: https://github.com/codechenx/tv.git
     source-type: git
-    override-pull: |
-      snapcraftctl pull
-      snapcraftctl set-version \
-      "$(git describe --long --tags --always --match=v*.*.* | sed 's/v//')"
 
 apps:
   codechenx-tv:
