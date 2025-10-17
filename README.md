@@ -154,31 +154,35 @@ For tv, there are three data types for every column: **string**, **number**, and
 
 ## Key binding
 
+All key bindings follow vim-like conventions for intuitive navigation and operation.
+
 | Key               | description                                            |
 | ----------------- | ------------------------------------------------------ |
-| ?                 | Help page                                              |
-| h, left arrow     | Move left                                              |
-| l, right arrow    | Move right                                             |
-| j, down arrow     | Move down                                              |
-| k, up             | Move up                                                |
-| g, home           | Move to first cell of table                            |
-| G, end            | Move to last cell of table                             |
-| Ctrl-f, page down | Move down by one page                                  |
-| Ctrl-b, page up   | Move up by one page                                    |
-| Ctrl-e            | Move to end of current column                          |
-| Ctrl-h            | Move to head of current column                         |
+| ?                 | Show help dialog (modal overlay)                       |
+| q                 | Quit                                                   |
+| Esc               | Close help/stats dialog, or clear search              |
+| h                 | Move left                                              |
+| l                 | Move right                                             |
+| j                 | Move down                                              |
+| k                 | Move up                                                |
+| w                 | Move to next column (word forward)                     |
+| b                 | Move to previous column (word backward)                |
+| gg                | Go to first row (press g twice)                        |
+| G                 | Go to last row                                         |
+| 0                 | Go to first column                                     |
+| $                 | Go to last column                                      |
+| Ctrl-d            | Page down (half page)                                  |
+| Ctrl-u            | Page up (half page)                                    |
 | /                 | Search for text (case-insensitive)                     |
 | n                 | Next search result                                     |
 | N                 | Previous search result                                 |
-| Ctrl-/            | Clear search highlighting                              |
-| Ctrl-f            | Filter rows by current column value                    |
-| Ctrl-r            | Reset/clear column filter                              |
-| Ctrl-m            | Change column data type (cycle: Str -> Num -> Date)   |
-| Ctrl-k            | Sort data by column(ascend)                            |
-| Ctrl-l            | Sort data by column(descend)                           |
-| Ctrl-w            | Toggle text wrapping for current column                |
-| Ctrl-y            | Show basic stats of current column, back to data table |
-| Ctrl-c            | Quit                                                   |
+| f                 | Filter rows by current column value                    |
+| r                 | Reset/clear column filter                              |
+| t                 | Toggle column data type (Str -> Num -> Date)          |
+| s                 | Sort data by column (ascending)                        |
+| S                 | Sort data by column (descending)                       |
+| W                 | Toggle text wrapping for current column                |
+| i                 | Show stats info for current column                     |
 
 ### Text Wrapping
 

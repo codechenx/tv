@@ -56,53 +56,61 @@ func I2S(i int) string {
 
 func getHelpContent() string {
 	helpContent := `
-C == Ctrl
+Vim-like Key Bindings
+
+##Help Navigation##
+j/k                 Scroll help text
+gg/G                Jump to top/bottom
+Ctrl-d/u            Page down/up
+? or q or Esc       Close help dialog
 
 ##Quit##
-C-c                 Quit
+q                   Quit application
+Esc                 Close dialog or clear search
 
 ##Movement##
-Left-arrow          Move left
-Right-arrow         Move right
-Down-arrow          Move down
-UP-arrow            Move up
-
 h                   Move left
 l                   Move right
 j                   Move down
 k                   Move up
 
-C-F                 Move down by one page 
-C-B                 Move up by one page  
+w                   Move to next column (word forward)
+b                   Move to previous column (word backward)
 
-C-e                 Move to end of current column
-C-h                 Move to head of current column
+gg                  Go to first row (press g twice)
+G                   Go to last row
 
-G                   Move to last cell of table
-g                   Move to first cell of table
+0                   Go to first column
+$                   Go to last column
+
+Ctrl-d              Page down (half page)
+Ctrl-u              Page up (half page)
 
 ##Search##
 /                   Search for text
 n                   Next search result
 N                   Previous search result
-C-/                 Clear search highlighting
+Esc                 Clear search highlighting
 
 ##Filter##
 f                   Filter rows by current column value
-C-r                 Reset/clear column filter
+r                   Reset/clear column filter
 
 ##Data Type##
-C-m 				Change column data type (cycle: String -> Number -> Date -> String)
+t                   Toggle column data type (Str -> Num -> Date -> Str)
 
 ##Sort##
-C-k                 Sort data by column(ascend)
-C-l                 Sort data by column(descend)
+s                   Sort data by column (ascending)
+S                   Sort data by column (descending)
 
 ##Text Wrapping##
-C-w                 Toggle text wrapping for current column
+W                   Toggle text wrapping for current column
 
 ##Stats##
-C-y                 Show basic stats of current column, back to data table
+i                   Show stats info for current column
+
+##Help##
+?                   Show this help dialog
 `
 	return helpContent
 }

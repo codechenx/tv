@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -142,49 +143,48 @@ func drawUI(b *Buffer, trs bool) error {
 	statsPage := tview.NewFrame(statsTable).
 		SetBorders(0, 0, 0, 0, 0, 0).
 		AddText("Basic Stats", true, tview.AlignCenter, tcell.ColorDarkOrange)
-	//help page init
-	helpPage := tview.NewTextView().
-		SetDynamicColors(true).
-		SetRegions(true).
-		SetWordWrap(true).SetText(getHelpContent())
-	//UI init
+	
+	//UI init - add pages to UI container
 	UI = tview.NewPages()
-	UI.AddPage("help", helpPage, true, false)
 	UI.AddPage("stats", statsPage, true, false)
 	UI.AddPage("main", mainPage, true, true)
-
-	//helpPage HotKey Event
-	helpPage.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyRune && event.Rune() == '?' {
-			UI.SwitchToPage("main")
-		}
-		return event
-	})
 
 	//statsPage HotKey Event
 	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 
-		//back to main page
-		if event.Key() == tcell.KeyCtrlY {
+		// Escape or q - back to main page
+		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == 'q') {
 			UI.SwitchToPage("main")
 			app.SetFocus(bufferTable)
+			return nil
 		}
 
-		//go to head of current column
-		if event.Key() == tcell.KeyCtrlH {
-			_, column := statsTable.GetSelection()
-			statsTable.Select(0, column)
-			statsTable.ScrollToBeginning()
+		// gg - go to top
+		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
+			if lastKeyWasG {
+				_, column := statsTable.GetSelection()
+				statsTable.Select(0, column)
+				statsTable.ScrollToBeginning()
+				lastKeyWasG = false
+				return nil
+			}
+			lastKeyWasG = true
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				lastKeyWasG = false
+			}()
+			return nil
 		}
 
-		//go to end of current column
-		if event.Key() == tcell.KeyCtrlE {
+		// G - go to bottom
+		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
 			_, column := statsTable.GetSelection()
 			statsTable.Select(statsTable.GetRowCount()-1, column)
 			statsTable.ScrollToEnd()
+			return nil
 		}
+		
 		return event
-
 	})
 
 	statsTable.SetDoneFunc(func(key tcell.Key) {
@@ -210,11 +210,129 @@ func drawUI(b *Buffer, trs bool) error {
 		if event.Key() == tcell.KeyUp || event.Key() == tcell.KeyDown ||
 			event.Key() == tcell.KeyLeft || event.Key() == tcell.KeyRight ||
 			event.Key() == tcell.KeyHome || event.Key() == tcell.KeyEnd ||
-			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn {
+			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn ||
+			(event.Key() == tcell.KeyRune && (event.Rune() == 'h' || event.Rune() == 'j' || 
+			 event.Rune() == 'k' || event.Rune() == 'l')) {
 			userMovedCursor = true
 		}
 
-		//search functionality
+		// Vim-like navigation
+		// h - move left
+		if event.Key() == tcell.KeyRune && event.Rune() == 'h' {
+			row, col := bufferTable.GetSelection()
+			if col > 0 {
+				bufferTable.Select(row, col-1)
+			}
+			return nil
+		}
+
+		// l - move right
+		if event.Key() == tcell.KeyRune && event.Rune() == 'l' {
+			row, col := bufferTable.GetSelection()
+			if col < b.colLen-1 {
+				bufferTable.Select(row, col+1)
+			}
+			return nil
+		}
+
+		// j - move down
+		if event.Key() == tcell.KeyRune && event.Rune() == 'j' {
+			row, col := bufferTable.GetSelection()
+			if row < b.rowLen-1 {
+				bufferTable.Select(row+1, col)
+			}
+			return nil
+		}
+
+		// k - move up
+		if event.Key() == tcell.KeyRune && event.Rune() == 'k' {
+			row, col := bufferTable.GetSelection()
+			if row > 0 {
+				bufferTable.Select(row-1, col)
+			}
+			return nil
+		}
+
+		// gg - go to first row
+		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
+			if lastKeyWasG {
+				bufferTable.Select(0, 0)
+				bufferTable.ScrollToBeginning()
+				lastKeyWasG = false
+				return nil
+			}
+			lastKeyWasG = true
+			// Set a timer to reset lastKeyWasG after a short delay
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				lastKeyWasG = false
+			}()
+			return nil
+		}
+
+		// G - go to last row
+		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
+			_, col := bufferTable.GetSelection()
+			bufferTable.Select(b.rowLen-1, col)
+			bufferTable.ScrollToEnd()
+			return nil
+		}
+
+		// Ctrl+d - page down (half page)
+		if event.Key() == tcell.KeyCtrlD {
+			row, col := bufferTable.GetSelection()
+			newRow := row + 10 // Move 10 rows down
+			if newRow >= b.rowLen {
+				newRow = b.rowLen - 1
+			}
+			bufferTable.Select(newRow, col)
+			return nil
+		}
+
+		// Ctrl+u - page up (half page)
+		if event.Key() == tcell.KeyCtrlU {
+			row, col := bufferTable.GetSelection()
+			newRow := row - 10 // Move 10 rows up
+			if newRow < 0 {
+				newRow = 0
+			}
+			bufferTable.Select(newRow, col)
+			return nil
+		}
+
+		// 0 - go to first column
+		if event.Key() == tcell.KeyRune && event.Rune() == '0' {
+			row, _ := bufferTable.GetSelection()
+			bufferTable.Select(row, 0)
+			return nil
+		}
+
+		// $ - go to last column
+		if event.Key() == tcell.KeyRune && event.Rune() == '$' {
+			row, _ := bufferTable.GetSelection()
+			bufferTable.Select(row, b.colLen-1)
+			return nil
+		}
+
+		// w - move to next column (word forward)
+		if event.Key() == tcell.KeyRune && event.Rune() == 'w' {
+			row, col := bufferTable.GetSelection()
+			if col < b.colLen-1 {
+				bufferTable.Select(row, col+1)
+			}
+			return nil
+		}
+
+		// b - move to previous column (word backward)
+		if event.Key() == tcell.KeyRune && event.Rune() == 'b' {
+			row, col := bufferTable.GetSelection()
+			if col > 0 {
+				bufferTable.Select(row, col-1)
+			}
+			return nil
+		}
+
+		// / - search functionality
 		if event.Key() == tcell.KeyRune && event.Rune() == '/' {
 			// Create search form
 			var form *tview.Form
@@ -330,8 +448,8 @@ func drawUI(b *Buffer, trs bool) error {
 			return nil
 		}
 
-		// Clear search highlighting (Ctrl+/)
-		if event.Key() == tcell.KeyCtrlUnderscore { // Ctrl+/ is often mapped to Ctrl+_
+		// Escape - clear search highlighting
+		if event.Key() == tcell.KeyEscape {
 			if searchQuery != "" {
 				searchQuery = ""
 				searchResults = []SearchResult{}
@@ -342,7 +460,7 @@ func drawUI(b *Buffer, trs bool) error {
 			return nil
 		}
 
-		// Column filter functionality (f key)
+		// f - column filter functionality
 		if event.Key() == tcell.KeyRune && event.Rune() == 'f' {
 			_, column := bufferTable.GetSelection()
 			
@@ -447,8 +565,8 @@ func drawUI(b *Buffer, trs bool) error {
 			return nil
 		}
 
-		// Reset filter (Ctrl+R)
-		if event.Key() == tcell.KeyCtrlR {
+		// r - reset filter
+		if event.Key() == tcell.KeyRune && event.Rune() == 'r' {
 			if isFiltered && originalBuffer != nil {
 				b = originalBuffer
 				isFiltered = false
@@ -459,8 +577,8 @@ func drawUI(b *Buffer, trs bool) error {
 			return nil
 		}
 
-		//sort by column, ascend
-		if event.Key() == tcell.KeyCtrlK {
+		// s - sort by column, ascending (s for sort)
+		if event.Key() == tcell.KeyRune && event.Rune() == 's' {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
@@ -476,8 +594,9 @@ func drawUI(b *Buffer, trs bool) error {
 			drawBuffer(b, bufferTable, trs)
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
-		//sort by column, descend
-		if event.Key() == tcell.KeyCtrlL {
+		
+		// S - sort by column, descending (capital S for reverse sort)
+		if event.Key() == tcell.KeyRune && event.Rune() == 'S' {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Sorting...", cursorPosStr)
 			app.ForceDraw()
@@ -494,8 +613,8 @@ func drawUI(b *Buffer, trs bool) error {
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
-		//show current column's stats info
-		if event.Key() == tcell.KeyCtrlY {
+		// i - show stats info for current column
+		if event.Key() == tcell.KeyRune && event.Rune() == 'i' {
 			_, column := bufferTable.GetSelection()
 			drawFooterText(fileNameStr, "Calculating", cursorPosStr)
 			var statsS statsSummary
@@ -517,8 +636,8 @@ func drawUI(b *Buffer, trs bool) error {
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
-		//change column data type (cycle through Str -> Num -> Date -> Str)
-		if event.Key() == tcell.KeyCtrlM {
+		// t - toggle/change column data type (t for type)
+		if event.Key() == tcell.KeyRune && event.Rune() == 't' {
 			row, column := bufferTable.GetSelection()
 			currentType := b.getColType(column)
 			
@@ -540,8 +659,8 @@ func drawUI(b *Buffer, trs bool) error {
 			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 		}
 
-		//toggle text wrapping for current column
-		if event.Key() == tcell.KeyCtrlW {
+		// W - toggle text wrapping for current column (capital W for wrap)
+		if event.Key() == tcell.KeyRune && event.Rune() == 'W' {
 			_, column := bufferTable.GetSelection()
 
 			if _, isWrapped := wrappedColumns[column]; isWrapped {
@@ -556,32 +675,18 @@ func drawUI(b *Buffer, trs bool) error {
 			drawBuffer(b, bufferTable, args.Transpose)
 		}
 
-		//go to head of current column
-		if event.Key() == tcell.KeyCtrlH {
-			_, column := bufferTable.GetSelection()
-			bufferTable.Select(0, column)
-			bufferTable.ScrollToBeginning()
+		// q - quit application
+		if event.Key() == tcell.KeyRune && event.Rune() == 'q' {
+			app.Stop()
+			return nil
 		}
 
-		//go to end of current column
-		if event.Key() == tcell.KeyCtrlE {
-			_, column := bufferTable.GetSelection()
-			bufferTable.Select(b.rowLen-1, column)
-			bufferTable.ScrollToEnd()
-		}
-		//switch to help page
+		// ? - switch to help page
 		if event.Key() == tcell.KeyRune && event.Rune() == '?' {
-			UI.SwitchToPage("help")
+			showHelpDialog()
+			return nil
 		}
 
-		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
-			bufferTable.Select(b.rowLen-1, b.colLen-1)
-		}
-
-		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
-			bufferTable.Select(0, 0)
-			bufferTable.ScrollToBeginning()
-		}
 		app.ForceDraw()
 		return event
 	})
@@ -594,4 +699,93 @@ func drawUI(b *Buffer, trs bool) error {
 	})
 
 	return nil
+}
+
+// showHelpDialog displays the help content as a centered modal dialog
+func showHelpDialog() {
+	// Create help content text view
+	helpText := tview.NewTextView().
+		SetDynamicColors(true).
+		SetText(getHelpContent()).
+		SetTextAlign(tview.AlignLeft).
+		SetWordWrap(true)
+	
+	// Make help text scrollable
+	helpText.SetScrollable(true)
+	helpText.SetBorder(true)
+	helpText.SetTitle(" Help - Press ? or q or Esc to close ")
+	helpText.SetTitleAlign(tview.AlignCenter)
+	helpText.SetBorderColor(tcell.ColorDarkOrange)
+
+	// Handle key events to close dialog
+	helpText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape || 
+		   (event.Key() == tcell.KeyRune && (event.Rune() == '?' || event.Rune() == 'q')) {
+			UI.RemovePage("helpDialog")
+			app.SetFocus(bufferTable)
+			return nil
+		}
+		// Allow j/k navigation in help
+		if event.Key() == tcell.KeyRune && event.Rune() == 'j' {
+			row, col := helpText.GetScrollOffset()
+			helpText.ScrollTo(row+1, col)
+			return nil
+		}
+		if event.Key() == tcell.KeyRune && event.Rune() == 'k' {
+			row, col := helpText.GetScrollOffset()
+			if row > 0 {
+				helpText.ScrollTo(row-1, col)
+			}
+			return nil
+		}
+		// gg - go to top
+		if event.Key() == tcell.KeyRune && event.Rune() == 'g' {
+			if lastKeyWasG {
+				helpText.ScrollToBeginning()
+				lastKeyWasG = false
+				return nil
+			}
+			lastKeyWasG = true
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				lastKeyWasG = false
+			}()
+			return nil
+		}
+		// G - go to bottom
+		if event.Key() == tcell.KeyRune && event.Rune() == 'G' {
+			helpText.ScrollToEnd()
+			return nil
+		}
+		// Ctrl-d/u for page scrolling
+		if event.Key() == tcell.KeyCtrlD {
+			row, col := helpText.GetScrollOffset()
+			helpText.ScrollTo(row+10, col)
+			return nil
+		}
+		if event.Key() == tcell.KeyCtrlU {
+			row, col := helpText.GetScrollOffset()
+			if row > 10 {
+				helpText.ScrollTo(row-10, col)
+			} else {
+				helpText.ScrollTo(0, col)
+			}
+			return nil
+		}
+		return event
+	})
+
+	// Create a centered modal with the help text
+	// Modal dimensions: 80% width, 85% height
+	helpModal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(helpText, 0, 85, true).
+			AddItem(nil, 0, 1, false), 0, 80, true).
+		AddItem(nil, 0, 1, false)
+
+	// Add and show the help dialog
+	UI.AddPage("helpDialog", helpModal, true, true)
+	app.SetFocus(helpText)
 }

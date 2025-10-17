@@ -46,6 +46,7 @@ var originalBuffer *Buffer     // Store original buffer before filtering
 var isFiltered bool            // Track if filter is active
 var filterColumn int           // Column index being filtered
 var filterQuery string         // Filter query string
+var lastKeyWasG bool           // Track if last key pressed was 'g' for gg navigation
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -84,6 +85,7 @@ func initView() {
 	isFiltered = false
 	filterColumn = -1
 	filterQuery = ""
+	lastKeyWasG = false // Initialize vim navigation state
 }
 
 // stop UI
