@@ -1,0 +1,5 @@
+ID,Description,LongText,Status,Value
+1,"Product A","This is a very long description that should be wrapped when displayed in the table viewer to make it more readable for users",Active,100
+2,"Product B","Another lengthy text field that contains multiple words and should demonstrate the text wrapping functionality effectively",Pending,200
+3,"Product C","Short text",Active,150
+4,"Product D","Medium length description that may or may not wrap depending on column width settings",Inactive,75

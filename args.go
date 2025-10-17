@@ -1,6 +1,6 @@
 package main
 
-//Args struct
+// Args struct
 type Args struct {
 	FileName   string
 	Sep        string

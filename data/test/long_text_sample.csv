@@ -1,0 +1,4 @@
+ID,ShortText,LongText
+1,Short,"This is a very long text that contains multiple words and should be wrapped when displayed in the table viewer application"
+2,Brief,"Another long text with many characters that will test the text wrapping functionality at twenty-five character boundaries"
+3,Tiny,"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"

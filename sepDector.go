@@ -22,7 +22,7 @@ func (sd *sepDetecor) sepDetect(s []string) rune {
 	if len(s) < 1 {
 		return 0
 	}
-	
+
 	// Fast path: Check common separators first (99% of cases)
 	commonSeps := []rune{',', '\t', '|', ';'}
 	for _, sep := range commonSeps {
@@ -30,7 +30,7 @@ func (sd *sepDetecor) sepDetect(s []string) rune {
 			return sep
 		}
 	}
-	
+
 	// Fallback: Analyze all potential separators
 	return sd.detectBestSeparator(s)
 }
@@ -40,20 +40,20 @@ func (sd *sepDetecor) isValidSeparator(lines []string, sep rune) bool {
 	if len(lines) == 0 {
 		return false
 	}
-	
+
 	// Count separator occurrences in first line
 	firstCount := countRuneFast(lines[0], sep)
 	if firstCount == 0 {
 		return false // Separator not found
 	}
-	
+
 	// Verify all lines have same count
 	for i := 1; i < len(lines); i++ {
 		if countRuneFast(lines[i], sep) != firstCount {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -73,48 +73,48 @@ func (sd *sepDetecor) detectBestSeparator(lines []string) rune {
 	if len(lines) == 0 {
 		return 0
 	}
-	
+
 	// Build candidate list from first line
 	candidates := sd.getCandidates(lines[0])
 	if len(candidates) == 0 {
 		return 0
 	}
-	
+
 	// Score each candidate
 	type candidateScore struct {
 		sep   rune
 		score int
 		count int
 	}
-	
+
 	var scored []candidateScore
-	
+
 	for _, sep := range candidates {
 		counts := make([]int, len(lines))
 		allEqual := true
-		
+
 		// Count occurrences in each line
 		for i, line := range lines {
 			counts[i] = countRuneFast(line, sep)
 		}
-		
+
 		// Check if all counts are equal and non-zero
 		firstCount := counts[0]
 		if firstCount == 0 {
 			continue
 		}
-		
+
 		for i := 1; i < len(counts); i++ {
 			if counts[i] != firstCount {
 				allEqual = false
 				break
 			}
 		}
-		
+
 		if !allEqual {
 			continue
 		}
-		
+
 		// Calculate score based on separator quality
 		score := sd.scoreSeparator(sep, firstCount)
 		scored = append(scored, candidateScore{
@@ -123,19 +123,19 @@ func (sd *sepDetecor) detectBestSeparator(lines []string) rune {
 			count: firstCount,
 		})
 	}
-	
+
 	// Return separator with highest score
 	if len(scored) == 0 {
 		return 0
 	}
-	
+
 	best := scored[0]
 	for _, candidate := range scored[1:] {
 		if candidate.score > best.score {
 			best = candidate
 		}
 	}
-	
+
 	return best.sep
 }
 
@@ -144,7 +144,7 @@ func (sd *sepDetecor) getCandidates(line string) []rune {
 	// Use map for deduplication
 	seen := make(map[rune]bool)
 	var candidates []rune
-	
+
 	// Priority characters to check first
 	priority := []rune{',', '\t', '|', ';', ':', ' '}
 	for _, r := range priority {
@@ -153,7 +153,7 @@ func (sd *sepDetecor) getCandidates(line string) []rune {
 			candidates = append(candidates, r)
 		}
 	}
-	
+
 	// Check other non-alphanumeric characters
 	for _, r := range line {
 		if seen[r] || unicode.IsLetter(r) || unicode.IsDigit(r) {
@@ -166,14 +166,14 @@ func (sd *sepDetecor) getCandidates(line string) []rune {
 		seen[r] = true
 		candidates = append(candidates, r)
 	}
-	
+
 	return candidates
 }
 
 // Score separator quality (higher is better)
 func (sd *sepDetecor) scoreSeparator(sep rune, count int) int {
 	score := 0
-	
+
 	// Prefer common separators
 	switch sep {
 	case ',':
@@ -191,14 +191,14 @@ func (sd *sepDetecor) scoreSeparator(sep rune, count int) int {
 	default:
 		score += 500 // Moderate priority for other chars
 	}
-	
+
 	// Prefer separators with reasonable column counts (2-100)
 	if count >= 2 && count <= 100 {
 		score += count * 10
 	} else if count > 100 {
 		score -= 100 // Penalize too many columns
 	}
-	
+
 	return score
 }
 
@@ -210,7 +210,7 @@ func (sd *sepDetecor) calFreq(s []string) {
 	if sd.freq == nil {
 		sd.freq = map[rune][]int{}
 	}
-	
+
 	// Simplified calculation for backward compatibility
 	charArray := []rune(s[0])
 	sd.char = uniqueChar(charArray[:len(charArray)-1])
@@ -236,7 +236,7 @@ func uniqueChar(intSlice []rune) []rune {
 	return list
 }
 
-//check if all item in []int is equal, false for empty array
+// check if all item in []int is equal, false for empty array
 func allIntItemEqual(r []int) bool {
 	if len(r) == 0 {
 		return false

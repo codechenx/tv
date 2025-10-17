@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
-//print fatal error and force quite app
+// print fatal error and force quite app
 func fatalError(err error) {
 	if err != nil {
 		color.Set(color.FgRed)
@@ -23,24 +23,24 @@ func fatalError(err error) {
 	}
 }
 
-//print useful info and force quite app
+// print useful info and force quite app
 func usefulInfo(s string) {
 	color.Set(color.FgHiYellow)
 	fmt.Println(s)
 	color.Unset()
 }
 
-//I2B  covert int to bool, if i >0:true, else false
+// I2B  covert int to bool, if i >0:true, else false
 func I2B(i int) bool {
 	return i > 0
 }
 
-//F2S covert float64 to bool
+// F2S covert float64 to bool
 func F2S(i float64) string {
 	return strconv.FormatFloat(i, 'f', 4, 64)
 }
 
-//S2F covert string to float64
+// S2F covert string to float64
 func S2F(i string) float64 {
 	s, err := strconv.ParseFloat(i, 64)
 	if err != nil {
@@ -49,7 +49,7 @@ func S2F(i string) float64 {
 	return s
 }
 
-//I2S covert int to string
+// I2S covert int to string
 func I2S(i int) string {
 	return strconv.Itoa(i)
 }
@@ -103,14 +103,14 @@ func wrapText(text string, maxWidth int) string {
 	if maxWidth <= 0 || len(text) <= maxWidth {
 		return text
 	}
-	
+
 	var result []rune
 	runes := []rune(text)
 	lineStart := 0
-	
+
 	for i := 0; i < len(runes); i++ {
 		// Check if we've reached the wrap point
-		if i - lineStart >= maxWidth {
+		if i-lineStart >= maxWidth {
 			// Find last space before maxWidth for word wrap
 			wrapPoint := i
 			for j := i; j > lineStart; j-- {
@@ -119,31 +119,31 @@ func wrapText(text string, maxWidth int) string {
 					break
 				}
 			}
-			
+
 			// If no good wrap point found, hard wrap at maxWidth
 			if wrapPoint == i && i > lineStart {
 				wrapPoint = lineStart + maxWidth
 			}
-			
+
 			// Add the wrapped line
 			result = append(result, runes[lineStart:wrapPoint]...)
 			result = append(result, '\n')
-			
+
 			// Skip trailing spaces on new line
 			for wrapPoint < len(runes) && (runes[wrapPoint] == ' ' || runes[wrapPoint] == '\t') {
 				wrapPoint++
 			}
-			
+
 			lineStart = wrapPoint
 			i = wrapPoint - 1 // -1 because loop will increment
 		}
 	}
-	
+
 	// Add remaining text
 	if lineStart < len(runes) {
 		result = append(result, runes[lineStart:]...)
 	}
-	
+
 	return string(result)
 }
 
@@ -151,11 +151,11 @@ func wrapText(text string, maxWidth int) string {
 func getColumnMaxWidth(colIndex int) int {
 	// Default wrap width (25 characters)
 	defaultWidth := 25
-	
+
 	// Check if custom width is set
 	if width, exists := wrappedColumns[colIndex]; exists {
 		return width
 	}
-	
+
 	return defaultWidth
 }

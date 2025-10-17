@@ -1,0 +1,4 @@
+Name|Age|City|Salary
+John Doe|30|New York|75000
+Jane Smith|25|London|65000
+Bob Johnson|35|Toronto|80000

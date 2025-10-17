@@ -1,0 +1,9 @@
+ID|Name|Department|Salary|Years
+1|John Smith|Engineering|90000|5
+2|Jane Doe|Marketing|75000|3
+3|Bob Johnson|Sales|65000|7
+4|Alice Williams|Engineering|95000|4
+5|Charlie Brown|HR|60000|2
+6|Diana Prince|Marketing|80000|6
+7|Eve Adams|Engineering|88000|3
+8|Frank Castle|Sales|72000|8

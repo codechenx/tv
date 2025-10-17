@@ -5,11 +5,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-//column data type
+// column data type
 const colTypeStr = 0
 const colTypeFloat = 1
 
-//get column data type name. s: string, n: number
+// get column data type name. s: string, n: number
 func type2name(i int) string {
 	if i == 0 {
 		return "Str"
@@ -33,9 +33,9 @@ var wrappedColumns map[int]int // Track which columns are wrapped and their max 
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
-	TotalBytes   int64
-	LoadedBytes  int64
-	IsComplete   bool
+	TotalBytes  int64
+	LoadedBytes int64
+	IsComplete  bool
 }
 
 // GetPercentage returns the loading percentage (0-100)
@@ -57,7 +57,7 @@ func initView() {
 	wrappedColumns = make(map[int]int) // Initialize wrapped columns map
 }
 
-//stop UI
+// stop UI
 func stopView() {
 	app.Stop()
 }

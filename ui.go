@@ -8,11 +8,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-//add buffer data to buffer table
+// add buffer data to buffer table
 func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
-	
+
 	t.Clear()
 	if trs {
 		b.transpose()
@@ -25,15 +25,15 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 			if c < b.colFreeze || r < b.rowFreeze {
 				color = tcell.ColorYellow
 			}
-			
+
 			// Get cell content
 			cellText := b.cont[r][c]
-			
+
 			// Apply text wrapping if column is marked for wrapping
 			if maxWidth, isWrapped := wrappedColumns[c]; isWrapped {
 				cellText = wrapText(cellText, maxWidth)
 			}
-			
+
 			if r == 0 && args.Header != -1 && args.Header != 2 {
 				t.SetCell(r, c,
 					tview.NewTableCell(cellText).
@@ -53,7 +53,7 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 	}
 }
 
-//add stats data to stats table
+// add stats data to stats table
 func drawStats(s statsSummary, t *tview.Table) {
 	t.Clear()
 	summaryData := s.getSummaryData()
@@ -70,7 +70,7 @@ func drawStats(s statsSummary, t *tview.Table) {
 	}
 }
 
-//draw app UI
+// draw app UI
 func drawUI(b *Buffer, trs bool) error {
 
 	//bufferTable init
@@ -182,7 +182,7 @@ func drawUI(b *Buffer, trs bool) error {
 			event.Key() == tcell.KeyPgUp || event.Key() == tcell.KeyPgDn {
 			userMovedCursor = true
 		}
-		
+
 		//sort by column, ascend
 		if event.Key() == tcell.KeyCtrlK {
 			_, column := bufferTable.GetSelection()
@@ -251,7 +251,7 @@ func drawUI(b *Buffer, trs bool) error {
 		//toggle text wrapping for current column
 		if event.Key() == tcell.KeyCtrlW {
 			_, column := bufferTable.GetSelection()
-			
+
 			if _, isWrapped := wrappedColumns[column]; isWrapped {
 				// Unwrap: remove from wrapped columns
 				delete(wrappedColumns, column)
@@ -259,7 +259,7 @@ func drawUI(b *Buffer, trs bool) error {
 				// Wrap: add to wrapped columns with default width
 				wrappedColumns[column] = 25 // Default wrap width (25 characters)
 			}
-			
+
 			// Redraw the table with updated wrapping
 			drawBuffer(b, bufferTable, args.Transpose)
 		}

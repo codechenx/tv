@@ -1,0 +1,6 @@
+ID,Name,Description,Tags
+1,"John ""Big"" Doe","Contains ""quotes"" inside","tag1,tag2,tag3"
+2,"Jane Smith","Normal text here","single"
+3,"Bob, Jr.","Name has comma","complex,field"
+4,"Alice\nMultiline","Text with
+newline","special"

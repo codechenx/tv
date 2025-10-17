@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/gdamore/tcell v1.4.0
+	github.com/gdamore/tcell/v2 v2.9.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/rivo/tview v0.42.0
 	github.com/spf13/cobra v1.10.1
@@ -13,7 +13,6 @@ require (
 require (
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
-	github.com/gdamore/tcell/v2 v2.9.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

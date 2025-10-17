@@ -1,0 +1,11 @@
+Name,Age,City,Country,Salary,Department,Email,Phone,StartDate,Status
+John Doe,30,New York,USA,75000,Engineering,john@example.com,555-0001,2020-01-15,Active
+Jane Smith,25,London,UK,65000,Marketing,jane@example.com,555-0002,2021-03-20,Active
+Bob Johnson,35,Toronto,Canada,80000,Engineering,bob@example.com,555-0003,2019-07-10,Active
+Alice Brown,28,Sydney,Australia,70000,Sales,alice@example.com,555-0004,2022-02-01,Active
+Charlie Wilson,42,Berlin,Germany,90000,Management,charlie@example.com,555-0005,2018-05-15,Active
+Diana Martinez,31,Madrid,Spain,68000,Marketing,diana@example.com,555-0006,2020-11-30,Active
+Eva Garcia,27,Paris,France,72000,Engineering,eva@example.com,555-0007,2021-08-12,Active
+Frank Lee,38,Tokyo,Japan,85000,Engineering,frank@example.com,555-0008,2019-01-20,Active
+Grace Kim,29,Seoul,Korea,67000,Sales,grace@example.com,555-0009,2022-06-05,Active
+Henry Chen,45,Beijing,China,95000,Management,henry@example.com,555-0010,2017-09-25,Active

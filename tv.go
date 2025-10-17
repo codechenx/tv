@@ -25,10 +25,10 @@ func main() {
 			}
 			info, err := os.Stdin.Stat()
 			fatalError(err)
-			
+
 			// Determine if we should use async loading
 			useAsync := args.AsyncLoad
-			
+
 			//check whether from a console pipe
 			if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
 				if len(cmdargs) < 1 {
@@ -38,17 +38,17 @@ func main() {
 				}
 				//get file name form console
 				args.FileName = cmdargs[0]
-				
+
 				if useAsync {
 					// Start async loading
 					userMovedCursor = false // Reset cursor tracking
 					updateChan := make(chan bool, 10)
 					doneChan := make(chan error, 1)
 					go loadFileToBufferAsync(args.FileName, b, updateChan, doneChan)
-					
+
 					// Wait for initial data
 					<-updateChan
-					
+
 					// Process freeze mode
 					switch args.Header {
 					case -1:
@@ -60,7 +60,7 @@ func main() {
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
-					
+
 					// Check if file is empty (no data rows)
 					dataRows := b.rowLen - b.rowFreeze
 					if b.rowLen == 0 || dataRows <= 0 {
@@ -72,16 +72,16 @@ func main() {
 						}
 						os.Exit(0)
 					}
-					
+
 					// Draw initial UI
 					err = drawUI(b, args.Transpose)
 					fatalError(err)
-					
+
 					// Start update handler in background
 					go func() {
 						ticker := time.NewTicker(20 * time.Millisecond)
 						defer ticker.Stop()
-						
+
 						loadComplete := false
 						for !loadComplete {
 							select {
@@ -102,27 +102,27 @@ func main() {
 								app.QueueUpdateDraw(func() {
 									drawBuffer(b, bufferTable, args.Transpose)
 
-								// Keep cursor on first row if user hasn't moved it
-								if !userMovedCursor {
-									row, col := bufferTable.GetSelection()
-									if row != 0 {
-										bufferTable.Select(0, col)
+									// Keep cursor on first row if user hasn't moved it
+									if !userMovedCursor {
+										row, col := bufferTable.GetSelection()
+										if row != 0 {
+											bufferTable.Select(0, col)
+										}
 									}
-								}
 
-								if loadProgress.TotalBytes > 0 {
-// Show percentage for files
-									percent := loadProgress.GetPercentage()
-									updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
-								} else {
-									// Show row count for pipes (no file size)
-									updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
-								}
+									if loadProgress.TotalBytes > 0 {
+										// Show percentage for files
+										percent := loadProgress.GetPercentage()
+										updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+									} else {
+										// Show row count for pipes (no file size)
+										updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
+									}
 								})
 							}
 						}
 					}()
-					
+
 					if !debug {
 						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
 							fatalError(err)
@@ -132,7 +132,7 @@ func main() {
 					// Synchronous loading (original behavior)
 					err = loadFileToBuffer(args.FileName, b)
 					fatalError(err)
-					
+
 					//process freeze mode
 					switch args.Header {
 					case -1:
@@ -144,7 +144,7 @@ func main() {
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
-					
+
 					// Check if file is empty (no data rows)
 					dataRows := b.rowLen - b.rowFreeze
 					if b.rowLen == 0 || dataRows <= 0 {
@@ -166,17 +166,17 @@ func main() {
 				}
 			} else {
 				args.FileName = "From Shell Pipe"
-				
+
 				if useAsync {
 					// Start async loading
 					userMovedCursor = false // Reset cursor tracking
 					updateChan := make(chan bool, 10)
 					doneChan := make(chan error, 1)
 					go loadPipeToBufferAsync(os.Stdin, b, updateChan, doneChan)
-					
+
 					// Wait for initial data
 					<-updateChan
-					
+
 					// Process freeze mode
 					switch args.Header {
 					case -1:
@@ -188,7 +188,7 @@ func main() {
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
-					
+
 					// Check if pipe is empty (no data rows)
 					dataRows := b.rowLen - b.rowFreeze
 					if b.rowLen == 0 || dataRows <= 0 {
@@ -200,16 +200,16 @@ func main() {
 						}
 						os.Exit(0)
 					}
-					
+
 					// Draw initial UI
 					err = drawUI(b, args.Transpose)
 					fatalError(err)
-					
+
 					// Start update handler in background
 					go func() {
 						ticker := time.NewTicker(20 * time.Millisecond)
 						defer ticker.Stop()
-						
+
 						loadComplete := false
 						for !loadComplete {
 							select {
@@ -229,28 +229,28 @@ func main() {
 								// Periodic UI update
 								app.QueueUpdateDraw(func() {
 									drawBuffer(b, bufferTable, args.Transpose)
-									
-								// Keep cursor on first row if user hasn't moved it
-								if !userMovedCursor {
-									row, col := bufferTable.GetSelection()
-									if row != 0 {
-										bufferTable.Select(0, col)
-									}
-								}
 
-								if loadProgress.TotalBytes > 0 {
-									// Show percentage for files
-									percent := loadProgress.GetPercentage()
-									updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+									// Keep cursor on first row if user hasn't moved it
+									if !userMovedCursor {
+										row, col := bufferTable.GetSelection()
+										if row != 0 {
+											bufferTable.Select(0, col)
+										}
+									}
+
+									if loadProgress.TotalBytes > 0 {
+										// Show percentage for files
+										percent := loadProgress.GetPercentage()
+										updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
 									} else {
-									// Show row count for pipes (no file size)
-									updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
+										// Show row count for pipes (no file size)
+										updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
 									}
 								})
 							}
 						}
 					}()
-					
+
 					if !debug {
 						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
 							fatalError(err)
@@ -260,7 +260,7 @@ func main() {
 					// Synchronous loading (original behavior)
 					err = loadPipeToBuffer(os.Stdin, b)
 					fatalError(err)
-					
+
 					//process freeze mode
 					switch args.Header {
 					case -1:
@@ -272,7 +272,7 @@ func main() {
 					case 2:
 						b.rowFreeze, b.colFreeze = 0, 1
 					}
-					
+
 					// Check if pipe is empty (no data rows)
 					dataRows := b.rowLen - b.rowFreeze
 					if b.rowLen == 0 || dataRows <= 0 {

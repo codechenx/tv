@@ -4,6 +4,10 @@ import (
 	"testing"
 )
 
+// ========================================
+// Type Conversion Tests
+// ========================================
+
 func TestI2B(t *testing.T) {
 	type args struct {
 		i int
@@ -13,10 +17,10 @@ func TestI2B(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"TestI2B 1", args{i: 1}, true},
-		{"TestI2B 2", args{i: 2}, true},
-		{"TestI2B 3", args{i: 0}, false},
-		{"TestI2B 3", args{i: 0}, false},
+		{"Positive number 1", args{i: 1}, true},
+		{"Positive number 2", args{i: 2}, true},
+		{"Zero value", args{i: 0}, false},
+		{"Negative value", args{i: -1}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -25,4 +29,179 @@ func TestI2B(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestI2S_Basic(t *testing.T) {
+	result := I2S(42)
+	if result != "42" {
+		t.Errorf("I2S(42) = %s, want 42", result)
+	}
+}
+
+func TestF2S_Basic(t *testing.T) {
+	result := F2S(42.0)
+	if result == "" {
+		t.Error("F2S should return a non-empty string")
+	}
+	t.Logf("F2S(42.0) = %s", result)
+}
+
+func TestS2F_Valid(t *testing.T) {
+	result := S2F("3.14")
+	if result != 3.14 {
+		t.Errorf("S2F('3.14') = %f, want 3.14", result)
+	}
+}
+
+func TestS2F_Invalid(t *testing.T) {
+	t.Skip("Skipping S2F invalid test - function calls os.Exit on error")
+}
+
+// ========================================
+// Text Wrapping Tests
+// ========================================
+
+func TestWrapText_Basic(t *testing.T) {
+	result := wrapText("Hello World", 25)
+	if len(result) < 1 {
+		t.Error("wrapText should return at least one character")
+	}
+}
+
+func TestWrapText_Long(t *testing.T) {
+	longText := "This is a very long text that needs to be wrapped at twenty-five characters to test the wrapping functionality properly"
+	result := wrapText(longText, 25)
+
+	// Check that text was wrapped (contains newlines or is within limit)
+	if len(longText) > 25 && len(result) == len(longText) {
+		t.Error("Long text should be wrapped")
+	}
+}
+
+func TestWrapText_Empty(t *testing.T) {
+	result := wrapText("", 25)
+	t.Logf("wrapText('', 25) returned: '%s'", result)
+}
+
+func TestWrapText_NoWrapNeeded(t *testing.T) {
+	short := "Short"
+	result := wrapText(short, 25)
+	if result != short {
+		t.Errorf("Short text should not be wrapped: got '%s', want '%s'", result, short)
+	}
+}
+
+func TestWrapText_ExactLength(t *testing.T) {
+	text := "Exactly25CharactersHere!!" // 25 characters
+	result := wrapText(text, 25)
+	if result != text {
+		t.Errorf("Text at exact length should not be wrapped")
+	}
+}
+
+// ========================================
+// Column Width Tests
+// ========================================
+
+func TestGetColumnMaxWidth_Valid(t *testing.T) {
+	// Initialize wrapped columns map
+	wrappedColumns = make(map[int]int)
+
+	// Create a test buffer
+	b = createNewBuffer()
+	_ = b.contAppendSli([]string{"Short", "Medium", "VeryLongText"}, false)
+
+	width := getColumnMaxWidth(0)
+	if width < 1 {
+		t.Error("getColumnMaxWidth should return positive width")
+	}
+}
+
+func TestGetColumnMaxWidth_Custom(t *testing.T) {
+	wrappedColumns = make(map[int]int)
+	wrappedColumns[0] = 30
+
+	width := getColumnMaxWidth(0)
+	if width != 30 {
+		t.Errorf("getColumnMaxWidth(0) = %d, want 30", width)
+	}
+}
+
+func TestGetColumnMaxWidth_Default(t *testing.T) {
+	wrappedColumns = make(map[int]int)
+
+	width := getColumnMaxWidth(5)
+	if width != 25 {
+		t.Errorf("getColumnMaxWidth(5) = %d, want default 25", width)
+	}
+}
+
+// ========================================
+// Help Content Tests
+// ========================================
+
+func TestGetHelpContent_NotEmpty(t *testing.T) {
+	help := getHelpContent()
+	if len(help) == 0 {
+		t.Error("getHelpContent() should return non-empty string")
+	}
+}
+
+func TestGetHelpContent_ContainsBasics(t *testing.T) {
+	help := getHelpContent()
+
+	// Check for essential content
+	if !contains(help, "Quit") {
+		t.Error("Help should contain 'Quit' section")
+	}
+	if !contains(help, "Movement") {
+		t.Error("Help should contain 'Movement' section")
+	}
+	if !contains(help, "Sort") {
+		t.Error("Help should contain 'Sort' section")
+	}
+}
+
+func TestUsefulInfo_NotEmpty(t *testing.T) {
+	// Just verify it doesn't panic
+	usefulInfo("test message")
+	t.Log("usefulInfo executed successfully")
+}
+
+// ========================================
+// Type Name Tests
+// ========================================
+
+func TestType2Name(t *testing.T) {
+	tests := []struct {
+		name     string
+		colType  int
+		expected string
+	}{
+		{"String type", colTypeStr, "Str"},
+		{"Float type", colTypeFloat, "Num"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := type2name(tt.colType)
+			if result != tt.expected {
+				t.Errorf("type2name(%d) = %s, want %s", tt.colType, result, tt.expected)
+			}
+		})
+	}
+}
+
+// Helper function
+func contains(s, substr string) bool {
+	return len(s) > 0 && len(substr) > 0 && findSubstring(s, substr)
+}
+
+func findSubstring(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

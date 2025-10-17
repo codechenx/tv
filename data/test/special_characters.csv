@@ -1,0 +1,8 @@
+ID,Name,Description,Price,Tags
+1,"Product A","Contains ""quotes"" and, commas",19.99,"tag1,tag2,tag3"
+2,Product B,Simple description,29.99,tag1
+3,"Product C","Line1
+Line2
+Line3",39.99,"complex,tags"
+4,Product D,Normal text,9.99,single
+5,"Product E","Special chars: @#$%^&*()",49.99,"special!@#"
