@@ -85,7 +85,7 @@ go install github.com/codechenx/tv@latest
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.deb
+wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.2_Linux_x86_64.deb
 sudo dpkg -i tv_*.deb
 ```
 
@@ -93,16 +93,8 @@ sudo dpkg -i tv_*.deb
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.rpm
+wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.2_Linux_x86_64.rpm
 sudo rpm -i tv_*.rpm
-```
-
-**Alpine (apk)**
-
-```bash
-# Download from releases page
-wget https://github.com/codechenx/tv/releases/latest/download/tv_0.6.1_Linux_x86_64.apk
-sudo apk add --allow-untrusted tv_*.apk
 ```
 
 ### Manual Download
