@@ -96,12 +96,3 @@ scoops:
     description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
     homepage: https://github.com/codechenx/tv
     license: MIT
-
-snapcrafts:
-  - name: codechenx-tv
-    summary: Table viewer for terminal
-    description: Fast, feature-rich CSV/TSV/delimited file viewer for the command line
-    grade: stable
-    confinement: strict
-    publish: true
-    license: MIT
