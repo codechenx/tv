@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -200,7 +200,7 @@ func drawUI(b *Buffer, trs bool) error {
 				statsS = &DiscreteStats{}
 			}
 			statsS.summary(summaryArray)
-			statsTable.Select(0, 0).GetFocusable()
+			statsTable.Select(0, 0)
 			app.SetFocus(statsTable)
 			statsTable.ScrollToBeginning()
 			drawStats(statsS, statsTable)
