@@ -5,14 +5,105 @@ import (
 	"compress/gzip"
 	"encoding/csv"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
+	"time"
 )
+
+//progressTracker helps display loading progress
+type progressTracker struct {
+	total         int64
+	current       int64
+	lastUpdate    time.Time
+	updateEvery   int
+	lineCount     int
+	showProgress  bool
+	startTime     time.Time
+}
+
+func newProgressTracker(total int64, showProgress bool) *progressTracker {
+	return &progressTracker{
+		total:        total,
+		current:      0,
+		lastUpdate:   time.Now(),
+		updateEvery:  5000, // update every 5000 lines
+		lineCount:    0,
+		showProgress: showProgress,
+		startTime:    time.Now(),
+	}
+}
+
+func (p *progressTracker) increment(bytes int64) {
+	if !p.showProgress {
+		return
+	}
+	p.current += bytes
+	p.lineCount++
+	
+	// Update display every N lines OR every 0.5 seconds (whichever comes first)
+	if p.lineCount%p.updateEvery == 0 || time.Since(p.lastUpdate) > 500*time.Millisecond {
+		p.display()
+		p.lastUpdate = time.Now()
+	}
+}
+
+func (p *progressTracker) display() {
+	if !p.showProgress {
+		return
+	}
+	
+	elapsed := time.Since(p.startTime).Seconds()
+	if elapsed == 0 {
+		elapsed = 0.001 // avoid division by zero
+	}
+	linesPerSec := float64(p.lineCount) / elapsed
+	
+	if p.total > 0 {
+		percent := float64(p.current) * 100.0 / float64(p.total)
+		if percent > 100 {
+			percent = 100
+		}
+		fmt.Printf("\r\033[K📊 Loading: %.1f%% | %d lines | %.0f lines/sec", percent, p.lineCount, linesPerSec)
+	} else {
+		// For pipes or when size is unknown
+		fmt.Printf("\r\033[K📊 Loading: %d lines | %.0f lines/sec", p.lineCount, linesPerSec)
+	}
+}
+
+func (p *progressTracker) finish() {
+	if !p.showProgress {
+		return
+	}
+	
+	elapsed := time.Since(p.startTime).Seconds()
+	if elapsed == 0 {
+		elapsed = 0.001
+	}
+	linesPerSec := float64(p.lineCount) / elapsed
+	
+	// Clear the progress line and show final summary
+	fmt.Printf("\r\033[K✓ Loaded %d lines in %.2fs (%.0f lines/sec)\n", p.lineCount, elapsed, linesPerSec)
+}
 
 //load file content to buffer
 func loadFileToBuffer(fn string, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
+	
+	// Get file size for progress tracking
+	fileInfo, err := os.Stat(fn)
+	if err != nil {
+		return err
+	}
+	var fileSize int64
+	if !fileInfo.IsDir() {
+		fileSize = fileInfo.Size()
+	}
+	
+	// Create progress tracker
+	progress := newProgressTracker(fileSize, true)
+	
 	scanner, err := getFileScanner(fn)
 	if err != nil {
 		return err
@@ -65,10 +156,12 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		//parse and add line to buffer
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
+			progress.finish()
 			return err
 
 		}
 		totalAddedLN++
+		progress.increment(int64(len(line) + 1)) // +1 for newline
 		if totalAddedLN >= args.NLine && args.NLine > 0 {
 			break
 		}
@@ -96,11 +189,14 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 		}
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
+			progress.finish()
 			return err
 		}
 		totalAddedLN++
+		progress.increment(int64(len(line) + 1)) // +1 for newline
 	}
 
+	progress.finish()
 	return nil
 }
 
@@ -108,6 +204,10 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 	totalAddedLN := 0 //the number of lines has been added into buffer
 	var err error
+	
+	// Create progress tracker (no file size for pipes)
+	progress := newProgressTracker(0, true)
+	
 	scanner := bufio.NewScanner(stdin)
 	//increase buffer size for large files and long lines
 	const maxScanTokenSize = 1024 * 1024
@@ -150,9 +250,11 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 		//parse and add line to buffer
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
+			progress.finish()
 			return err
 		}
 		totalAddedLN++
+		progress.increment(int64(len(line) + 1))
 		if totalAddedLN >= args.NLine && args.NLine > 0 {
 			break
 		}
@@ -179,11 +281,14 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 		}
 		err = addDRToBuffer(b, line, args.ShowNum, args.HideNum)
 		if err != nil {
+			progress.finish()
 			return err
 		}
 		totalAddedLN++
+		progress.increment(int64(len(line) + 1))
 	}
 
+	progress.finish()
 	return nil
 }
 

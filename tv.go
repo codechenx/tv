@@ -31,15 +31,11 @@ func main() {
 				}
 				//get file name form console
 				args.FileName = cmdargs[0]
-				usefulInfo("Data loading...")
 				err = loadFileToBuffer(args.FileName, b)
 				fatalError(err)
-				usefulInfo("Data loaded")
 			} else {
 				args.FileName = "From Shell Pipe"
-				usefulInfo("Data loading...")
 				err = loadPipeToBuffer(os.Stdin, b)
-				usefulInfo("Data loaded")
 				fatalError(err)
 			}
 
