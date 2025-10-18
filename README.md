@@ -315,7 +315,7 @@ Find text anywhere in your table with full highlighting support.
 
 ### Column Filter
 
-Show only rows where a specific column matches your criteria. Supports powerful OR, AND, and ROR operators for complex filtering.
+Show only rows where specific columns match your criteria. **Supports filtering on multiple columns simultaneously** with powerful OR, AND, and ROR operators for complex filtering.
 
 **How to filter:**
 
@@ -324,7 +324,17 @@ Show only rows where a specific column matches your criteria. Supports powerful 
 3. Type filter text (case-insensitive, partial match)
 4. Use operators for complex queries (must be UPPERCASE with spaces)
 5. Press Enter to apply
-6. Press `r` to reset and show all rows
+6. **Repeat on other columns to add more filters**
+7. Press `r` on a filtered column to remove that column's filter
+
+**Multi-Column Filtering:**
+
+- Apply filters to **multiple columns** by pressing `f` on each column and entering criteria
+- All filters are combined with AND logic (rows must match all active filters)
+- Each column can have different filter criteria including operators
+- Press `f` on a filtered column to edit or remove its filter (empty query removes the filter)
+- The footer shows how many filters are active
+- Filtered column headers display 🔎 icons with orange background
 
 **Operators:**
 
@@ -340,6 +350,7 @@ Show only rows where a specific column matches your criteria. Supports powerful 
 - All operators must be **UPPERCASE** and surrounded by spaces
 - Search terms are case-insensitive
 - All matching is partial (substring)
+- **Visual indicator**: Filtered column headers show 🔎 icons and orange background
 
 **Examples:**
 
@@ -359,12 +370,37 @@ Navigate to "Description" column → f → type "user AND admin" → Enter
 # ROR filter - combines separate result sets
 Navigate to "Priority" column → f → type "high ROR critical" → Enter
 # Result: All rows with "high" + all rows with "critical" (union)
+
+# Multi-column filtering
+Navigate to "City" column → f → type "New York" → Enter
+Navigate to "Department" column → f → type "Engineering" → Enter
+# Result: Rows where City="New York" AND Department contains "Engineering"
+
+# Edit existing filter
+Navigate to filtered column → f → modify text → Enter
+# Or enter empty text to remove that column's filter
+
+# Remove a specific filter
+Navigate to filtered column → Press r
+# Result: That column's filter removed, other filters remain
+
+# Remove all filters one by one
+Navigate to each filtered column → Press r on each
+# Or press f and enter empty text
 ```
 
 **Use Cases:**
 - Use **OR** when a single field can have alternative values
 - Use **AND** when a single field must meet multiple criteria
 - Use **ROR** when you want to combine different categories of results
+- Use **multi-column filters** to narrow down data by multiple dimensions (e.g., location AND department AND status)
+
+**Visual Feedback:**
+- When a filter is active, the filtered column header displays 🔎 icons and an orange background
+- A dedicated **filter strip** appears above the main footer **only when cursor is on the filtered column**
+- Filter strip format: `🔎 Filter Active: [Column Name] = "query"  |  Press 'r' to clear`
+- The strip automatically hides when you move to a different column
+- Press `r` to clear the filter and return to normal view
 
 For more details, see [FILTER_OPERATORS.md](FILTER_OPERATORS.md).
 

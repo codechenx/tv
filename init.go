@@ -43,6 +43,8 @@ var searchQuery string           // Current search query
 var searchModal tview.Primitive  // Search modal dialog
 var originalBuffer *Buffer       // Store original buffer before filtering
 var isFiltered bool              // Track if filter is active
+var activeFilters map[int]string // Track active filters: column -> query
+var currentCursorColumn int      // Track current cursor column position
 var lastKeyWasG bool             // Track if last key pressed was 'g' for gg navigation
 
 // LoadProgress tracks loading progress
@@ -80,6 +82,8 @@ func initView() {
 	searchQuery = ""
 	originalBuffer = nil // Initialize filter variables
 	isFiltered = false
+	activeFilters = make(map[int]string) // Initialize active filters map
+	currentCursorColumn = 0 // Initialize cursor column
 	lastKeyWasG = false // Initialize vim navigation state
 }
 

@@ -97,10 +97,12 @@ func getHelpContent() string {
 
 [::b][orange]🔎 Filter[white]
   [yellow]f[-]                   Filter rows by current column value
+                    • Apply filters to multiple columns
+                    • Edit filter: press f on filtered column
                     OR: same cell has either term
                     AND: same cell has both terms
                     ROR: different rows, any match (uppercase only)
-  [yellow]r[-]                   Reset/clear column filter
+  [yellow]r[-]                   Remove filter from current column
 
 [::b][purple]🏷️  Data Type[white]
   [yellow]t[-]                   Toggle column data type
@@ -126,7 +128,7 @@ func getHelpContent() string {
   • Press [yellow]gg[-] to jump to the top of any table
   • Use [yellow]/[-] for quick searching across all cells
   • Press [yellow]i[-] to see detailed statistics for any column
-  • Use [yellow]f[-] to filter data without losing the original view
+  • Use [yellow]f[-] on multiple columns to combine filters
   • Headers are frozen by default for easy navigation
 
 [::b][yellow]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[white]
