@@ -285,3 +285,152 @@ func TestBuffer_filterByColumn_EdgeCases(t *testing.T) {
 		}
 	})
 }
+
+func TestBuffer_filterByColumn_NumericComparison(t *testing.T) {
+	tests := []struct {
+		name         string
+		data         [][]string
+		colIndex     int
+		query        string
+		expectedRows int // including header
+	}{
+		{
+			name: "Filter > operator",
+			data: [][]string{
+				{"Name", "Age", "Score"},
+				{"Alice", "30", "85"},
+				{"Bob", "25", "90"},
+				{"Charlie", "35", "78"},
+				{"David", "28", "92"},
+			},
+			colIndex:     1, // Age column
+			query:        ">28",
+			expectedRows: 3, // header + Alice (30), Charlie (35)
+		},
+		{
+			name: "Filter < operator",
+			data: [][]string{
+				{"Name", "Age", "Score"},
+				{"Alice", "30", "85"},
+				{"Bob", "25", "90"},
+				{"Charlie", "35", "78"},
+				{"David", "28", "92"},
+			},
+			colIndex:     1, // Age column
+			query:        "<30",
+			expectedRows: 3, // header + Bob (25), David (28)
+		},
+		{
+			name: "Filter >= operator",
+			data: [][]string{
+				{"Name", "Age", "Score"},
+				{"Alice", "30", "85"},
+				{"Bob", "25", "90"},
+				{"Charlie", "35", "78"},
+				{"David", "28", "92"},
+			},
+			colIndex:     1, // Age column
+			query:        ">=30",
+			expectedRows: 3, // header + Alice (30), Charlie (35)
+		},
+		{
+			name: "Filter <= operator",
+			data: [][]string{
+				{"Name", "Age", "Score"},
+				{"Alice", "30", "85"},
+				{"Bob", "25", "90"},
+				{"Charlie", "35", "78"},
+				{"David", "28", "92"},
+			},
+			colIndex:     1, // Age column
+			query:        "<=28",
+			expectedRows: 3, // header + Bob (25), David (28)
+		},
+		{
+			name: "Filter > with decimals",
+			data: [][]string{
+				{"Name", "Score"},
+				{"Alice", "85.5"},
+				{"Bob", "90.2"},
+				{"Charlie", "78.8"},
+				{"David", "92.1"},
+			},
+			colIndex:     1, // Score column
+			query:        ">85",
+			expectedRows: 4, // header + Alice (85.5), Bob (90.2), David (92.1)
+		},
+		{
+			name: "Filter < with decimals",
+			data: [][]string{
+				{"Name", "Score"},
+				{"Alice", "85.5"},
+				{"Bob", "90.2"},
+				{"Charlie", "78.8"},
+				{"David", "92.1"},
+			},
+			colIndex:     1, // Score column
+			query:        "<85",
+			expectedRows: 2, // header + Charlie (78.8)
+		},
+		{
+			name: "Filter > on string column (should not match)",
+			data: [][]string{
+				{"Name", "Status"},
+				{"Alice", "Active"},
+				{"Bob", "Inactive"},
+				{"Charlie", "Pending"},
+			},
+			colIndex:     1, // Status column (string type)
+			query:        ">5",
+			expectedRows: 1, // header only (string column, no numeric comparison)
+		},
+		{
+			name: "Filter > with spaces",
+			data: [][]string{
+				{"Name", "Age"},
+				{"Alice", "30"},
+				{"Bob", "25"},
+				{"Charlie", "35"},
+			},
+			colIndex:     1, // Age column
+			query:        "> 28",
+			expectedRows: 3, // header + Alice (30), Charlie (35)
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create buffer with test data
+			b, err := createNewBufferWithData(tt.data, false)
+			if err != nil {
+				t.Fatalf("Failed to create buffer: %v", err)
+			}
+			b.rowFreeze = 1 // Set header row
+			
+			// Detect column types
+			b.detectAllColumnTypes()
+
+			// Apply filter
+			filtered := b.filterByColumn(tt.colIndex, tt.query, false)
+
+			// Check result
+			if filtered.rowLen != tt.expectedRows {
+				t.Errorf("Expected %d rows (including header), got %d", tt.expectedRows, filtered.rowLen)
+				// Print actual data for debugging
+				t.Logf("Actual rows:")
+				for i := 0; i < filtered.rowLen; i++ {
+					t.Logf("  Row %d: %v", i, filtered.cont[i])
+				}
+			}
+
+			// Verify header is preserved
+			if filtered.rowLen > 0 {
+				for col := 0; col < filtered.colLen && col < len(tt.data[0]); col++ {
+					if filtered.cont[0][col] != tt.data[0][col] {
+						t.Errorf("Header not preserved: expected %s, got %s", tt.data[0][col], filtered.cont[0][col])
+					}
+				}
+			}
+		})
+	}
+}

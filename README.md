@@ -344,12 +344,17 @@ Show only rows where specific columns match your criteria. **Supports filtering 
 | **OR** | `term1 OR term2` | Same cell contains either term | `error OR warning` → cell has "error" or "warning" |
 | **AND** | `term1 AND term2` | Same cell contains both terms | `user AND admin` → cell has both words |
 | **ROR** | `term1 ROR term2` | Keeps all rows matching any term | `high ROR critical` → rows with "high" + rows with "critical" |
+| **>** | `>value` | Numeric: greater than (number columns only) | `>30` → values greater than 30 |
+| **<** | `<value` | Numeric: less than (number columns only) | `<50` → values less than 50 |
+| **>=** | `>=value` | Numeric: greater than or equal (number columns only) | `>=100` → values 100 or more |
+| **<=** | `<=value` | Numeric: less than or equal (number columns only) | `<=75` → values 75 or less |
 
 **Key Differences:**
 - **OR vs ROR**: OR checks if a single cell contains either term. ROR combines rows where any cell matches any term (row-level union).
-- All operators must be **UPPERCASE** and surrounded by spaces
-- Search terms are case-insensitive
-- All matching is partial (substring)
+- **Numeric operators** (`>`, `<`, `>=`, `<=`): Only work on numeric and date columns (automatically detected). Perform numeric comparisons instead of text matching.
+- All operators must be **UPPERCASE** and surrounded by spaces (except numeric operators)
+- Search terms are case-insensitive (except numeric comparisons)
+- All matching is partial (substring) for text, exact comparison for numeric operators
 - **Visual indicator**: Filtered column headers show 🔎 icons and orange background
 
 **Examples:**
@@ -371,10 +376,27 @@ Navigate to "Description" column → f → type "user AND admin" → Enter
 Navigate to "Priority" column → f → type "high ROR critical" → Enter
 # Result: All rows with "high" + all rows with "critical" (union)
 
+# Numeric comparison - greater than
+Navigate to "Age" column → f → type ">30" → Enter
+# Result: Rows where Age is greater than 30
+
+# Numeric comparison - less than or equal
+Navigate to "Score" column → f → type "<=85" → Enter
+# Result: Rows where Score is 85 or less
+
+# Numeric comparison - greater than or equal
+Navigate to "Salary" column → f → type ">=50000" → Enter
+# Result: Rows where Salary is 50000 or more
+
 # Multi-column filtering
 Navigate to "City" column → f → type "New York" → Enter
 Navigate to "Department" column → f → type "Engineering" → Enter
 # Result: Rows where City="New York" AND Department contains "Engineering"
+
+# Multi-column with numeric filter
+Navigate to "Age" column → f → type ">25" → Enter
+Navigate to "Score" column → f → type ">80" → Enter
+# Result: Rows where Age > 25 AND Score > 80
 
 # Edit existing filter
 Navigate to filtered column → f → modify text → Enter
@@ -393,6 +415,7 @@ Navigate to each filtered column → Press r on each
 - Use **OR** when a single field can have alternative values
 - Use **AND** when a single field must meet multiple criteria
 - Use **ROR** when you want to combine different categories of results
+- Use **numeric operators** (`>`, `<`, `>=`, `<=`) to filter by numeric ranges on number or date columns
 - Use **multi-column filters** to narrow down data by multiple dimensions (e.g., location AND department AND status)
 
 **Visual Feedback:**

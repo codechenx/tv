@@ -575,6 +575,12 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		return filtered
 	}
 
+	// Get column type for numeric comparisons
+	colType := colTypeStr
+	if colIndex < len(b.colType) {
+		colType = b.colType[colIndex]
+	}
+
 	// Filter data rows for OR/AND/simple filters
 	startRow := b.rowFreeze
 	for i := startRow; i < b.rowLen; i++ {
@@ -585,7 +591,7 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		cellValue := b.cont[i][colIndex]
 		
 		// Evaluate filter condition
-		if evaluateFilter(cellValue, query, caseSensitive, hasOR, hasAND) {
+		if evaluateFilter(cellValue, query, caseSensitive, hasOR, hasAND, colType) {
 			filtered.cont = append(filtered.cont, b.cont[i])
 			filtered.rowLen++
 		}
@@ -595,8 +601,45 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 }
 
 // evaluateFilter checks if a cell value matches the filter query
-// Supports simple matching, OR logic, and AND logic
-func evaluateFilter(cellValue, query string, caseSensitive, hasOR, hasAND bool) bool {
+// Supports simple matching, OR logic, AND logic, and numeric comparisons (>, <, >=, <=)
+func evaluateFilter(cellValue, query string, caseSensitive, hasOR, hasAND bool, colType int) bool {
+	// Check for numeric comparison operators (>, <, >=, <=) for numeric columns
+	if colType == colTypeFloat || colType == colTypeDate {
+		query = trimSpace(query)
+		
+		// Check for >= operator
+		if len(query) >= 2 && query[0] == '>' && query[1] == '=' {
+			threshold := trimSpace(query[2:])
+			cellVal := parseNumericValueFast(cellValue)
+			thresholdVal := parseNumericValueFast(threshold)
+			return cellVal >= thresholdVal
+		}
+		
+		// Check for <= operator
+		if len(query) >= 2 && query[0] == '<' && query[1] == '=' {
+			threshold := trimSpace(query[2:])
+			cellVal := parseNumericValueFast(cellValue)
+			thresholdVal := parseNumericValueFast(threshold)
+			return cellVal <= thresholdVal
+		}
+		
+		// Check for > operator
+		if len(query) >= 1 && query[0] == '>' {
+			threshold := trimSpace(query[1:])
+			cellVal := parseNumericValueFast(cellValue)
+			thresholdVal := parseNumericValueFast(threshold)
+			return cellVal > thresholdVal
+		}
+		
+		// Check for < operator
+		if len(query) >= 1 && query[0] == '<' {
+			threshold := trimSpace(query[1:])
+			cellVal := parseNumericValueFast(cellValue)
+			thresholdVal := parseNumericValueFast(threshold)
+			return cellVal < thresholdVal
+		}
+	}
+	
 	// Handle OR operator (takes precedence)
 	if hasOR {
 		// Split by OR (uppercase only)
