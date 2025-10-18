@@ -10,6 +10,34 @@ import (
 	"github.com/rivo/tview"
 )
 
+// buildCursorPosStr builds the cursor position string (without filter info now)
+func buildCursorPosStr(row, column int) string {
+	posStr := "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
+	return posStr
+}
+
+// buildFilterInfoStr builds the filter information string for the top strip
+// Shows all active filters or current column filter when cursor is on a filtered column
+func buildFilterInfoStr(currentColumn int) string {
+	if !isFiltered || len(activeFilters) == 0 {
+		return "" // No filter active
+	}
+
+	// Check if current column has a filter
+	if opts, hasFilter := activeFilters[currentColumn]; hasFilter {
+		// Get column name if available
+		columnName := fmt.Sprintf("Column %d", currentColumn)
+		if b.rowFreeze > 0 && len(b.cont) > 0 && currentColumn < len(b.cont[0]) {
+			columnName = b.cont[0][currentColumn]
+		}
+
+		return fmt.Sprintf("🔎 Filter Active: [%s] %s \"%s\"  |  %d filters total  |  Press 'r' to remove this filter", columnName, opts.Operator, opts.Query, len(activeFilters))
+	}
+
+	// Show summary if cursor is not on a filtered column
+	return fmt.Sprintf("🔎 %d filters active  |  Navigate to filtered column and press 'r' to remove", len(activeFilters))
+}
+
 // add buffer data to buffer table
 func drawBuffer(b *Buffer, t *tview.Table) {
 	b.mu.RLock()
@@ -24,7 +52,7 @@ func drawBuffer(b *Buffer, t *tview.Table) {
 			backgroundColor := tcell.ColorDefault
 			attributes := tcell.AttrNone
 			alignment := tview.AlignLeft
-			
+
 			// Get cell content
 			cellText := b.cont[r][c]
 
@@ -39,6 +67,14 @@ func drawBuffer(b *Buffer, t *tview.Table) {
 				backgroundColor = tcell.NewRGBColor(30, 60, 120) // Deep blue
 				attributes = tcell.AttrBold | tcell.AttrUnderline
 				alignment = tview.AlignCenter
+
+				// Add filter indicator if this column has a filter applied
+				if isFiltered {
+					if _, hasFilter := activeFilters[c]; hasFilter {
+						cellText = "🔎 " + cellText + " 🔎"
+						backgroundColor = tcell.NewRGBColor(255, 100, 0) // Orange background for filtered column
+					}
+				}
 			} else if isHeaderCol {
 				// Frozen column: gold color for row headers
 				color = tcell.NewRGBColor(255, 215, 0) // Gold
@@ -89,11 +125,11 @@ func drawBuffer(b *Buffer, t *tview.Table) {
 				SetAttributes(attributes).
 				SetAlign(alignment).
 				SetExpansion(1)
-			
+
 			if maxWidth > 0 {
 				cell.SetMaxWidth(maxWidth)
 			}
-			
+
 			t.SetCell(r, c, cell)
 		}
 	}
@@ -109,17 +145,17 @@ func drawStats(s statsSummary, t *tview.Table) {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
 			backgroundColor := tcell.ColorDefault
-			
+
 			// Modern styling: alternate row colors for better readability
 			if r%2 == 1 {
 				backgroundColor = tcell.NewRGBColor(20, 20, 30)
 			}
-			
+
 			// Highlight stat labels with accent color
 			if c == 0 {
 				color = tcell.NewRGBColor(100, 200, 255) // Soft blue for labels
 			}
-			
+
 			t.SetCell(r, c,
 				tview.NewTableCell(summaryData[r][c]).
 					SetTextColor(color).
@@ -136,7 +172,7 @@ func drawUI(b *Buffer) error {
 	bufferTable = tview.NewTable()
 	bufferTable.SetSelectable(true, true)
 	bufferTable.SetBorders(false)
-	bufferTable.SetSeparator(tview.Borders.Vertical) // Add subtle vertical separators
+	bufferTable.SetSeparator(tview.Borders.Vertical)             // Add subtle vertical separators
 	bufferTable.SetBordersColor(tcell.NewRGBColor(60, 100, 140)) // Subtle blue borders
 	bufferTable.SetFixed(b.rowFreeze, b.colFreeze)
 	bufferTable.Select(0, 0)
@@ -144,28 +180,45 @@ func drawUI(b *Buffer) error {
 		Foreground(tcell.ColorBlack).
 		Background(tcell.NewRGBColor(100, 200, 255)). // Modern cyan selection
 		Attributes(tcell.AttrBold))
-	
+
 	// Auto-detect and wrap long columns (sample first 100 rows, threshold 50 characters)
 	detectAndWrapLongColumns(b, 100, 50)
-	
+
 	drawBuffer(b, bufferTable)
 
 	//main page init with modern styling
-	cursorPosStr = "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
+	cursorPosStr = buildCursorPosStr(0, 0) //footer right
 	if statusMessage == "" {
 		statusMessage = "All Done"
 	}
 	shorFileName := filepath.Base(args.FileName)
 	fileNameStr = shorFileName + "  |  " + "? help" //footer left
+	filterInfoStr := buildFilterInfoStr(0)          // Top strip for filter info, initially at column 0
+
 	mainPage = tview.NewFrame(bufferTable).
-		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(fileNameStr, false, tview.AlignLeft, tcell.NewRGBColor(255, 150, 50)).
+		SetBorders(0, 0, 0, 0, 0, 0)
+
+	// Add filter info strip at top if filter is active and cursor on filtered column
+	if filterInfoStr != "" {
+		mainPage.AddText(filterInfoStr, true, tview.AlignCenter, tcell.NewRGBColor(255, 140, 0))
+	}
+
+	// Add main footer at bottom
+	mainPage.AddText(fileNameStr, false, tview.AlignLeft, tcell.NewRGBColor(255, 150, 50)).
 		AddText(statusMessage, false, tview.AlignCenter, tcell.NewRGBColor(100, 200, 255)).
 		AddText(cursorPosStr, false, tview.AlignRight, tcell.NewRGBColor(150, 255, 150))
 
 	drawFooterText := func(lstr, cstr, rstr string) {
 		statusMessage = cstr // Update global status
 		mainPage.Clear()
+
+		// Add filter info strip at top if filter is active and cursor on filtered column
+		filterInfoStr := buildFilterInfoStr(currentCursorColumn)
+		if filterInfoStr != "" {
+			mainPage.AddText(filterInfoStr, true, tview.AlignCenter, tcell.NewRGBColor(255, 140, 0))
+		}
+
+		// Add main footer at bottom
 		mainPage.AddText(lstr, false, tview.AlignLeft, tcell.NewRGBColor(255, 150, 50)).
 			AddText(cstr, false, tview.AlignCenter, tcell.NewRGBColor(100, 200, 255)).
 			AddText(rstr, false, tview.AlignRight, tcell.NewRGBColor(150, 255, 150))
@@ -182,7 +235,13 @@ func drawUI(b *Buffer) error {
 		if !userMovedCursor && (row != 0 || column != 0) {
 			userMovedCursor = true
 		}
-		cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
+
+		// Update current cursor column
+		currentCursorColumn = column
+
+		cursorPosStr = buildCursorPosStr(row, column)
+
+		// Rebuild the page with filter strip based on current column
 		drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 	})
 
@@ -319,34 +378,53 @@ func drawUI(b *Buffer) error {
 			// Create search form
 			form := tview.NewForm()
 			form.AddInputField("Search:", "", 40, nil, nil)
-			form.AddButton("Search", func() {
+			form.AddCheckbox("Use Regex:", searchUseRegex, func(checked bool) {
+				searchUseRegex = checked
+			})
+			form.AddCheckbox("Case Sensitive:", false, nil)
+
+			// Define search execution function to avoid duplication
+			executeSearch := func() {
 				query := form.GetFormItem(0).(*tview.InputField).GetText()
+				useRegex := form.GetFormItem(1).(*tview.Checkbox).IsChecked()
+				caseSensitive := form.GetFormItem(2).(*tview.Checkbox).IsChecked()
 				if query != "" {
 					searchQuery = query
-					searchResults = performSearch(b, query, false)
+					searchUseRegex = useRegex
+					searchResults = performSearch(b, query, useRegex, caseSensitive)
 
 					if len(searchResults) > 0 {
 						currentSearchIndex = 0
 						bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
 						drawBuffer(b, bufferTable)
+						searchMode := "matches"
+						if useRegex {
+							searchMode = "regex matches"
+						}
 						drawFooterText(fileNameStr,
-							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
+							fmt.Sprintf("Found %d %s (1/%d)", len(searchResults), searchMode, len(searchResults)),
 							cursorPosStr)
 					} else {
 						currentSearchIndex = -1
-						drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+						if useRegex {
+							drawFooterText(fileNameStr, "Invalid regex or no matches found", cursorPosStr)
+						} else {
+							drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+						}
 					}
 				}
 				UI.HidePage("searchModal")
 				app.SetFocus(bufferTable)
-			})
+			}
+			form.AddButton("Search", executeSearch)
 			form.AddButton("Cancel", func() {
 				UI.HidePage("searchModal")
 				app.SetFocus(bufferTable)
 			})
 			form.SetButtonsAlign(tview.AlignCenter)
 			form.SetBorder(true)
-			form.SetTitle(" 🔍 Search (case-insensitive) - Enter to search, Esc to cancel ")
+			title := " 🔍 Search - Tab to navigate, Enter to search, Esc to cancel "
+			form.SetTitle(title)
 			form.SetTitleAlign(tview.AlignCenter)
 			form.SetBorderColor(tcell.NewRGBColor(100, 200, 255))
 
@@ -357,26 +435,9 @@ func drawUI(b *Buffer) error {
 					app.SetFocus(bufferTable)
 					return nil
 				}
+				// Allow Enter to submit from any field
 				if event.Key() == tcell.KeyEnter {
-					query := form.GetFormItem(0).(*tview.InputField).GetText()
-					if query != "" {
-						searchQuery = query
-						searchResults = performSearch(b, query, false)
-
-						if len(searchResults) > 0 {
-							currentSearchIndex = 0
-							bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
-							drawBuffer(b, bufferTable)
-							drawFooterText(fileNameStr,
-								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
-								cursorPosStr)
-						} else {
-							currentSearchIndex = -1
-							drawFooterText(fileNameStr, "No matches found", cursorPosStr)
-						}
-					}
-					UI.HidePage("searchModal")
-					app.SetFocus(bufferTable)
+					executeSearch()
 					return nil
 				}
 				return event
@@ -387,7 +448,7 @@ func drawUI(b *Buffer) error {
 				AddItem(nil, 0, 1, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(nil, 0, 1, false).
-					AddItem(form, 9, 1, true).
+					AddItem(form, 11, 1, true).
 					AddItem(nil, 0, 1, false), 60, 1, true).
 				AddItem(nil, 0, 1, false)
 
@@ -448,43 +509,123 @@ func drawUI(b *Buffer) error {
 
 			// Create filter form
 			filterForm := tview.NewForm()
-			filterForm.AddInputField("Filter column by value:", "", 40, nil, nil)
-			filterForm.AddButton("Filter", func() {
-				query := filterForm.GetFormItem(0).(*tview.InputField).GetText()
+
+			// Operator selection
+			operators := []string{"contains", "equals", "starts with", "ends with", "regex", ">", "<", ">=", "<="}
+			selectedOperatorIndex := 0
+
+			// Value input
+			query := ""
+			caseSensitive := false
+
+			if opts, exists := activeFilters[column]; exists {
+				query = opts.Query
+				caseSensitive = opts.CaseSensitive
+				for i, op := range operators {
+					if op == opts.Operator {
+						selectedOperatorIndex = i
+						break
+					}
+				}
+			}
+
+			filterForm.AddDropDown("Operator:", operators, selectedOperatorIndex, func(option string, optionIndex int) {
+				selectedOperatorIndex = optionIndex
+			})
+			filterForm.AddInputField("Value:", query, 40, nil, nil)
+			filterForm.AddCheckbox("Case Sensitive:", caseSensitive, func(checked bool) {
+				caseSensitive = checked
+			})
+
+			applyFilter := func() {
+				query = filterForm.GetFormItem(1).(*tview.InputField).GetText()
+				operator := operators[selectedOperatorIndex]
+
 				if query != "" {
 					drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
 					app.ForceDraw()
 
-					// Apply filter
-					filteredBuffer := b.filterByColumn(column, query, false)
+					// Add or update filter for this column
+					activeFilters[column] = FilterOptions{
+						Query:         query,
+						Operator:      operator,
+						CaseSensitive: caseSensitive,
+					}
+
+					// Apply all filters starting from original buffer
+					if originalBuffer == nil {
+						originalBuffer = b // Save original buffer first time
+					}
+
+					// Start with original buffer and apply all filters sequentially
+					filteredBuffer := originalBuffer
+					for col, opts := range activeFilters {
+						filteredBuffer = filteredBuffer.filterByColumn(col, opts)
+					}
 
 					// Update display with filtered data
 					if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
-						drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
+						drawFooterText(fileNameStr, "No rows match filters", cursorPosStr)
+						// Remove this filter since it results in no data
+						delete(activeFilters, column)
 					} else {
 						// Replace current buffer with filtered buffer
-						originalBuffer = b // Save original buffer
 						b = filteredBuffer
 						isFiltered = true
 
 						drawBuffer(b, bufferTable)
-						bufferTable.Select(0, 0)
+						bufferTable.Select(0, column) // Stay at same column, go to first row
 						matchCount := b.rowLen - b.rowFreeze
 						drawFooterText(fileNameStr,
-							fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount),
+							fmt.Sprintf("Filtered: %d rows match (%d filters active, r to reset)", matchCount, len(activeFilters)),
 							cursorPosStr)
+					}
+				} else {
+					// Empty query means remove filter for this column
+					if _, exists := activeFilters[column]; exists {
+						delete(activeFilters, column)
+
+						// Reapply remaining filters
+						if len(activeFilters) == 0 {
+							// No more filters, restore original
+							b = originalBuffer
+							isFiltered = false
+							drawBuffer(b, bufferTable)
+							bufferTable.Select(0, column) // Stay at same column
+							drawFooterText(fileNameStr, "All filters cleared - showing all rows", cursorPosStr)
+						} else {
+							// Apply remaining filters
+							filteredBuffer := originalBuffer
+							for col, opts := range activeFilters {
+								filteredBuffer = filteredBuffer.filterByColumn(col, opts)
+							}
+							b = filteredBuffer
+							drawBuffer(b, bufferTable)
+							bufferTable.Select(0, column) // Stay at same column
+							matchCount := b.rowLen - b.rowFreeze
+							drawFooterText(fileNameStr,
+								fmt.Sprintf("Filter removed: %d rows match (%d filters active)", matchCount, len(activeFilters)),
+								cursorPosStr)
+						}
 					}
 				}
 				UI.HidePage("filterModal")
 				app.SetFocus(bufferTable)
-			})
+			}
+
+			filterForm.AddButton("Filter", applyFilter)
 			filterForm.AddButton("Cancel", func() {
 				UI.HidePage("filterModal")
 				app.SetFocus(bufferTable)
 			})
 			filterForm.SetButtonsAlign(tview.AlignCenter)
 			filterForm.SetBorder(true)
-			filterForm.SetTitle(fmt.Sprintf(" 🔎 Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
+
+			filterTitle := fmt.Sprintf(" 🔎 Filter Column %d - Enter to filter, Esc to cancel ", column)
+			if _, exists := activeFilters[column]; exists {
+				filterTitle = fmt.Sprintf(" 🔎 Edit Filter for Column %d (empty value to remove) - Enter to apply, Esc to cancel ", column)
+			}
+			filterForm.SetTitle(filterTitle)
 			filterForm.SetTitleAlign(tview.AlignCenter)
 			filterForm.SetBorderColor(tcell.NewRGBColor(255, 150, 50))
 
@@ -496,33 +637,7 @@ func drawUI(b *Buffer) error {
 					return nil
 				}
 				if event.Key() == tcell.KeyEnter {
-					query := filterForm.GetFormItem(0).(*tview.InputField).GetText()
-					if query != "" {
-						drawFooterText(fileNameStr, "Filtering...", cursorPosStr)
-						app.ForceDraw()
-
-						// Apply filter
-						filteredBuffer := b.filterByColumn(column, query, false)
-
-						// Update display with filtered data
-						if filteredBuffer.rowLen <= filteredBuffer.rowFreeze {
-							drawFooterText(fileNameStr, "No rows match filter", cursorPosStr)
-						} else {
-							// Replace current buffer with filtered buffer
-							originalBuffer = b // Save original buffer
-							b = filteredBuffer
-							isFiltered = true
-
-							drawBuffer(b, bufferTable)
-							bufferTable.Select(0, 0)
-							matchCount := b.rowLen - b.rowFreeze
-							drawFooterText(fileNameStr,
-								fmt.Sprintf("Filtered: %d rows match (r to reset)", matchCount),
-								cursorPosStr)
-						}
-					}
-					UI.HidePage("filterModal")
-					app.SetFocus(bufferTable)
+					applyFilter()
 					return nil
 				}
 				return event
@@ -533,8 +648,8 @@ func drawUI(b *Buffer) error {
 				AddItem(nil, 0, 1, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(nil, 0, 1, false).
-					AddItem(filterForm, 9, 1, true).
-					AddItem(nil, 0, 1, false), 70, 1, true).
+					AddItem(filterForm, 13, 1, true).
+					AddItem(nil, 0, 1, false), 80, 1, true).
 				AddItem(nil, 0, 1, false)
 
 			UI.AddPage("filterModal", filterModal, true, true)
@@ -543,14 +658,42 @@ func drawUI(b *Buffer) error {
 			return nil
 		}
 
-		// r - reset filter
+		// r - reset filter for current column
 		if event.Key() == tcell.KeyRune && event.Rune() == 'r' {
 			if isFiltered && originalBuffer != nil {
-				b = originalBuffer
-				isFiltered = false
-				drawBuffer(b, bufferTable)
-				bufferTable.Select(0, 0)
-				drawFooterText(fileNameStr, "Filter cleared - showing all rows", cursorPosStr)
+				row, column := bufferTable.GetSelection()
+
+				// Check if current column has a filter
+				if _, hasFilter := activeFilters[column]; hasFilter {
+					// Remove filter for this column
+					delete(activeFilters, column)
+
+					// Reapply remaining filters
+					if len(activeFilters) == 0 {
+						// No more filters, restore original
+						b = originalBuffer
+						isFiltered = false
+						drawBuffer(b, bufferTable)
+						bufferTable.Select(row, column)
+						drawFooterText(fileNameStr, "All filters cleared - showing all rows", cursorPosStr)
+					} else {
+						// Apply remaining filters
+						filteredBuffer := originalBuffer
+						for col, opts := range activeFilters {
+							filteredBuffer = filteredBuffer.filterByColumn(col, opts)
+						}
+						b = filteredBuffer
+						drawBuffer(b, bufferTable)
+						bufferTable.Select(row, column)
+						matchCount := b.rowLen - b.rowFreeze
+						drawFooterText(fileNameStr,
+							fmt.Sprintf("Filter removed from current column: %d rows match (%d filters active)", matchCount, len(activeFilters)),
+							cursorPosStr)
+					}
+				} else if len(activeFilters) > 0 {
+					// Current column doesn't have a filter, but others do
+					drawFooterText(fileNameStr, "Current column has no filter - navigate to filtered column to remove", cursorPosStr)
+				}
 			}
 			return nil
 		}
@@ -597,26 +740,30 @@ func drawUI(b *Buffer) error {
 			drawFooterText(fileNameStr, "Calculating statistics...", cursorPosStr)
 			app.ForceDraw()
 
+			// Use the current buffer (which is filtered if filters are active)
+			// This ensures stats are calculated only on visible/filtered data
+			currentBuffer := b
+
 			var statsS statsSummary
-			summaryArray := b.getCol(column)
+			summaryArray := currentBuffer.getCol(column)
 			columnName := "Column " + I2S(column)
 
 			// Get column name from header if available
-			if b.rowFreeze > 0 && len(b.cont) > 0 && column < len(b.cont[0]) {
-				columnName = b.cont[0][column]
+			if currentBuffer.rowFreeze > 0 && len(currentBuffer.cont) > 0 && column < len(currentBuffer.cont[0]) {
+				columnName = currentBuffer.cont[0][column]
 				summaryArray = summaryArray[1:]
 			}
 
 			// Determine statistics type
-			if b.getColType(column) == colTypeFloat {
+			if currentBuffer.getColType(column) == colTypeFloat {
 				statsS = &ContinuousStats{}
 			} else {
 				statsS = &DiscreteStats{}
 			}
 			statsS.summary(summaryArray)
 
-			// Show statistics as a modal dialog
-			showStatsDialog(statsS, columnName, b.getColType(column))
+			// Show statistics as a modal dialog with filter indication
+			showStatsDialog(statsS, columnName, currentBuffer.getColType(column))
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 			return nil
 		}
@@ -640,7 +787,7 @@ func drawUI(b *Buffer) error {
 			}
 
 			b.setColType(column, newType)
-			cursorPosStr = "Column Type: " + type2name(b.getColType(column)) + "  |  " + strconv.Itoa(row) + "," + strconv.Itoa(column) + "  "
+			cursorPosStr = buildCursorPosStr(row, column)
 			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
 		}
 
@@ -678,6 +825,32 @@ func drawUI(b *Buffer) error {
 
 		app.ForceDraw()
 		return event
+	})
+	// Add mouse handler for scrolling and clicking
+	bufferTable.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		// Mark that user has interacted via mouse
+		if action == tview.MouseLeftClick {
+			userMovedCursor = true
+		}
+
+		// Handle mouse wheel scrolling
+		switch action {
+		case tview.MouseScrollUp:
+			row, col := bufferTable.GetSelection()
+			if row > 0 {
+				bufferTable.Select(row-1, col)
+			}
+			return action, nil
+		case tview.MouseScrollDown:
+			row, col := bufferTable.GetSelection()
+			if row < b.rowLen-1 {
+				bufferTable.Select(row+1, col)
+			}
+			return action, nil
+		}
+
+		// Pass through other mouse events to default handler
+		return action, event
 	})
 
 	//bufferTable quit event
@@ -797,6 +970,12 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 
 	typeName := type2name(colType)
 	title := fmt.Sprintf(" 📊 Statistics: %s [%s] ", columnName, typeName)
+
+	// Add filter indicator if data is filtered
+	if isFiltered && len(activeFilters) > 0 {
+		title = fmt.Sprintf(" 📊 Statistics: %s [%s] (Filtered Data - %d filters active) ", columnName, typeName, len(activeFilters))
+	}
+
 	statsTable.SetTitle(title)
 	statsTable.SetTitleAlign(tview.AlignCenter)
 

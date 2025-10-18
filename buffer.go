@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -274,8 +275,6 @@ func parseDateValueFast(s string) int64 {
 	return 0
 }
 
-
-
 // getCol returns the ith column data as a string slice
 // Uses pointer receiver to avoid copying mutex
 func (b *Buffer) getCol(i int) []string {
@@ -502,9 +501,16 @@ func (b *Buffer) selectBySearch(s string) {
 	}
 }
 
-// filterByColumn filters rows based on column value containing the search string
-// Returns a new filtered buffer
-func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) *Buffer {
+// FilterOptions defines the parameters for a column filter.
+type FilterOptions struct {
+	Query         string
+	Operator      string
+	CaseSensitive bool
+}
+
+// filterByColumn filters rows based on column value using the provided options.
+// It returns a new buffer containing the filtered rows.
+func (b *Buffer) filterByColumn(colIndex int, options FilterOptions) *Buffer {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -517,9 +523,15 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 	copy(filtered.colType, b.colType)
 
 	// Add header row if present
-	if b.rowFreeze > 0 {
+	if b.rowFreeze > 0 && b.rowLen > 0 {
 		filtered.cont = append(filtered.cont, b.cont[0])
 		filtered.rowLen = 1
+	}
+
+	// Get column type for numeric comparisons
+	colType := colTypeStr
+	if colIndex < len(b.colType) {
+		colType = b.colType[colIndex]
 	}
 
 	// Filter data rows
@@ -530,18 +542,77 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		}
 
 		cellValue := b.cont[i][colIndex]
-		queryStr := query
 
-		if !caseSensitive {
-			cellValue = toLowerSimple(cellValue)
-			queryStr = toLowerSimple(query)
-		}
-
-		if containsStr(cellValue, queryStr) {
+		// Evaluate filter condition
+		if evaluateFilter(cellValue, options, colType) {
 			filtered.cont = append(filtered.cont, b.cont[i])
 			filtered.rowLen++
 		}
 	}
 
 	return filtered
+}
+
+// evaluateFilter checks if a cell value matches the filter query based on the operator.
+func evaluateFilter(cellValue string, options FilterOptions, colType int) bool {
+	query := options.Query
+	operator := options.Operator
+
+	// Handle numeric comparisons first
+	if colType == colTypeFloat || colType == colTypeDate {
+		isNumericOperator := false
+		switch operator {
+		case ">", "<", ">=", "<=":
+			isNumericOperator = true
+		}
+
+		if isNumericOperator {
+			cellVal := parseNumericValueFast(cellValue)
+			thresholdVal, err := strconv.ParseFloat(strings.TrimSpace(query), 64)
+			if err != nil {
+				return false // Cannot compare if query is not a number
+			}
+
+			switch operator {
+			case ">":
+				return cellVal > thresholdVal
+			case "<":
+				return cellVal < thresholdVal
+			case ">=":
+				return cellVal >= thresholdVal
+			case "<=":
+				return cellVal <= thresholdVal
+			}
+		}
+	}
+
+	// Prepare strings for comparison
+	cell := cellValue
+	q := query
+	if !options.CaseSensitive {
+		cell = strings.ToLower(cell)
+		q = strings.ToLower(q)
+	}
+
+	// Handle string-based operators
+	switch operator {
+	case "contains":
+		return strings.Contains(cell, q)
+	case "equals":
+		return cell == q
+	case "starts with":
+		return strings.HasPrefix(cell, q)
+	case "ends with":
+		return strings.HasSuffix(cell, q)
+	case "regex":
+		// When using regex, the user has full control over case sensitivity in the pattern.
+		re, err := regexp.Compile(options.Query)
+		if err != nil {
+			return false // Invalid regex
+		}
+		return re.MatchString(cellValue)
+	default:
+		// Default to contains for backward compatibility if operator is empty
+		return strings.Contains(cell, q)
+	}
 }

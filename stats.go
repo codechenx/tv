@@ -158,7 +158,7 @@ func (s *ContinuousStats) getPlot() string {
 
 	// Initialize bins
 	bins := make([]float64, numBins)
-	
+
 	// Count values in each bin
 	for _, v := range s.data {
 		binIndex := int((v - s.min) / binWidth)

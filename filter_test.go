@@ -6,15 +6,14 @@ import (
 
 func TestBuffer_filterByColumn(t *testing.T) {
 	tests := []struct {
-		name          string
-		data          [][]string
-		colIndex      int
-		query         string
-		caseSensitive bool
-		expectedRows  int // including header
+		name         string
+		data         [][]string
+		colIndex     int
+		options      FilterOptions
+		expectedRows int // including header
 	}{
 		{
-			name: "Filter by exact match",
+			name: "Filter with operator 'contains'",
 			data: [][]string{
 				{"Name", "Status", "Age"},
 				{"Alice", "Active", "30"},
@@ -22,11 +21,23 @@ func TestBuffer_filterByColumn(t *testing.T) {
 				{"Charlie", "Active", "35"},
 			},
 			colIndex:     1, // Status column
-			query:        "Active",
-			expectedRows: 4, // header + 2 Active rows + 1 Inactive (contains "active")
+			options:      FilterOptions{Query: "act", Operator: "contains", CaseSensitive: false},
+			expectedRows: 4, // header + 3 rows containing "act"
 		},
 		{
-			name: "Filter by partial match",
+			name: "Filter with operator 'contains' case sensitive",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "Active", "30"},
+				{"Bob", "Inactive", "25"},
+				{"Charlie", "active", "35"},
+			},
+			colIndex:     1, // Status column
+			options:      FilterOptions{Query: "Active", Operator: "contains", CaseSensitive: true},
+			expectedRows: 2, // header + "Active"
+		},
+		{
+			name: "Filter with operator 'equals'",
 			data: [][]string{
 				{"Name", "Status", "Age"},
 				{"Alice", "Active", "30"},
@@ -34,55 +45,68 @@ func TestBuffer_filterByColumn(t *testing.T) {
 				{"Charlie", "Active", "35"},
 			},
 			colIndex:     1, // Status column
-			query:        "act",
-			expectedRows: 4, // header + all 3 rows containing "act"
+			options:      FilterOptions{Query: "Active", Operator: "equals", CaseSensitive: false},
+			expectedRows: 3, // header + 2 "Active" rows
 		},
 		{
-			name: "Filter case insensitive",
-			data: [][]string{
-				{"Name", "Status", "Age"},
-				{"Alice", "ACTIVE", "30"},
-				{"Bob", "inactive", "25"},
-				{"Charlie", "Active", "35"},
-			},
-			colIndex:     1, // Status column
-			query:        "active",
-			expectedRows: 4, // header + all 3 rows (case insensitive)
-		},
-		{
-			name: "Filter no matches",
+			name: "Filter with operator 'starts with'",
 			data: [][]string{
 				{"Name", "Status", "Age"},
 				{"Alice", "Active", "30"},
 				{"Bob", "Inactive", "25"},
-				{"Charlie", "Active", "35"},
+				{"Charlie", "Activation", "35"},
 			},
 			colIndex:     1, // Status column
-			query:        "Pending",
-			expectedRows: 1, // only header
+			options:      FilterOptions{Query: "Activ", Operator: "starts with", CaseSensitive: false},
+			expectedRows: 3, // header + "Active", "Activation"
 		},
 		{
-			name: "Filter first column",
+			name: "Filter with operator 'ends with'",
 			data: [][]string{
 				{"Name", "Status", "Age"},
 				{"Alice", "Active", "30"},
 				{"Bob", "Inactive", "25"},
-				{"Charlie", "Active", "35"},
+				{"Charlie", "Proactive", "35"},
 			},
-			colIndex:     0, // Name column
-			query:        "li",
-			expectedRows: 3, // header + Alice, Charlie (both contain "li")
+			colIndex:     1, // Status column
+			options:      FilterOptions{Query: "active", Operator: "ends with", CaseSensitive: false},
+			expectedRows: 4, // header + "Active", "Inactive", "Proactive"
 		},
 		{
-			name: "Empty filter query matches all",
+			name: "Filter with operator 'regex'",
 			data: [][]string{
 				{"Name", "Status", "Age"},
 				{"Alice", "Active", "30"},
 				{"Bob", "Inactive", "25"},
+				{"Charlie", "Pending", "35"},
 			},
 			colIndex:     1, // Status column
-			query:        "",
-			expectedRows: 3, // header + all data rows
+			options:      FilterOptions{Query: "^(Act|Inact)ive$", Operator: "regex", CaseSensitive: true},
+			expectedRows: 3, // header + "Active", "Inactive"
+		},
+		{
+			name: "Filter with numeric operator '>'",
+			data: [][]string{
+				{"Name", "Age"},
+				{"Alice", "30"},
+				{"Bob", "25"},
+				{"Charlie", "35"},
+			},
+			colIndex:     1, // Age column
+			options:      FilterOptions{Query: "28", Operator: ">"},
+			expectedRows: 3, // header + "30", "35"
+		},
+		{
+			name: "Filter with numeric operator '<='",
+			data: [][]string{
+				{"Name", "Age"},
+				{"Alice", "30"},
+				{"Bob", "25"},
+				{"Charlie", "28"},
+			},
+			colIndex:     1, // Age column
+			options:      FilterOptions{Query: "28", Operator: "<="},
+			expectedRows: 3, // header + "25", "28"
 		},
 	}
 
@@ -94,9 +118,10 @@ func TestBuffer_filterByColumn(t *testing.T) {
 				t.Fatalf("Failed to create buffer: %v", err)
 			}
 			b.rowFreeze = 1 // Set header row
+			b.detectAllColumnTypes()
 
 			// Apply filter
-			filtered := b.filterByColumn(tt.colIndex, tt.query, tt.caseSensitive)
+			filtered := b.filterByColumn(tt.colIndex, tt.options)
 
 			// Check result
 			if filtered.rowLen != tt.expectedRows {
@@ -133,7 +158,7 @@ func TestBuffer_filterByColumn_EdgeCases(t *testing.T) {
 		b.rowFreeze = 1
 
 		// Filter by non-existent column
-		filtered := b.filterByColumn(10, "test", false)
+		filtered := b.filterByColumn(10, FilterOptions{Query: "test", Operator: "contains"})
 
 		// Should return only header
 		if filtered.rowLen != 1 {
@@ -146,7 +171,7 @@ func TestBuffer_filterByColumn_EdgeCases(t *testing.T) {
 		b.rowFreeze = 0
 
 		// Filter empty buffer
-		filtered := b.filterByColumn(0, "test", false)
+		filtered := b.filterByColumn(0, FilterOptions{Query: "test", Operator: "contains"})
 
 		// Should return empty buffer
 		if filtered.rowLen != 0 {
@@ -163,11 +188,11 @@ func TestBuffer_filterByColumn_EdgeCases(t *testing.T) {
 		b.rowFreeze = 0 // No header
 
 		// Filter by column
-		filtered := b.filterByColumn(1, "Active", false)
+		filtered := b.filterByColumn(1, FilterOptions{Query: "Active", Operator: "equals", CaseSensitive: true})
 
-		// Should return 2 rows (both contain "active")
-		if filtered.rowLen != 2 {
-			t.Errorf("Expected 2 rows, got %d", filtered.rowLen)
+		// Should return 1 row
+		if filtered.rowLen != 1 {
+			t.Errorf("Expected 1 row, got %d", filtered.rowLen)
 		}
 	})
 }

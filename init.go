@@ -41,9 +41,13 @@ var searchResults []SearchResult // Store search results
 var currentSearchIndex int       // Current position in search results
 var searchQuery string           // Current search query
 var searchModal tview.Primitive  // Search modal dialog
-var originalBuffer *Buffer       // Store original buffer before filtering
-var isFiltered bool              // Track if filter is active
-var lastKeyWasG bool             // Track if last key pressed was 'g' for gg navigation
+var searchUseRegex bool
+
+var originalBuffer *Buffer              // Store original buffer before filtering
+var isFiltered bool                     // Track if filter is active
+var activeFilters map[int]FilterOptions // Track active filters: column -> query
+var currentCursorColumn int             // Track current cursor column position
+var lastKeyWasG bool                    // Track if last key pressed was 'g' for gg navigation
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -73,14 +77,18 @@ type SearchResult struct {
 // initialize tview, buffer
 func initView() {
 	app = tview.NewApplication()
+	app.EnableMouse(true) // Enable mouse support
 	b = createNewBuffer()
 	wrappedColumns = make(map[int]int) // Initialize wrapped columns map
 	searchResults = []SearchResult{}
 	currentSearchIndex = -1
 	searchQuery = ""
+	searchUseRegex = false
 	originalBuffer = nil // Initialize filter variables
 	isFiltered = false
-	lastKeyWasG = false // Initialize vim navigation state
+	activeFilters = make(map[int]FilterOptions) // Initialize active filters map
+	currentCursorColumn = 0                     // Initialize cursor column
+	lastKeyWasG = false                         // Initialize vim navigation state
 }
 
 // stop UI
