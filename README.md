@@ -156,8 +156,6 @@ tv file.vcf --skip-prefix "##"
 
 ## Command Line Flags
 
-## Command Line Flags
-
 **Syntax:** `tv [FILE] [flags]`
 
 | Flag | Short | Description |
@@ -237,8 +235,6 @@ tv uses vim-inspired keybindings for intuitive navigation.
 
 ### Progressive Loading
 
-### Progressive Loading
-
 Start viewing large files instantly without waiting for them to fully load. The UI appears immediately and updates as data streams in.
 
 ```bash
@@ -287,8 +283,6 @@ Analyze your data with comprehensive statistics and modern ASCII plots.
 - **Visual distribution:** Bar chart of top 15 most frequent values
 
 The statistics dialog features a split-pane layout with numerical stats on the left and an ASCII graph visualization on the right, powered by `asciigraph` for modern, clean plots.
-
-### Search
 
 ### Search
 
