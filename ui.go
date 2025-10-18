@@ -776,26 +776,30 @@ func drawUI(b *Buffer) error {
 			drawFooterText(fileNameStr, "Calculating statistics...", cursorPosStr)
 			app.ForceDraw()
 
+			// Use the current buffer (which is filtered if filters are active)
+			// This ensures stats are calculated only on visible/filtered data
+			currentBuffer := b
+			
 			var statsS statsSummary
-			summaryArray := b.getCol(column)
+			summaryArray := currentBuffer.getCol(column)
 			columnName := "Column " + I2S(column)
 
 			// Get column name from header if available
-			if b.rowFreeze > 0 && len(b.cont) > 0 && column < len(b.cont[0]) {
-				columnName = b.cont[0][column]
+			if currentBuffer.rowFreeze > 0 && len(currentBuffer.cont) > 0 && column < len(currentBuffer.cont[0]) {
+				columnName = currentBuffer.cont[0][column]
 				summaryArray = summaryArray[1:]
 			}
 
 			// Determine statistics type
-			if b.getColType(column) == colTypeFloat {
+			if currentBuffer.getColType(column) == colTypeFloat {
 				statsS = &ContinuousStats{}
 			} else {
 				statsS = &DiscreteStats{}
 			}
 			statsS.summary(summaryArray)
 
-			// Show statistics as a modal dialog
-			showStatsDialog(statsS, columnName, b.getColType(column))
+			// Show statistics as a modal dialog with filter indication
+			showStatsDialog(statsS, columnName, currentBuffer.getColType(column))
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 			return nil
 		}
@@ -976,6 +980,12 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 
 	typeName := type2name(colType)
 	title := fmt.Sprintf(" 📊 Statistics: %s [%s] ", columnName, typeName)
+	
+	// Add filter indicator if data is filtered
+	if isFiltered && len(activeFilters) > 0 {
+		title = fmt.Sprintf(" 📊 Statistics: %s [%s] (Filtered Data - %d filters active) ", columnName, typeName, len(activeFilters))
+	}
+	
 	statsTable.SetTitle(title)
 	statsTable.SetTitleAlign(tview.AlignCenter)
 

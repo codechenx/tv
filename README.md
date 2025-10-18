@@ -287,6 +287,8 @@ Analyze your data with comprehensive statistics and modern ASCII plots.
 - Frequency distribution with percentages
 - **Visual distribution:** Bar chart of top 15 most frequent values
 
+**Important:** When column filters are active, statistics are calculated **only on the filtered/visible data**, not the entire dataset. The dialog title will indicate when statistics are based on filtered data and show the number of active filters.
+
 The statistics dialog features a split-pane layout with numerical stats on the left and an ASCII graph visualization on the right, powered by `asciigraph` for modern, clean plots.
 
 ### Search
