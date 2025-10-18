@@ -452,7 +452,6 @@ Navigate to filtered column → Press r
 - The strip automatically hides when you move to a different column
 - Press `r` to clear the filter and return to normal view
 
-For more details, see [FILTER_OPERATORS.md](FILTER_OPERATORS.md).
 
 ### Text Wrapping
 
