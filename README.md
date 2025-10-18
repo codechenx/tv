@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/codechenx/tv/badge.svg?branch=master)](https://coveralls.io/github/codechenx/tv?branch=master)
 [![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/codechenx/tv.svg)](http://GitHub.com/codechenx/tv/releases)
-[![codechenx-tv](https://snapcraft.io//codechenx-tv/badge.svg)](https://snapcraft.io/codechenx-tv)
+
 
 <p align="center">
    <img src="data/icon-192x192.png" alt="tv icon"/>
