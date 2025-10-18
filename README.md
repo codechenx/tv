@@ -47,7 +47,7 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 - **Progressive loading** - Start viewing large files immediately while they load
 - **Gzip support** - Read compressed files directly
 - **Powerful search** - Find text across all cells with highlighting and regex pattern matching support
-- **Advanced filtering** - Filter rows with OR, AND, and ROR operators for complex queries
+- **Advanced filtering** - Filter rows complex regex queries
 - **Flexible sorting** - Sort by any column with intelligent type detection
 - **Text wrapping** - Wrap long cell content for better readability
 - **Statistics & plots** - View column statistics with visual distribution charts
