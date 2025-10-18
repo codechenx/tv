@@ -30,6 +30,7 @@
 - [Features in Detail](#features-in-detail)
   - [Progressive Loading](#progressive-loading)
   - [Data Types and Sorting](#data-types-and-sorting)
+  - [Statistics and Visualization](#statistics-and-visualization)
   - [Search](#search)
   - [Column Filter](#column-filter)
   - [Text Wrapping](#text-wrapping)
@@ -48,7 +49,7 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 - **Column filtering** - Show only rows matching specific criteria
 - **Flexible sorting** - Sort by any column with intelligent type detection
 - **Text wrapping** - Wrap long cell content for better readability
-- **Statistics** - View column stats (min/max, mean for numbers; frequency for strings)
+- **Statistics & plots** - View column statistics with visual distribution charts
 - **Vim keybindings** - Navigate naturally with h/j/k/l and more
 - **Pipe support** - Read from stdin for seamless integration with shell pipelines
 
@@ -271,9 +272,25 @@ tv automatically detects column types and provides intelligent sorting.
 - **Numbers:** Numeric order (supports integers, floats, scientific notation, thousands separators)
 - **Dates:** Chronological order (supports ISO-8601, US format, EU format, and more)
 
-**View Statistics:** Press `i` to open a comprehensive statistics dialog showing:
-- **For numeric columns:** count, min, max, range, sum, mean, median, mode, standard deviation, variance, quartiles (Q1, Q2, Q3), and IQR
-- **For string columns:** total values, unique values, frequency distribution with percentages for each value
+### Statistics and Visualization
+
+Analyze your data with comprehensive statistics and modern ASCII plots.
+
+**View Statistics:** Press `i` on any column to open an interactive statistics dialog that displays:
+
+**For numeric columns:**
+- Summary stats: count, min, max, range, sum
+- Central tendency: mean, median, mode
+- Dispersion: standard deviation, variance
+- Quartiles: Q1, Q2, Q3, and IQR
+- **Visual distribution:** Histogram plot showing data distribution
+
+**For categorical/string columns:**
+- Total values, unique values, missing/empty count
+- Frequency distribution with percentages
+- **Visual distribution:** Bar chart of top 15 most frequent values
+
+The statistics dialog features a split-pane layout with numerical stats on the left and an ASCII graph visualization on the right, powered by `asciigraph` for modern, clean plots.
 
 ### Search
 
@@ -427,7 +444,7 @@ tv data.txt -s "  "
 - **Too many columns?** Use `--columns` to show only what you need
 - **Long text?** Press `W` to wrap the current column
 - **Wrong sort order?** Press `t` to change the column type, then `s` to re-sort
-- **Need stats?** Press `i` for comprehensive statistics including mean, median, quartiles, std dev, and frequency distributions
+- **Need insights?** Press `i` for comprehensive statistics with visual plots - histograms for numeric data, frequency charts for categorical data
 
 ## License
 

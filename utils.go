@@ -55,62 +55,78 @@ func I2S(i int) string {
 }
 
 func getHelpContent() string {
-	helpContent := `
-Vim-like Key Bindings
+	helpContent := `[::b][yellow]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[white]
 
-##Help Navigation##
-j/k                 Scroll help text
-gg/G                Jump to top/bottom
-Ctrl-d/u            Page down/up
-? or q or Esc       Close help dialog
+[::b][cyan]🚀 TV - Modern Terminal Table Viewer[-][white]
 
-##Quit##
-q                   Quit application
-Esc                 Close dialog or clear search
+[::b][yellow]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[white]
 
-##Movement##
-h                   Move left
-l                   Move right
-j                   Move down
-k                   Move up
+[::b][green]📖 Help Navigation[white]
+  [yellow]j/k[-]                 Scroll help text
+  [yellow]gg/G[-]                Jump to top/bottom
+  [yellow]Ctrl-d/u[-]            Page down/up
+  [yellow]? or q or Esc[-]       Close help dialog
 
-w                   Move to next column (word forward)
-b                   Move to previous column (word backward)
+[::b][red]🚪 Quit[white]
+  [yellow]q[-]                   Quit application
+  [yellow]Esc[-]                 Close dialog or clear search
 
-gg                  Go to first row (press g twice)
-G                   Go to last row
+[::b][blue]⬆️ Movement[white]
+  [yellow]h[-]                   Move left ⬅️
+  [yellow]l[-]                   Move right ➡️
+  [yellow]j[-]                   Move down ⬇️
+  [yellow]k[-]                   Move up ⬆️
 
-0                   Go to first column
-$                   Go to last column
+  [yellow]w[-]                   Move to next column (word forward)
+  [yellow]b[-]                   Move to previous column (word backward)
 
-Ctrl-d              Page down (half page)
-Ctrl-u              Page up (half page)
+  [yellow]gg[-]                  Go to first row (press g twice)
+  [yellow]G[-]                   Go to last row
 
-##Search##
-/                   Search for text
-n                   Next search result
-N                   Previous search result
-Esc                 Clear search highlighting
+  [yellow]0[-]                   Go to first column
+  [yellow]$[-]                   Go to last column
 
-##Filter##
-f                   Filter rows by current column value
-r                   Reset/clear column filter
+  [yellow]Ctrl-d[-]              Page down (half page)
+  [yellow]Ctrl-u[-]              Page up (half page)
 
-##Data Type##
-t                   Toggle column data type (Str -> Num -> Date -> Str)
+[::b][magenta]🔍 Search[white]
+  [yellow]/[-]                   Search for text
+  [yellow]n[-]                   Next search result ⏭
+  [yellow]N[-]                   Previous search result ⏮
+  [yellow]Esc[-]                 Clear search highlighting
 
-##Sort##
-s                   Sort data by column (ascending)
-S                   Sort data by column (descending)
+[::b][orange]🔎 Filter[white]
+  [yellow]f[-]                   Filter rows by current column value
+  [yellow]r[-]                   Reset/clear column filter
 
-##Text Wrapping##
-W                   Toggle text wrapping for current column
+[::b][purple]🏷️  Data Type[white]
+  [yellow]t[-]                   Toggle column data type
+                    (String → Number → Date → String)
 
-##Stats##
-i                   Show stats info for current column
+[::b][green]🔃 Sort[white]
+  [yellow]s[-]                   Sort data by column (ascending ⬆️)
+  [yellow]S[-]                   Sort data by column (descending ⬇️)
 
-##Help##
-?                   Show this help dialog
+[::b][cyan]📏 Text Wrapping[white]
+  [yellow]W[-]                   Toggle width limit for current column (50 chars)
+                    Long columns (>50 chars) are limited automatically
+
+[::b][blue]📊 Stats[white]
+  [yellow]i[-]                   Show stats info for current column
+
+[::b][yellow]❓ Help[white]
+  [yellow]?[-]                   Show this help dialog
+
+[::b][yellow]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[white]
+
+[::b][green]💡 Pro Tips:[white]
+  • Press [yellow]gg[-] to jump to the top of any table
+  • Use [yellow]/[-] for quick searching across all cells
+  • Press [yellow]i[-] to see detailed statistics for any column
+  • Use [yellow]f[-] to filter data without losing the original view
+  • Headers are frozen by default for easy navigation
+
+[::b][yellow]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[white]
 `
 	return helpContent
 }
@@ -165,10 +181,29 @@ func wrapText(text string, maxWidth int) string {
 	return string(result)
 }
 
+// truncateText truncates text to maxWidth and adds ellipsis if needed
+func truncateText(text string, maxWidth int) string {
+	if maxWidth <= 0 {
+		return text
+	}
+
+	runes := []rune(text)
+	if len(runes) <= maxWidth {
+		return text
+	}
+
+	// Reserve 3 characters for ellipsis
+	if maxWidth <= 3 {
+		return string(runes[:maxWidth])
+	}
+
+	return string(runes[:maxWidth-3]) + "..."
+}
+
 // getColumnMaxWidth determines the maximum width for a column
 func getColumnMaxWidth(colIndex int) int {
-	// Default wrap width (25 characters)
-	defaultWidth := 25
+	// Default wrap width (50 characters for long columns)
+	defaultWidth := 50
 
 	// Check if custom width is set
 	if width, exists := wrappedColumns[colIndex]; exists {
@@ -176,6 +211,50 @@ func getColumnMaxWidth(colIndex int) int {
 	}
 
 	return defaultWidth
+}
+
+// detectAndWrapLongColumns automatically enables wrapping for columns with long content
+// Analyzes first N rows to detect if columns have text longer than threshold
+func detectAndWrapLongColumns(b *Buffer, sampleSize int, threshold int) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	// Determine how many rows to sample
+	maxSample := sampleSize
+	if b.rowLen < maxSample {
+		maxSample = b.rowLen
+	}
+
+	// Skip header row in analysis if it exists
+	startRow := 0
+	if b.rowFreeze > 0 {
+		startRow = b.rowFreeze
+	}
+
+	// Track maximum length found in each column
+	maxLengths := make([]int, b.colLen)
+
+	// Sample rows to find maximum content length per column
+	for r := startRow; r < maxSample; r++ {
+		for c := 0; c < b.colLen; c++ {
+			if c < len(b.cont[r]) {
+				cellLen := len(b.cont[r][c])
+				if cellLen > maxLengths[c] {
+					maxLengths[c] = cellLen
+				}
+			}
+		}
+	}
+
+	// Enable wrapping for columns that exceed threshold
+	for c := 0; c < b.colLen; c++ {
+		if maxLengths[c] > threshold {
+			// Only set if not already manually configured
+			if _, exists := wrappedColumns[c]; !exists {
+				wrappedColumns[c] = getColumnMaxWidth(c)
+			}
+		}
+	}
 }
 
 // performSearch searches for a query string in the buffer and stores results

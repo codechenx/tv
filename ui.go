@@ -25,12 +25,28 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
 			backgroundColor := tcell.ColorDefault
-			if c < b.colFreeze || r < b.rowFreeze {
-				color = tcell.ColorYellow
-			}
-
+			attributes := tcell.AttrNone
+			alignment := tview.AlignLeft
+			
 			// Get cell content
 			cellText := b.cont[r][c]
+
+			// Check if this is a header row/column (frozen area)
+			isHeaderRow := r < b.rowFreeze && args.Header != -1 && args.Header != 2
+			isHeaderCol := c < b.colFreeze
+
+			// Modern header styling with rich visual design
+			if isHeaderRow {
+				// Main header row: bold white text on gradient blue background
+				color = tcell.ColorWhite
+				backgroundColor = tcell.NewRGBColor(30, 60, 120) // Deep blue
+				attributes = tcell.AttrBold | tcell.AttrUnderline
+				alignment = tview.AlignCenter
+			} else if isHeaderCol {
+				// Frozen column: gold color for row headers
+				color = tcell.NewRGBColor(255, 215, 0) // Gold
+				attributes = tcell.AttrBold
+			}
 
 			// Check if this cell is a search result and highlight it
 			isSearchMatch := false
@@ -43,44 +59,45 @@ func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
 				}
 			}
 
-			// Highlight search matches
+			// Modern search match highlighting (overrides header styling)
 			if isSearchMatch {
 				// Check if this is the current search result
 				if currentSearchIndex >= 0 && currentSearchIndex < len(searchResults) &&
 					searchResults[currentSearchIndex].Row == r &&
 					searchResults[currentSearchIndex].Col == c {
-					// Current match: bright highlight
-					backgroundColor = tcell.ColorDarkCyan
+					// Current match: vibrant cyan highlight
+					backgroundColor = tcell.NewRGBColor(0, 180, 216)
 					color = tcell.ColorBlack
+					attributes = tcell.AttrBold
 				} else {
-					// Other matches: subtle highlight
-					backgroundColor = tcell.ColorDarkGray
+					// Other matches: soft purple highlight
+					backgroundColor = tcell.NewRGBColor(100, 100, 150)
 					color = tcell.ColorWhite
+					attributes = tcell.AttrNone
 				}
 			}
 
-			// Apply text wrapping if column is marked for wrapping
-			if maxWidth, isWrapped := wrappedColumns[c]; isWrapped {
-				cellText = wrapText(cellText, maxWidth)
+			// Determine max width for this column
+			maxWidth := 0
+			if width, isWrapped := wrappedColumns[c]; isWrapped {
+				maxWidth = width
+				// Truncate text if it exceeds max width
+				cellText = truncateText(cellText, maxWidth)
 			}
 
-			if r == 0 && args.Header != -1 && args.Header != 2 {
-				t.SetCell(r, c,
-					tview.NewTableCell(cellText).
-						SetTextColor(color).
-						SetBackgroundColor(backgroundColor).
-						SetAlign(tview.AlignLeft).
-						SetMaxWidth(0). // 0 means no limit, allows wrapping
-						SetExpansion(1))
-				continue
+			// Create cell with modern styling
+			cell := tview.NewTableCell(cellText).
+				SetTextColor(color).
+				SetBackgroundColor(backgroundColor).
+				SetAttributes(attributes).
+				SetAlign(alignment).
+				SetExpansion(1)
+			
+			if maxWidth > 0 {
+				cell.SetMaxWidth(maxWidth)
 			}
-			t.SetCell(r, c,
-				tview.NewTableCell(cellText).
-					SetTextColor(color).
-					SetBackgroundColor(backgroundColor).
-					SetAlign(tview.AlignLeft).
-					SetMaxWidth(0).
-					SetExpansion(1))
+			
+			t.SetCell(r, c, cell)
 		}
 	}
 }
@@ -94,9 +111,22 @@ func drawStats(s statsSummary, t *tview.Table) {
 	for r := 0; r < rows; r++ {
 		for c := 0; c < cols; c++ {
 			color := tcell.ColorWhite
+			backgroundColor := tcell.ColorDefault
+			
+			// Modern styling: alternate row colors for better readability
+			if r%2 == 1 {
+				backgroundColor = tcell.NewRGBColor(20, 20, 30)
+			}
+			
+			// Highlight stat labels with accent color
+			if c == 0 {
+				color = tcell.NewRGBColor(100, 200, 255) // Soft blue for labels
+			}
+			
 			t.SetCell(r, c,
 				tview.NewTableCell(summaryData[r][c]).
 					SetTextColor(color).
+					SetBackgroundColor(backgroundColor).
 					SetAlign(tview.AlignLeft))
 		}
 	}
@@ -105,15 +135,25 @@ func drawStats(s statsSummary, t *tview.Table) {
 // draw app UI
 func drawUI(b *Buffer, trs bool) error {
 
-	//bufferTable init
+	//bufferTable init with modern styling
 	bufferTable = tview.NewTable()
 	bufferTable.SetSelectable(true, true)
 	bufferTable.SetBorders(false)
+	bufferTable.SetSeparator(tview.Borders.Vertical) // Add subtle vertical separators
+	bufferTable.SetBordersColor(tcell.NewRGBColor(60, 100, 140)) // Subtle blue borders
 	bufferTable.SetFixed(b.rowFreeze, b.colFreeze)
 	bufferTable.Select(0, 0)
+	bufferTable.SetSelectedStyle(tcell.Style{}.
+		Foreground(tcell.ColorBlack).
+		Background(tcell.NewRGBColor(100, 200, 255)). // Modern cyan selection
+		Attributes(tcell.AttrBold))
+	
+	// Auto-detect and wrap long columns (sample first 100 rows, threshold 50 characters)
+	detectAndWrapLongColumns(b, 100, 50)
+	
 	drawBuffer(b, bufferTable, trs)
 
-	//main page init
+	//main page init with modern styling
 	cursorPosStr = "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
 	if statusMessage == "" {
 		statusMessage = "All Done"
@@ -122,16 +162,16 @@ func drawUI(b *Buffer, trs bool) error {
 	fileNameStr = shorFileName + "  |  " + "? help" //footer left
 	mainPage = tview.NewFrame(bufferTable).
 		SetBorders(0, 0, 0, 0, 0, 0).
-		AddText(fileNameStr, false, tview.AlignLeft, tcell.ColorDarkOrange).
-		AddText(statusMessage, false, tview.AlignCenter, tcell.ColorDarkOrange).
-		AddText(cursorPosStr, false, tview.AlignRight, tcell.ColorDarkOrange)
+		AddText(fileNameStr, false, tview.AlignLeft, tcell.NewRGBColor(255, 150, 50)).
+		AddText(statusMessage, false, tview.AlignCenter, tcell.NewRGBColor(100, 200, 255)).
+		AddText(cursorPosStr, false, tview.AlignRight, tcell.NewRGBColor(150, 255, 150))
 
 	drawFooterText := func(lstr, cstr, rstr string) {
 		statusMessage = cstr // Update global status
 		mainPage.Clear()
-		mainPage.AddText(lstr, false, tview.AlignLeft, tcell.ColorDarkOrange).
-			AddText(cstr, false, tview.AlignCenter, tcell.ColorDarkOrange).
-			AddText(rstr, false, tview.AlignRight, tcell.ColorDarkOrange)
+		mainPage.AddText(lstr, false, tview.AlignLeft, tcell.NewRGBColor(255, 150, 50)).
+			AddText(cstr, false, tview.AlignCenter, tcell.NewRGBColor(100, 200, 255)).
+			AddText(rstr, false, tview.AlignRight, tcell.NewRGBColor(150, 255, 150))
 	}
 
 	//UI init - add pages to UI container
@@ -309,8 +349,9 @@ func drawUI(b *Buffer, trs bool) error {
 			})
 			form.SetButtonsAlign(tview.AlignCenter)
 			form.SetBorder(true)
-			form.SetTitle(" Search (case-insensitive) - Enter to search, Esc to cancel ")
+			form.SetTitle(" 🔍 Search (case-insensitive) - Enter to search, Esc to cancel ")
 			form.SetTitleAlign(tview.AlignCenter)
+			form.SetBorderColor(tcell.NewRGBColor(100, 200, 255))
 
 			// Handle Escape and Enter keys on form
 			form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -446,8 +487,9 @@ func drawUI(b *Buffer, trs bool) error {
 			})
 			filterForm.SetButtonsAlign(tview.AlignCenter)
 			filterForm.SetBorder(true)
-			filterForm.SetTitle(fmt.Sprintf(" Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
+			filterForm.SetTitle(fmt.Sprintf(" 🔎 Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
 			filterForm.SetTitleAlign(tview.AlignCenter)
+			filterForm.SetBorderColor(tcell.NewRGBColor(255, 150, 50))
 
 			// Handle Escape and Enter keys on form
 			filterForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -612,13 +654,17 @@ func drawUI(b *Buffer, trs bool) error {
 			if _, isWrapped := wrappedColumns[column]; isWrapped {
 				// Unwrap: remove from wrapped columns
 				delete(wrappedColumns, column)
+				drawFooterText(fileNameStr, "Column width limit removed", cursorPosStr)
 			} else {
 				// Wrap: add to wrapped columns with default width
-				wrappedColumns[column] = 25 // Default wrap width (25 characters)
+				width := getColumnMaxWidth(column)
+				wrappedColumns[column] = width
+				drawFooterText(fileNameStr, fmt.Sprintf("Column width limited to %d chars", width), cursorPosStr)
 			}
 
 			// Redraw the table with updated wrapping
 			drawBuffer(b, bufferTable, args.Transpose)
+			return nil
 		}
 
 		// q - quit application
@@ -656,12 +702,13 @@ func showHelpDialog() {
 		SetTextAlign(tview.AlignLeft).
 		SetWordWrap(true)
 
-	// Make help text scrollable
+	// Make help text scrollable with modern styling
 	helpText.SetScrollable(true)
 	helpText.SetBorder(true)
-	helpText.SetTitle(" Help - Press ? or q or Esc to close ")
+	helpText.SetTitle(" ❓ Help - Press ? or q or Esc to close ")
 	helpText.SetTitleAlign(tview.AlignCenter)
-	helpText.SetBorderColor(tcell.ColorDarkOrange)
+	helpText.SetBorderColor(tcell.NewRGBColor(150, 100, 255))
+	helpText.SetBackgroundColor(tcell.NewRGBColor(10, 10, 20))
 
 	// Handle key events to close dialog
 	helpText.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -747,17 +794,33 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 	// Draw statistics
 	drawStats(statsS, statsTable)
 
-	// Create border with title
+	// Create border with title and modern styling
 	statsTable.SetBorder(true)
-	statsTable.SetBorderColor(tcell.ColorDarkOrange)
+	statsTable.SetBorderColor(tcell.NewRGBColor(100, 200, 255))
 
 	typeName := type2name(colType)
-	title := fmt.Sprintf(" Statistics: %s [%s] - Press q or Esc to close ", columnName, typeName)
+	title := fmt.Sprintf(" 📊 Statistics: %s [%s] ", columnName, typeName)
 	statsTable.SetTitle(title)
 	statsTable.SetTitleAlign(tview.AlignCenter)
 
+	// Create plot view
+	plotView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetText(statsS.getPlot()).
+		SetTextAlign(tview.AlignLeft)
+	plotView.SetBorder(true)
+	plotView.SetTitle(" 📈 Visual Distribution ")
+	plotView.SetTitleAlign(tview.AlignCenter)
+	plotView.SetBorderColor(tcell.NewRGBColor(255, 150, 50))
+
+	// Create a flex layout with stats on left and plot on right
+	statsContent := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(statsTable, 0, 1, true).
+		AddItem(plotView, 0, 1, false)
+
 	// Handle key events
-	statsTable.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	statsContent.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		// Escape or q - close dialog
 		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == 'q') {
 			UI.RemovePage("statsDialog")
@@ -829,17 +892,21 @@ func showStatsDialog(statsS statsSummary, columnName string, colType int) {
 		return event
 	})
 
-	// Create a centered modal with the stats table
-	// Modal dimensions: 60% width, 70% height
+	// Create a centered modal with the stats content
+	// Modal dimensions: 80% width, 80% height
 	statsModal := tview.NewFlex().
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
-			AddItem(statsTable, 0, 70, true).
-			AddItem(nil, 0, 1, false), 0, 60, true).
+			AddItem(statsContent, 0, 80, true).
+			AddItem(tview.NewTextView().
+				SetText("Press q or Esc to close").
+				SetTextAlign(tview.AlignCenter).
+				SetTextColor(tcell.NewRGBColor(150, 150, 150)), 1, 0, false).
+			AddItem(nil, 0, 1, false), 0, 80, true).
 		AddItem(nil, 0, 1, false)
 
 	// Add and show the stats dialog
 	UI.AddPage("statsDialog", statsModal, true, true)
-	app.SetFocus(statsTable)
+	app.SetFocus(statsContent)
 }

@@ -162,3 +162,75 @@ func BenchmarkDiscreteStats(b *testing.B) {
 		ds.summary(data)
 	}
 }
+
+// ========================================
+// Plot Tests
+// ========================================
+
+func TestContinuousStats_GetPlot(t *testing.T) {
+	cs := &ContinuousStats{}
+	data := []string{"10", "20", "15", "25", "30", "18", "22", "27", "12", "16"}
+
+	cs.summary(data)
+	plot := cs.getPlot()
+
+	if len(plot) == 0 {
+		t.Error("Expected plot output, got empty string")
+	}
+	if plot == "No data to plot" {
+		t.Error("Should generate plot for valid data")
+	}
+	t.Logf("Plot output:\n%s", plot)
+}
+
+func TestContinuousStats_GetPlot_EmptyData(t *testing.T) {
+	cs := &ContinuousStats{}
+	data := []string{}
+
+	cs.summary(data)
+	plot := cs.getPlot()
+
+	if plot != "No data to plot" {
+		t.Errorf("Expected 'No data to plot', got: %s", plot)
+	}
+}
+
+func TestContinuousStats_GetPlot_IdenticalValues(t *testing.T) {
+	cs := &ContinuousStats{}
+	data := []string{"42", "42", "42", "42", "42"}
+
+	cs.summary(data)
+	plot := cs.getPlot()
+
+	if plot != "All values are identical" {
+		t.Errorf("Expected 'All values are identical', got: %s", plot)
+	}
+}
+
+func TestDiscreteStats_GetPlot(t *testing.T) {
+	ds := &DiscreteStats{}
+	data := []string{"A", "B", "A", "C", "A", "B", "A", "D", "A", "B"}
+
+	ds.summary(data)
+	plot := ds.getPlot()
+
+	if len(plot) == 0 {
+		t.Error("Expected plot output, got empty string")
+	}
+	if plot == "No data to plot" {
+		t.Error("Should generate plot for valid data")
+	}
+	t.Logf("Plot output:\n%s", plot)
+}
+
+func TestDiscreteStats_GetPlot_EmptyData(t *testing.T) {
+	ds := &DiscreteStats{}
+	data := []string{}
+
+	ds.summary(data)
+	plot := ds.getPlot()
+
+	if plot != "No data to plot" {
+		t.Errorf("Expected 'No data to plot', got: %s", plot)
+	}
+}

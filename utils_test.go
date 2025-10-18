@@ -100,6 +100,47 @@ func TestWrapText_ExactLength(t *testing.T) {
 }
 
 // ========================================
+// Text Truncation Tests
+// ========================================
+
+func TestTruncateText_Short(t *testing.T) {
+	text := "Short"
+	result := truncateText(text, 25)
+	if result != text {
+		t.Errorf("Short text should not be truncated: got '%s', want '%s'", result, text)
+	}
+}
+
+func TestTruncateText_Long(t *testing.T) {
+	text := "This is a very long text that needs to be truncated"
+	result := truncateText(text, 20)
+	expected := "This is a very lo..."
+	if result != expected {
+		t.Errorf("Long text should be truncated: got '%s', want '%s'", result, expected)
+	}
+	// Check that result doesn't exceed maxWidth
+	if len([]rune(result)) > 20 {
+		t.Errorf("Truncated text exceeds maxWidth: got length %d, want 20", len([]rune(result)))
+	}
+}
+
+func TestTruncateText_ExactLength(t *testing.T) {
+	text := "Exactly20Characters!"
+	result := truncateText(text, 20)
+	if result != text {
+		t.Errorf("Text at exact length should not be truncated: got '%s', want '%s'", result, text)
+	}
+}
+
+func TestTruncateText_ZeroWidth(t *testing.T) {
+	text := "Some text"
+	result := truncateText(text, 0)
+	if result != text {
+		t.Errorf("Zero maxWidth should return original text: got '%s', want '%s'", result, text)
+	}
+}
+
+// ========================================
 // Column Width Tests
 // ========================================
 
@@ -131,8 +172,8 @@ func TestGetColumnMaxWidth_Default(t *testing.T) {
 	wrappedColumns = make(map[int]int)
 
 	width := getColumnMaxWidth(5)
-	if width != 25 {
-		t.Errorf("getColumnMaxWidth(5) = %d, want default 25", width)
+	if width != 50 {
+		t.Errorf("getColumnMaxWidth(5) = %d, want default 50", width)
 	}
 }
 

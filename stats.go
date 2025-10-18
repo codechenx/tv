@@ -3,6 +3,7 @@ package main
 import (
 	"sort"
 
+	"github.com/guptarohit/asciigraph"
 	"github.com/montanaflynn/stats"
 )
 
@@ -10,6 +11,7 @@ type statsSummary interface {
 	summary(a []string)
 	getSummaryData() [][]string
 	getSummaryStr(a []string) string
+	getPlot() string
 }
 
 type DiscreteStats struct {
@@ -133,6 +135,51 @@ func (s *ContinuousStats) getSummaryStr(a []string) string {
 	return result
 }
 
+// getPlot generates a histogram visualization for continuous data
+func (s *ContinuousStats) getPlot() string {
+	if len(s.data) == 0 {
+		return "No data to plot"
+	}
+
+	// Create histogram bins
+	numBins := 20
+	if len(s.data) < 100 {
+		numBins = 10
+	}
+	if len(s.data) < 20 {
+		numBins = 5
+	}
+
+	// Calculate bin width
+	binWidth := (s.max - s.min) / float64(numBins)
+	if binWidth == 0 {
+		return "All values are identical"
+	}
+
+	// Initialize bins
+	bins := make([]float64, numBins)
+	
+	// Count values in each bin
+	for _, v := range s.data {
+		binIndex := int((v - s.min) / binWidth)
+		if binIndex >= numBins {
+			binIndex = numBins - 1
+		}
+		if binIndex < 0 {
+			binIndex = 0
+		}
+		bins[binIndex]++
+	}
+
+	// Generate the plot
+	plot := asciigraph.Plot(bins,
+		asciigraph.Height(15),
+		asciigraph.Width(60),
+		asciigraph.Caption("Distribution Histogram"))
+
+	return plot
+}
+
 func (s *DiscreteStats) summary(a []string) {
 	s.data = a
 	s.count = len(a)
@@ -234,4 +281,44 @@ func (s *DiscreteStats) getSummaryStr(a []string) string {
 	}
 
 	return result
+}
+
+// getPlot generates a bar chart visualization for discrete data
+func (s *DiscreteStats) getPlot() string {
+	if len(s.counter) == 0 {
+		return "No data to plot"
+	}
+
+	// Sort by frequency
+	type kv struct {
+		Key   string
+		Value int
+	}
+	var ss []kv
+	for k, v := range s.counter {
+		ss = append(ss, kv{k, v})
+	}
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value > ss[j].Value
+	})
+
+	// Take top 15 values for the plot
+	maxDisplay := 15
+	if len(ss) < maxDisplay {
+		maxDisplay = len(ss)
+	}
+
+	// Prepare data for plotting
+	frequencies := make([]float64, maxDisplay)
+	for i := 0; i < maxDisplay; i++ {
+		frequencies[i] = float64(ss[i].Value)
+	}
+
+	// Generate the plot
+	plot := asciigraph.Plot(frequencies,
+		asciigraph.Height(12),
+		asciigraph.Width(60),
+		asciigraph.Caption("Top Values Frequency"))
+
+	return plot
 }
