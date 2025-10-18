@@ -34,6 +34,7 @@
   - [Search](#search)
   - [Column Filter](#column-filter)
   - [Text Wrapping](#text-wrapping)
+- [Filter Operators Guide](FILTER_OPERATORS.md)
 - [Advanced Examples](#advanced-examples)
   - [Biological Data Formats](#biological-data-formats)
 
@@ -46,7 +47,7 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 - **Progressive loading** - Start viewing large files immediately while they load
 - **Gzip support** - Read compressed files directly
 - **Powerful search** - Find text across all cells with highlighting
-- **Column filtering** - Show only rows matching specific criteria
+- **Advanced filtering** - Filter rows with OR, AND, and ROR operators for complex queries
 - **Flexible sorting** - Sort by any column with intelligent type detection
 - **Text wrapping** - Wrap long cell content for better readability
 - **Statistics & plots** - View column statistics with visual distribution charts
@@ -314,27 +315,58 @@ Find text anywhere in your table with full highlighting support.
 
 ### Column Filter
 
-Show only rows where a specific column matches your criteria.
+Show only rows where a specific column matches your criteria. Supports powerful OR, AND, and ROR operators for complex filtering.
 
 **How to filter:**
 
 1. Navigate to the column you want to filter
 2. Press `f` to open the filter dialog
 3. Type filter text (case-insensitive, partial match)
-4. Press Enter to apply
-5. Press `r` to reset and show all rows
+4. Use operators for complex queries (must be UPPERCASE with spaces)
+5. Press Enter to apply
+6. Press `r` to reset and show all rows
 
-**Features:**
-- Partial matching: "act" matches "active", "action", "react"
-- Header always visible
-- Footer shows filtered row count
+**Operators:**
 
-**Example:**
-```
+| Operator | Syntax | Behavior | Example |
+|----------|--------|----------|---------|
+| **Simple** | `term` | Matches cells containing the term | `active` → matches "Active", "Inactive" |
+| **OR** | `term1 OR term2` | Same cell contains either term | `error OR warning` → cell has "error" or "warning" |
+| **AND** | `term1 AND term2` | Same cell contains both terms | `user AND admin` → cell has both words |
+| **ROR** | `term1 ROR term2` | Keeps all rows matching any term | `high ROR critical` → rows with "high" + rows with "critical" |
+
+**Key Differences:**
+- **OR vs ROR**: OR checks if a single cell contains either term. ROR combines rows where any cell matches any term (row-level union).
+- All operators must be **UPPERCASE** and surrounded by spaces
+- Search terms are case-insensitive
+- All matching is partial (substring)
+
+**Examples:**
+
+```bash
+# Simple filter - partial match
 Navigate to "Status" column → f → type "pending" → Enter
+# Result: Matches "Pending", "Pending Review", etc.
+
+# OR filter - same cell matches either term
+Navigate to "Status" column → f → type "active OR pending" → Enter
+# Result: Rows where Status contains "active" OR "pending"
+
+# AND filter - same cell must contain both terms
+Navigate to "Description" column → f → type "user AND admin" → Enter
+# Result: Rows where Description has both "user" AND "admin"
+
+# ROR filter - combines separate result sets
+Navigate to "Priority" column → f → type "high ROR critical" → Enter
+# Result: All rows with "high" + all rows with "critical" (union)
 ```
 
-Now only rows where Status contains "pending" are displayed.
+**Use Cases:**
+- Use **OR** when a single field can have alternative values
+- Use **AND** when a single field must meet multiple criteria
+- Use **ROR** when you want to combine different categories of results
+
+For more details, see [FILTER_OPERATORS.md](FILTER_OPERATORS.md).
 
 ### Text Wrapping
 
@@ -440,6 +472,7 @@ tv data.txt -s "  "
 - **Too many columns?** Use `--columns` to show only what you need
 - **Long text?** Press `W` to wrap the current column
 - **Wrong sort order?** Press `t` to change the column type, then `s` to re-sort
+- **Complex filtering?** Use `OR` for alternatives, `AND` for requirements, `ROR` to combine results
 - **Need insights?** Press `i` for comprehensive statistics with visual plots - histograms for numeric data, frequency charts for categorical data
 
 ## License

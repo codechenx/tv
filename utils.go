@@ -97,6 +97,9 @@ func getHelpContent() string {
 
 [::b][orange]🔎 Filter[white]
   [yellow]f[-]                   Filter rows by current column value
+                    OR: same cell has either term
+                    AND: same cell has both terms
+                    ROR: different rows, any match (uppercase only)
   [yellow]r[-]                   Reset/clear column filter
 
 [::b][purple]🏷️  Data Type[white]

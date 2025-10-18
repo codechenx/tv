@@ -84,6 +84,120 @@ func TestBuffer_filterByColumn(t *testing.T) {
 			query:        "",
 			expectedRows: 3, // header + all data rows
 		},
+		{
+			name: "Filter with OR operator - matches either",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "Active", "30"},
+				{"Bob", "Pending", "25"},
+				{"Charlie", "Inactive", "35"},
+				{"David", "Active", "40"},
+			},
+			colIndex:     1, // Status column
+			query:        "Active OR Pending",
+			expectedRows: 5, // header + Alice (Active), Bob (Pending), Charlie (Inactive has "active"), David (Active)
+		},
+		{
+			name: "Filter with OR operator - case insensitive",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "ACTIVE", "30"},
+				{"Bob", "pending", "25"},
+				{"Charlie", "Inactive", "35"},
+			},
+			colIndex:     1, // Status column
+			query:        "active OR PENDING",
+			expectedRows: 4, // header + Alice (ACTIVE), Bob (pending), Charlie (Inactive has "active")
+		},
+		{
+			name: "Filter with AND operator - must have both",
+			data: [][]string{
+				{"Name", "Description", "Age"},
+				{"Alice", "user admin", "30"},
+				{"Bob", "user only", "25"},
+				{"Charlie", "admin only", "35"},
+				{"David", "admin user", "40"},
+			},
+			colIndex:     1, // Description column
+			query:        "user AND admin",
+			expectedRows: 3, // header + Alice (user admin), David (admin user)
+		},
+		{
+			name: "Filter with AND operator - no matches",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "Active", "30"},
+				{"Bob", "Pending", "25"},
+				{"Charlie", "Inactive", "35"},
+			},
+			colIndex:     1, // Status column
+			query:        "Active AND Pending",
+			expectedRows: 1, // only header (no row has both)
+		},
+		{
+			name: "Filter with OR operator - multiple terms",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "red", "30"},
+				{"Bob", "blue", "25"},
+				{"Charlie", "green", "35"},
+				{"David", "yellow", "40"},
+			},
+			colIndex:     1, // Status column
+			query:        "red OR blue OR green",
+			expectedRows: 4, // header + Alice, Bob, Charlie
+		},
+		{
+			name: "Filter with AND operator - partial matches",
+			data: [][]string{
+				{"Name", "Tags", "Age"},
+				{"Alice", "python developer", "30"},
+				{"Bob", "python", "25"},
+				{"Charlie", "developer", "35"},
+				{"David", "java developer", "40"},
+			},
+			colIndex:     1, // Tags column
+			query:        "python AND developer",
+			expectedRows: 2, // header + Alice (has both)
+		},
+		{
+			name: "Filter with ROR operator - row-level OR",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "Active", "30"},
+				{"Bob", "Pending", "25"},
+				{"Charlie", "Inactive", "35"},
+				{"David", "Completed", "40"},
+			},
+			colIndex:     1, // Status column
+			query:        "Active ROR Pending",
+			expectedRows: 4, // header + Alice (Active), Bob (Pending), Charlie (Inactive has "active")
+		},
+		{
+			name: "Filter with ROR operator - multiple terms",
+			data: [][]string{
+				{"Name", "Priority", "Age"},
+				{"Alice", "high", "30"},
+				{"Bob", "low", "25"},
+				{"Charlie", "medium", "35"},
+				{"David", "high", "40"},
+			},
+			colIndex:     1, // Priority column
+			query:        "high ROR low",
+			expectedRows: 4, // header + Alice (high), Bob (low), David (high)
+		},
+		{
+			name: "Filter with ROR operator - case insensitive",
+			data: [][]string{
+				{"Name", "Status", "Age"},
+				{"Alice", "ACTIVE", "30"},
+				{"Bob", "pending", "25"},
+				{"Charlie", "Inactive", "35"},
+			},
+			colIndex:     1, // Status column
+			query:        "active ROR PENDING",
+			expectedRows: 4, // header + Alice (ACTIVE), Bob (pending), Charlie (Inactive has "active")
+		},
 	}
 
 	for _, tt := range tests {

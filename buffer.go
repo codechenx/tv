@@ -503,6 +503,9 @@ func (b *Buffer) selectBySearch(s string) {
 }
 
 // filterByColumn filters rows based on column value containing the search string
+// Supports OR, AND, and ROR operators for multiple conditions
+// Examples: "value1 OR value2", "value1 AND value2", "value1 ROR value2"
+// ROR keeps all rows matching any term (row-level OR)
 // Returns a new filtered buffer
 func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) *Buffer {
 	b.mu.RLock()
@@ -522,7 +525,57 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		filtered.rowLen = 1
 	}
 
-	// Filter data rows
+	// Parse query for operators (must be uppercase)
+	hasROR := containsStr(query, " ROR ")
+	hasOR := containsStr(query, " OR ")
+	hasAND := containsStr(query, " AND ")
+
+	// Handle ROR operator separately (row-level OR)
+	if hasROR {
+		terms := splitByString(query, " ROR ")
+		rowMatches := make(map[int]bool) // Track which rows match
+		
+		startRow := b.rowFreeze
+		for _, term := range terms {
+			term = trimSpace(term)
+			if term == "" {
+				continue
+			}
+			
+			// Find all rows matching this term
+			for i := startRow; i < b.rowLen; i++ {
+				if colIndex >= len(b.cont[i]) {
+					continue
+				}
+				
+				cellValue := b.cont[i][colIndex]
+				cellVal := cellValue
+				queryTerm := term
+				
+				if !caseSensitive {
+					cellVal = toLowerSimple(cellVal)
+					queryTerm = toLowerSimple(queryTerm)
+				}
+				
+				if containsStr(cellVal, queryTerm) {
+					rowMatches[i] = true
+				}
+			}
+		}
+		
+		// Add all matched rows in original order
+		startRow = b.rowFreeze
+		for i := startRow; i < b.rowLen; i++ {
+			if rowMatches[i] {
+				filtered.cont = append(filtered.cont, b.cont[i])
+				filtered.rowLen++
+			}
+		}
+		
+		return filtered
+	}
+
+	// Filter data rows for OR/AND/simple filters
 	startRow := b.rowFreeze
 	for i := startRow; i < b.rowLen; i++ {
 		if colIndex >= len(b.cont[i]) {
@@ -530,18 +583,133 @@ func (b *Buffer) filterByColumn(colIndex int, query string, caseSensitive bool) 
 		}
 
 		cellValue := b.cont[i][colIndex]
-		queryStr := query
-
-		if !caseSensitive {
-			cellValue = toLowerSimple(cellValue)
-			queryStr = toLowerSimple(query)
-		}
-
-		if containsStr(cellValue, queryStr) {
+		
+		// Evaluate filter condition
+		if evaluateFilter(cellValue, query, caseSensitive, hasOR, hasAND) {
 			filtered.cont = append(filtered.cont, b.cont[i])
 			filtered.rowLen++
 		}
 	}
 
 	return filtered
+}
+
+// evaluateFilter checks if a cell value matches the filter query
+// Supports simple matching, OR logic, and AND logic
+func evaluateFilter(cellValue, query string, caseSensitive, hasOR, hasAND bool) bool {
+	// Handle OR operator (takes precedence)
+	if hasOR {
+		// Split by OR (uppercase only)
+		terms := splitByString(query, " OR ")
+		for _, term := range terms {
+			term = trimSpace(term)
+			if term == "" {
+				continue
+			}
+			
+			cellVal := cellValue
+			queryTerm := term
+			if !caseSensitive {
+				cellVal = toLowerSimple(cellVal)
+				queryTerm = toLowerSimple(queryTerm)
+			}
+			
+			if containsStr(cellVal, queryTerm) {
+				return true // At least one term matches
+			}
+		}
+		return false // None of the terms matched
+	}
+	
+	// Handle AND operator
+	if hasAND {
+		// Split by AND (uppercase only)
+		terms := splitByString(query, " AND ")
+		for _, term := range terms {
+			term = trimSpace(term)
+			if term == "" {
+				continue
+			}
+			
+			cellVal := cellValue
+			queryTerm := term
+			if !caseSensitive {
+				cellVal = toLowerSimple(cellVal)
+				queryTerm = toLowerSimple(queryTerm)
+			}
+			
+			if !containsStr(cellVal, queryTerm) {
+				return false // One term doesn't match
+			}
+		}
+		return true // All terms matched
+	}
+	
+	// Simple matching (no operators)
+	cellVal := cellValue
+	queryStr := query
+	if !caseSensitive {
+		cellVal = toLowerSimple(cellVal)
+		queryStr = toLowerSimple(queryStr)
+	}
+	
+	return containsStr(cellVal, queryStr)
+}
+
+// splitByString splits a string by a separator (case-sensitive)
+func splitByString(s, sep string) []string {
+	if len(sep) == 0 {
+		return []string{s}
+	}
+	
+	var result []string
+	start := 0
+	
+	for i := 0; i <= len(s)-len(sep); i++ {
+		match := true
+		for j := 0; j < len(sep); j++ {
+			if s[i+j] != sep[j] {
+				match = false
+				break
+			}
+		}
+		
+		if match {
+			result = append(result, s[start:i])
+			start = i + len(sep)
+			i += len(sep) - 1
+		}
+	}
+	
+	// Add remaining part
+	if start < len(s) {
+		result = append(result, s[start:])
+	} else if start == len(s) {
+		result = append(result, "")
+	}
+	
+	// If no split occurred, return the whole query
+	if len(result) == 0 {
+		return []string{s}
+	}
+	
+	return result
+}
+
+// trimSpace removes leading and trailing whitespace
+func trimSpace(s string) string {
+	start := 0
+	end := len(s)
+	
+	// Trim leading spaces
+	for start < end && (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' || s[start] == '\r') {
+		start++
+	}
+	
+	// Trim trailing spaces
+	for end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\n' || s[end-1] == '\r') {
+		end--
+	}
+	
+	return s[start:end]
 }

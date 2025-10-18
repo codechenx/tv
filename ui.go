@@ -484,7 +484,7 @@ func drawUI(b *Buffer) error {
 			})
 			filterForm.SetButtonsAlign(tview.AlignCenter)
 			filterForm.SetBorder(true)
-			filterForm.SetTitle(fmt.Sprintf(" 🔎 Filter Column %d (case-insensitive) - Enter to filter, Esc to cancel ", column))
+			filterForm.SetTitle(fmt.Sprintf(" 🔎 Filter Column %d (case-insensitive, use uppercase OR/AND/ROR) - Enter to filter, Esc to cancel ", column))
 			filterForm.SetTitleAlign(tview.AlignCenter)
 			filterForm.SetBorderColor(tcell.NewRGBColor(255, 150, 50))
 
