@@ -169,7 +169,6 @@ tv file.vcf --skip-prefix "##"
 | `--columns` | | Show only specified columns (comma-separated) |
 | `--hide-columns` | | Hide specified columns (comma-separated) |
 | `--freeze` | `-f` | Freeze mode: `-1`=none, `0`=row+col, `1`=row only, `2`=col only |
-| `--transpose` | `-t` | Transpose rows and columns |
 | `--strict` | | Strict mode: fail on missing/inconsistent data |
 | `--async` | | Progressive rendering while loading (default: `true`) |
 | `--help` | `-h` | Show help |
@@ -189,9 +188,6 @@ tv data.txt --skip-prefix "#"
 
 # Disable header freezing
 tv data.csv -f -1
-
-# Transpose data (swap rows and columns)
-tv data.csv -t
 
 # Disable async loading for slow systems
 tv large.csv --async=false

@@ -274,23 +274,7 @@ func parseDateValueFast(s string) int64 {
 	return 0
 }
 
-// transpose buffer content
-func (b *Buffer) transpose() {
-	b.rowLen, b.colLen = b.colLen, b.rowLen
-	b.colType = make([]int, b.colLen+1)
-	xl := len(b.cont[0])
-	yl := len(b.cont)
-	result := make([][]string, xl)
-	for i := range result {
-		result[i] = make([]string, yl)
-	}
-	for i := 0; i < xl; i++ {
-		for j := 0; j < yl; j++ {
-			result[i][j] = b.cont[j][i]
-		}
-	}
-	b.cont = result
-}
+
 
 // getCol returns the ith column data as a string slice
 // Uses pointer receiver to avoid copying mutex

@@ -11,14 +11,11 @@ import (
 )
 
 // add buffer data to buffer table
-func drawBuffer(b *Buffer, t *tview.Table, trs bool) {
+func drawBuffer(b *Buffer, t *tview.Table) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
 	t.Clear()
-	if trs {
-		b.transpose()
-	}
 	cols, rows := b.colLen, b.rowLen
 
 	for r := 0; r < rows; r++ {
@@ -133,7 +130,7 @@ func drawStats(s statsSummary, t *tview.Table) {
 }
 
 // draw app UI
-func drawUI(b *Buffer, trs bool) error {
+func drawUI(b *Buffer) error {
 
 	//bufferTable init with modern styling
 	bufferTable = tview.NewTable()
@@ -151,7 +148,7 @@ func drawUI(b *Buffer, trs bool) error {
 	// Auto-detect and wrap long columns (sample first 100 rows, threshold 50 characters)
 	detectAndWrapLongColumns(b, 100, 50)
 	
-	drawBuffer(b, bufferTable, trs)
+	drawBuffer(b, bufferTable)
 
 	//main page init with modern styling
 	cursorPosStr = "Column Type: " + type2name(b.getColType(0)) + "  |  0,0  " //footer right
@@ -331,7 +328,7 @@ func drawUI(b *Buffer, trs bool) error {
 					if len(searchResults) > 0 {
 						currentSearchIndex = 0
 						bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
-						drawBuffer(b, bufferTable, args.Transpose)
+						drawBuffer(b, bufferTable)
 						drawFooterText(fileNameStr,
 							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
 							cursorPosStr)
@@ -369,7 +366,7 @@ func drawUI(b *Buffer, trs bool) error {
 						if len(searchResults) > 0 {
 							currentSearchIndex = 0
 							bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
-							drawBuffer(b, bufferTable, args.Transpose)
+							drawBuffer(b, bufferTable)
 							drawFooterText(fileNameStr,
 								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
 								cursorPosStr)
@@ -405,7 +402,7 @@ func drawUI(b *Buffer, trs bool) error {
 			if len(searchResults) > 0 && currentSearchIndex >= 0 {
 				currentSearchIndex = (currentSearchIndex + 1) % len(searchResults)
 				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
-				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
+				drawBuffer(b, bufferTable) // Redraw to update highlighting
 				drawFooterText(fileNameStr,
 					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)),
 					cursorPosStr)
@@ -423,7 +420,7 @@ func drawUI(b *Buffer, trs bool) error {
 					currentSearchIndex = len(searchResults) - 1
 				}
 				bufferTable.Select(searchResults[currentSearchIndex].Row, searchResults[currentSearchIndex].Col)
-				drawBuffer(b, bufferTable, args.Transpose) // Redraw to update highlighting
+				drawBuffer(b, bufferTable) // Redraw to update highlighting
 				drawFooterText(fileNameStr,
 					fmt.Sprintf("Match %d/%d", currentSearchIndex+1, len(searchResults)),
 					cursorPosStr)
@@ -439,7 +436,7 @@ func drawUI(b *Buffer, trs bool) error {
 				searchQuery = ""
 				searchResults = []SearchResult{}
 				currentSearchIndex = -1
-				drawBuffer(b, bufferTable, args.Transpose)
+				drawBuffer(b, bufferTable)
 				drawFooterText(fileNameStr, "Search cleared", cursorPosStr)
 			}
 			return nil
@@ -470,7 +467,7 @@ func drawUI(b *Buffer, trs bool) error {
 						b = filteredBuffer
 						isFiltered = true
 
-						drawBuffer(b, bufferTable, args.Transpose)
+						drawBuffer(b, bufferTable)
 						bufferTable.Select(0, 0)
 						matchCount := b.rowLen - b.rowFreeze
 						drawFooterText(fileNameStr,
@@ -516,7 +513,7 @@ func drawUI(b *Buffer, trs bool) error {
 							b = filteredBuffer
 							isFiltered = true
 
-							drawBuffer(b, bufferTable, args.Transpose)
+							drawBuffer(b, bufferTable)
 							bufferTable.Select(0, 0)
 							matchCount := b.rowLen - b.rowFreeze
 							drawFooterText(fileNameStr,
@@ -551,7 +548,7 @@ func drawUI(b *Buffer, trs bool) error {
 			if isFiltered && originalBuffer != nil {
 				b = originalBuffer
 				isFiltered = false
-				drawBuffer(b, bufferTable, args.Transpose)
+				drawBuffer(b, bufferTable)
 				bufferTable.Select(0, 0)
 				drawFooterText(fileNameStr, "Filter cleared - showing all rows", cursorPosStr)
 			}
@@ -572,7 +569,7 @@ func drawUI(b *Buffer, trs bool) error {
 			default:
 				b.sortByStr(column, false)
 			}
-			drawBuffer(b, bufferTable, trs)
+			drawBuffer(b, bufferTable)
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
@@ -590,7 +587,7 @@ func drawUI(b *Buffer, trs bool) error {
 			default:
 				b.sortByStr(column, true)
 			}
-			drawBuffer(b, bufferTable, trs)
+			drawBuffer(b, bufferTable)
 			drawFooterText(fileNameStr, "All Done", cursorPosStr)
 		}
 
@@ -663,7 +660,7 @@ func drawUI(b *Buffer, trs bool) error {
 			}
 
 			// Redraw the table with updated wrapping
-			drawBuffer(b, bufferTable, args.Transpose)
+			drawBuffer(b, bufferTable)
 			return nil
 		}
 

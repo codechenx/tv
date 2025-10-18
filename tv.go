@@ -92,7 +92,7 @@ func main() {
 					}
 
 					// Draw initial UI
-					err = drawUI(b, args.Transpose)
+					err = drawUI(b)
 					fatalError(err)
 
 					// Start update handler in background
@@ -112,13 +112,13 @@ func main() {
 								}
 								// Final update
 								app.QueueUpdateDraw(func() {
-									drawBuffer(b, bufferTable, args.Transpose)
+									drawBuffer(b, bufferTable)
 									updateFooterWithStatus("Loaded " + strconv.Itoa(b.rowLen) + " rows")
 								})
 							case <-ticker.C:
 								// Periodic UI update
 								app.QueueUpdateDraw(func() {
-									drawBuffer(b, bufferTable, args.Transpose)
+									drawBuffer(b, bufferTable)
 
 									// Keep cursor on first row if user hasn't moved it
 									if !userMovedCursor {
@@ -174,7 +174,7 @@ func main() {
 						}
 						os.Exit(0)
 					}
-					err = drawUI(b, args.Transpose)
+					err = drawUI(b)
 					fatalError(err)
 					if !debug {
 						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
@@ -227,7 +227,7 @@ func main() {
 					}
 
 					// Draw initial UI
-					err = drawUI(b, args.Transpose)
+					err = drawUI(b)
 					fatalError(err)
 
 					// Start update handler in background
@@ -247,13 +247,13 @@ func main() {
 								}
 								// Final update
 								app.QueueUpdateDraw(func() {
-									drawBuffer(b, bufferTable, args.Transpose)
+									drawBuffer(b, bufferTable)
 									updateFooterWithStatus("Loaded " + strconv.Itoa(b.rowLen) + " rows")
 								})
 							case <-ticker.C:
 								// Periodic UI update
 								app.QueueUpdateDraw(func() {
-									drawBuffer(b, bufferTable, args.Transpose)
+									drawBuffer(b, bufferTable)
 
 									// Keep cursor on first row if user hasn't moved it
 									if !userMovedCursor {
@@ -309,7 +309,7 @@ func main() {
 						}
 						os.Exit(0)
 					}
-					err = drawUI(b, args.Transpose)
+					err = drawUI(b)
 					fatalError(err)
 					if !debug {
 						if err = app.SetRoot(UI, true).SetFocus(UI).Run(); err != nil {
@@ -328,7 +328,6 @@ func main() {
 	RootCmd.Flags().IntSliceVar(&args.ShowNum, "columns", []int{}, "Show only specified columns (comma-separated)")
 	RootCmd.Flags().IntSliceVar(&args.HideNum, "hide-columns", []int{}, "Hide specified columns (comma-separated)")
 	RootCmd.Flags().IntVarP(&args.Header, "freeze", "f", 0, "Freeze mode: -1=none, 0=row+col, 1=row only, 2=col only")
-	RootCmd.Flags().BoolVarP(&args.Transpose, "transpose", "t", false, "Transpose rows and columns")
 	RootCmd.Flags().BoolVar(&args.Strict, "strict", false, "Strict mode: fail on missing/inconsistent data")
 	RootCmd.Flags().BoolVar(&args.AsyncLoad, "async", true, "Progressive rendering while loading")
 	RootCmd.Flags().SortFlags = false

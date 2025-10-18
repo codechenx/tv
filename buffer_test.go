@@ -208,52 +208,6 @@ func TestBuffer_SortByNum(t *testing.T) {
 // Buffer Transformation Tests
 // ========================================
 
-func TestBuffer_transpose(t *testing.T) {
-	testBuffer, _ := createNewBufferWithData([][]string{{"a", "b", "c"}, {"1", "2", "3"}, {"4", "5", "6"}}, true)
-	wantBuffer, _ := createNewBufferWithData([][]string{{"a", "1", "4"}, {"b", "2", "5"}, {"c", "3", "6"}}, true)
-	tests := []struct {
-		name string
-		b    *Buffer
-		want *Buffer
-	}{
-		{"Transpose 3x3", testBuffer, wantBuffer},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.b.transpose()
-			if !reflect.DeepEqual(tt.b, tt.want) {
-				t.Errorf("Buffer_transpose() = %v, want %v", tt.b, tt.want)
-			}
-		})
-	}
-}
-
-func TestBuffer_Transpose(t *testing.T) {
-	b := createNewBuffer()
-	_ = b.contAppendSli([]string{"A", "B", "C"}, false)
-	_ = b.contAppendSli([]string{"1", "2", "3"}, false)
-	_ = b.contAppendSli([]string{"X", "Y", "Z"}, false)
-
-	originalRows := b.rowLen
-	originalCols := b.colLen
-
-	b.transpose()
-
-	if b.rowLen != originalCols {
-		t.Errorf("After transpose, rowLen = %d, want %d", b.rowLen, originalCols)
-	}
-	if b.colLen != originalRows {
-		t.Errorf("After transpose, colLen = %d, want %d", b.colLen, originalRows)
-	}
-
-	if b.cont[0][0] != "A" {
-		t.Errorf("After transpose, [0][0] = %s, want A", b.cont[0][0])
-	}
-	if b.cont[1][0] != "B" {
-		t.Errorf("After transpose, [1][0] = %s, want B", b.cont[1][0])
-	}
-}
-
 // ========================================
 // Buffer Query Tests
 // ========================================
@@ -371,9 +325,8 @@ func TestBuffer_EdgeCases(t *testing.T) {
 	t.Run("Single cell", func(t *testing.T) {
 		b := createNewBuffer()
 		_ = b.contAppendSli([]string{"X"}, false)
-		b.transpose()
 		if b.cont[0][0] != "X" {
-			t.Error("Single cell transpose failed")
+			t.Error("Single cell failed")
 		}
 	})
 
@@ -419,20 +372,6 @@ func TestBuffer_SetAndGetColType(t *testing.T) {
 	b.setColType(0, colTypeStr)
 	if b.getColType(0) != colTypeStr {
 		t.Error("setColType/getColType failed for string")
-	}
-}
-
-func TestBuffer_MultipleTranspose(t *testing.T) {
-	b := createNewBuffer()
-	_ = b.contAppendSli([]string{"A", "B"}, false)
-	_ = b.contAppendSli([]string{"1", "2"}, false)
-
-	original := b.cont[0][0]
-	b.transpose()
-	b.transpose()
-
-	if b.cont[0][0] != original {
-		t.Error("Double transpose should return to original")
 	}
 }
 
