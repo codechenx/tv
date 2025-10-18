@@ -42,12 +42,12 @@ var currentSearchIndex int       // Current position in search results
 var searchQuery string           // Current search query
 var searchModal tview.Primitive  // Search modal dialog
 var searchUseRegex bool
-var searchCaseSensitive bool          // Track if search should use regex
-var originalBuffer *Buffer       // Store original buffer before filtering
-var isFiltered bool              // Track if filter is active
+
+var originalBuffer *Buffer              // Store original buffer before filtering
+var isFiltered bool                     // Track if filter is active
 var activeFilters map[int]FilterOptions // Track active filters: column -> query
-var currentCursorColumn int      // Track current cursor column position
-var lastKeyWasG bool             // Track if last key pressed was 'g' for gg navigation
+var currentCursorColumn int             // Track current cursor column position
+var lastKeyWasG bool                    // Track if last key pressed was 'g' for gg navigation
 
 // LoadProgress tracks loading progress
 type LoadProgress struct {
@@ -87,8 +87,8 @@ func initView() {
 	originalBuffer = nil // Initialize filter variables
 	isFiltered = false
 	activeFilters = make(map[int]FilterOptions) // Initialize active filters map
-	currentCursorColumn = 0 // Initialize cursor column
-	lastKeyWasG = false // Initialize vim navigation state
+	currentCursorColumn = 0                     // Initialize cursor column
+	lastKeyWasG = false                         // Initialize vim navigation state
 }
 
 // stop UI

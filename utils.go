@@ -309,7 +309,7 @@ func performSearch(b *Buffer, query string, useRegex bool, caseSensitive bool) [
 	for c := 0; c < b.colLen; c++ {
 		for r := 0; r < b.rowLen; r++ {
 			cellText := b.cont[r][c]
-			
+
 			var matches bool
 			if useRegex {
 				matches = re.MatchString(cellText)
@@ -343,41 +343,6 @@ func toLower(s string) string {
 
 // stringContains checks if s contains substr
 func stringContains(s, substr string) bool {
-	if len(substr) == 0 {
-		return true
-	}
-	if len(substr) > len(s) {
-		return false
-	}
-
-	for i := 0; i <= len(s)-len(substr); i++ {
-		match := true
-		for j := 0; j < len(substr); j++ {
-			if s[i+j] != substr[j] {
-				match = false
-				break
-			}
-		}
-		if match {
-			return true
-		}
-	}
-	return false
-}
-
-// toLowerSimple converts a string to lowercase (simple implementation)
-func toLowerSimple(s string) string {
-	runes := []rune(s)
-	for i, r := range runes {
-		if r >= 'A' && r <= 'Z' {
-			runes[i] = r + 32
-		}
-	}
-	return string(runes)
-}
-
-// containsStr checks if s contains substr
-func containsStr(s, substr string) bool {
 	if len(substr) == 0 {
 		return true
 	}

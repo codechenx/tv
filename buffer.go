@@ -275,8 +275,6 @@ func parseDateValueFast(s string) int64 {
 	return 0
 }
 
-
-
 // getCol returns the ith column data as a string slice
 // Uses pointer receiver to avoid copying mutex
 func (b *Buffer) getCol(i int) []string {
@@ -617,62 +615,4 @@ func evaluateFilter(cellValue string, options FilterOptions, colType int) bool {
 		// Default to contains for backward compatibility if operator is empty
 		return strings.Contains(cell, q)
 	}
-}
-
-// splitByString splits a string by a separator (case-sensitive)
-func splitByString(s, sep string) []string {
-	if len(sep) == 0 {
-		return []string{s}
-	}
-	
-	var result []string
-	start := 0
-	
-	for i := 0; i <= len(s)-len(sep); i++ {
-		match := true
-		for j := 0; j < len(sep); j++ {
-			if s[i+j] != sep[j] {
-				match = false
-				break
-			}
-		}
-		
-		if match {
-			result = append(result, s[start:i])
-			start = i + len(sep)
-			i += len(sep) - 1
-		}
-	}
-	
-	// Add remaining part
-	if start < len(s) {
-		result = append(result, s[start:])
-	} else if start == len(s) {
-		result = append(result, "")
-	}
-	
-	// If no split occurred, return the whole query
-	if len(result) == 0 {
-		return []string{s}
-	}
-	
-	return result
-}
-
-// trimSpace removes leading and trailing whitespace
-func trimSpace(s string) string {
-	start := 0
-	end := len(s)
-	
-	// Trim leading spaces
-	for start < end && (s[start] == ' ' || s[start] == '\t' || s[start] == '\n' || s[start] == '\r') {
-		start++
-	}
-	
-	// Trim trailing spaces
-	for end > start && (s[end-1] == ' ' || s[end-1] == '\t' || s[end-1] == '\n' || s[end-1] == '\r') {
-		end--
-	}
-	
-	return s[start:end]
 }
