@@ -282,7 +282,7 @@ func detectAndWrapLongColumns(b *Buffer, sampleSize int, threshold int) {
 
 // performSearch searches for a query string in the buffer and stores results
 // Supports both plain text and regex search modes
-func performSearch(b *Buffer, query string, useRegex bool) []SearchResult {
+func performSearch(b *Buffer, query string, useRegex bool, caseSensitive bool) []SearchResult {
 	results := []SearchResult{}
 
 	b.mu.RLock()
@@ -292,12 +292,15 @@ func performSearch(b *Buffer, query string, useRegex bool) []SearchResult {
 	var re *regexp.Regexp
 	var err error
 	if useRegex {
+		if !caseSensitive {
+			query = "(?i)" + query
+		}
 		re, err = regexp.Compile(query)
 		if err != nil {
 			// If regex is invalid, return empty results
 			return results
 		}
-	} else {
+	} else if !caseSensitive {
 		// For non-regex, convert to lowercase for case-insensitive search
 		query = toLower(query)
 	}
@@ -311,7 +314,11 @@ func performSearch(b *Buffer, query string, useRegex bool) []SearchResult {
 			if useRegex {
 				matches = re.MatchString(cellText)
 			} else {
-				matches = stringContains(toLower(cellText), query)
+				if caseSensitive {
+					matches = stringContains(cellText, query)
+				} else {
+					matches = stringContains(toLower(cellText), query)
+				}
 			}
 
 			if matches {

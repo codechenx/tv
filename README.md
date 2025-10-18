@@ -223,9 +223,9 @@ tv uses vim-inspired keybindings for intuitive navigation.
 | `/` | Search |
 | `n` | Next search result |
 | `N` | Previous search result |
-| `Ctrl-/` | Clear search |
-| `f` | Filter by column value |
-| `r` | Reset/clear filter |
+| `Esc` | Clear search highlighting / Close dialogs |
+| `f` | Filter by column |
+| `r` | Remove filter for current column |
 | `s` | Sort ascending |
 | `S` | Sort descending |
 | `t` | Toggle column type (String → Number → Date) |
@@ -306,30 +306,30 @@ The statistics dialog features a split-pane layout with numerical stats on the l
 
 ### Search
 
-### Search
-
 Find text anywhere in your table with full highlighting support and powerful regex pattern matching.
 
 **How to search:**
 
 1. Press `/` to open the search dialog
-2. Type your search term (case-insensitive by default)
-3. **Optional:** Press Tab to navigate to the checkbox, then Space to enable "Use Regex" for pattern matching with regular expressions
-4. Press Enter to execute the search
-5. Navigate results with `n` (next) and `N` (previous)
-6. Press `Esc` to clear highlighting
+2. Type your search term.
+3. **Optional:** Press Tab to navigate to the checkboxes, then Space to enable:
+    - **Use Regex**: for pattern matching with regular expressions.
+    - **Case Sensitive**: for case-sensitive matching.
+4. Press Enter to execute the search.
+5. Navigate results with `n` (next) and `N` (previous).
+6. Press `Esc` to clear highlighting.
 
 **Search Modes:**
 
-- **Plain Text (default):** Case-insensitive substring matching
-- **Regex:** Full regular expression support for advanced pattern matching
+- **Plain Text (default):** Case-insensitive substring matching. Enable `Case Sensitive` for exact matching.
+- **Regex:** Full regular expression support. By default, regex is case-insensitive. Enable `Case Sensitive` for case-sensitive regex matching.
 
 **Navigation in Search Dialog:**
-- Type your search query in the text field
-- Press `Tab` to move between the search field, checkbox, and buttons
-- Press `Space` to toggle the "Use Regex" checkbox when focused on it
-- Press `Enter` from anywhere in the form to execute the search
-- Press `Esc` to cancel and close the dialog
+- Type your search query in the text field.
+- Press `Tab` to move between the search field, checkboxes, and buttons.
+- Press `Space` to toggle a checkbox when it is focused.
+- Press `Enter` from anywhere in the form to execute the search.
+- Press `Esc` to cancel and close the dialog.
 
 **Visual feedback:**
 - Current match: bright cyan highlight
@@ -338,15 +338,19 @@ Find text anywhere in your table with full highlighting support and powerful reg
 
 **Example:**
 ```
-# Simple text search
+# Simple text search (case-insensitive)
 / → type "error" → Enter → n → n → N → Esc
 
+# Case-sensitive text search
+/ → check "Case Sensitive" → type "Error" → Enter
+
 # Regex search examples
-/ → check "Use Regex" → type "^ERROR" → Enter     # Lines starting with ERROR
-/ → check "Use Regex" → type "\d{4}-\d{2}-\d{2}" → Enter     # Date patterns (YYYY-MM-DD)
+/ → check "Use Regex" → type "^ERROR" → Enter     # Lines starting with ERROR (case-insensitive)
+/ → check "Use Regex" and "Case Sensitive" → type "^Error" → Enter # Lines starting with Error (case-sensitive)
+/ → check "Use Regex" → type "\\d{4}-\\d{2}-\\d{2}" → Enter     # Date patterns (YYYY-MM-DD)
 / → check "Use Regex" → type "user(name)?" → Enter           # Match "user" or "username"
 / → check "Use Regex" → type "error|warning|critical" → Enter # Match any of these words
-/ → check "Use Regex" → type "@.*\.(com|org)$" → Enter       # Email domains ending in .com or .org
+/ → check "Use Regex" → type "@.*\\.(com|org)$" → Enter       # Email domains ending in .com or .org
 ```
 
 **Common Regex Patterns:**
@@ -354,29 +358,30 @@ Find text anywhere in your table with full highlighting support and powerful reg
 | Pattern | Description | Example Match |
 |---------|-------------|---------------|
 | `^start` | Match at beginning of cell | `^Error` matches "Error: failed" |
-| `end$` | Match at end of cell | `\.txt$` matches "file.txt" |
-| `\d+` | Match one or more digits | `\d+` matches "123" |
-| `\w+@\w+\.\w+` | Match email pattern | Matches "user@example.com" |
-| `word1\|word2` | Match either word (OR) | `success\|complete` matches either |
+| `end$` | Match at end of cell | `\\.txt$` matches "file.txt" |
+| `\\d+` | Match one or more digits | `\\d+` matches "123" |
+| `\\w+@\\w+\\.\\w+` | Match email pattern | Matches "user@example.com" |
+| `word1\\|word2` | Match either word (OR) | `success\\|complete` matches either |
 | `[A-Z]+` | Match uppercase letters | `[A-Z]{3}` matches "USA" |
 | `.*` | Match any characters | `start.*end` matches "start...end" |
-| `\s+` | Match whitespace | `\s{2,}` matches 2+ spaces |
+| `\\s+` | Match whitespace | `\\s{2,}` matches 2+ spaces |
 
-**Note:** Regex mode is case-sensitive. Use `(?i)` at the start of your pattern for case-insensitive matching (e.g., `(?i)error`).
+**Note:** For case-insensitive regex search, the `(?i)` flag is automatically added to your pattern. For case-sensitive regex, this flag is omitted.
 
 ### Column Filter
 
-Show only rows where specific columns match your criteria. **Supports filtering on multiple columns simultaneously** with powerful OR, AND, and ROR operators for complex filtering.
+Show only rows where specific columns match your criteria. **Supports filtering on multiple columns simultaneously**.
 
 **How to filter:**
 
 1. Navigate to the column you want to filter
 2. Press `f` to open the filter dialog
-3. Type filter text (case-insensitive, partial match)
-4. Use operators for complex queries (must be UPPERCASE with spaces)
-5. Press Enter to apply
-6. **Repeat on other columns to add more filters**
-7. Press `r` on a filtered column to remove that column's filter
+3. Use the dropdown to select an operator (e.g., `contains`, `equals`, `regex`, `>`).
+4. Enter the value to filter by.
+5. Optionally, check the `Case Sensitive` box.
+6. Press Enter to apply the filter.
+7. **Repeat on other columns to add more filters**
+8. Press `r` on a filtered column to remove that column's filter
 
 **Multi-Column Filtering:**
 
@@ -389,90 +394,61 @@ Show only rows where specific columns match your criteria. **Supports filtering 
 
 **Operators:**
 
-| Operator | Syntax | Behavior | Example |
-|----------|--------|----------|---------|
-| **Simple** | `term` | Matches cells containing the term | `active` → matches "Active", "Inactive" |
-| **OR** | `term1 OR term2` | Same cell contains either term | `error OR warning` → cell has "error" or "warning" |
-| **AND** | `term1 AND term2` | Same cell contains both terms | `user AND admin` → cell has both words |
-| **ROR** | `term1 ROR term2` | Keeps all rows matching any term | `high ROR critical` → rows with "high" + rows with "critical" |
-| **>** | `>value` | Numeric: greater than (number columns only) | `>30` → values greater than 30 |
-| **<** | `<value` | Numeric: less than (number columns only) | `<50` → values less than 50 |
-| **>=** | `>=value` | Numeric: greater than or equal (number columns only) | `>=100` → values 100 or more |
-| **<=** | `<=value` | Numeric: less than or equal (number columns only) | `<=75` → values 75 or less |
+| Operator | Description |
+|---|---|
+| `contains` | Matches cells containing the term |
+| `equals` | Matches cells that are exactly the term |
+| `starts with` | Matches cells that start with the term |
+| `ends with` | Matches cells that end with the term |
+| `regex` | Matches cells based on a regular expression |
+| `>` | Numeric: greater than (number columns only) |
+| `<` | Numeric: less than (number columns only) |
+| `>=` | Numeric: greater than or equal (number columns only) |
+| `<=` | Numeric: less than or equal (number columns only) |
 
-**Key Differences:**
-- **OR vs ROR**: OR checks if a single cell contains either term. ROR combines rows where any cell matches any term (row-level union).
+**Key Features:**
 - **Numeric operators** (`>`, `<`, `>=`, `<=`): Only work on numeric and date columns (automatically detected). Perform numeric comparisons instead of text matching.
-- All operators must be **UPPERCASE** and surrounded by spaces (except numeric operators)
-- Search terms are case-insensitive (except numeric comparisons)
-- All matching is partial (substring) for text, exact comparison for numeric operators
-- **Visual indicator**: Filtered column headers show 🔎 icons and orange background
+- **Regex**: Provides the full power of regular expressions for complex pattern matching.
+- **Case-Insensitive by default**: All string-based comparisons are case-insensitive unless the `Case Sensitive` box is checked.
+- **Visual indicator**: Filtered column headers show 🔎 icons and an orange background
 
 **Examples:**
 
 ```bash
 # Simple filter - partial match
-Navigate to "Status" column → f → type "pending" → Enter
+Navigate to "Status" column → f → select 'contains' → type "pending" → Enter
 # Result: Matches "Pending", "Pending Review", etc.
 
-# OR filter - same cell matches either term
-Navigate to "Status" column → f → type "active OR pending" → Enter
-# Result: Rows where Status contains "active" OR "pending"
+# Exact match filter
+Navigate to "Status" column → f → select 'equals' → type "active" → Enter
+# Result: Rows where Status is exactly "active" (case-insensitive)
 
-# AND filter - same cell must contain both terms
-Navigate to "Description" column → f → type "user AND admin" → Enter
-# Result: Rows where Description has both "user" AND "admin"
-
-# ROR filter - combines separate result sets
-Navigate to "Priority" column → f → type "high ROR critical" → Enter
-# Result: All rows with "high" + all rows with "critical" (union)
+# Regex filter
+Navigate to "Email" column → f → select 'regex' → type "^.+@gmail\.com$" → Enter
+# Result: Rows where Email ends with "@gmail.com"
 
 # Numeric comparison - greater than
-Navigate to "Age" column → f → type ">30" → Enter
+Navigate to "Age" column → f → select '>' → type "30" → Enter
 # Result: Rows where Age is greater than 30
 
-# Numeric comparison - less than or equal
-Navigate to "Score" column → f → type "<=85" → Enter
-# Result: Rows where Score is 85 or less
-
-# Numeric comparison - greater than or equal
-Navigate to "Salary" column → f → type ">=50000" → Enter
-# Result: Rows where Salary is 50000 or more
-
 # Multi-column filtering
-Navigate to "City" column → f → type "New York" → Enter
-Navigate to "Department" column → f → type "Engineering" → Enter
-# Result: Rows where City="New York" AND Department contains "Engineering"
-
-# Multi-column with numeric filter
-Navigate to "Age" column → f → type ">25" → Enter
-Navigate to "Score" column → f → type ">80" → Enter
-# Result: Rows where Age > 25 AND Score > 80
+Navigate to "City" column → f → select 'equals' → type "New York" → Enter
+Navigate to "Department" column → f → select 'contains' → type "Engineering" → Enter
+# Result: Rows where City is "New York" AND Department contains "Engineering"
 
 # Edit existing filter
-Navigate to filtered column → f → modify text → Enter
+Navigate to filtered column → f → modify operator/value → Enter
 # Or enter empty text to remove that column's filter
 
 # Remove a specific filter
 Navigate to filtered column → Press r
 # Result: That column's filter removed, other filters remain
-
-# Remove all filters one by one
-Navigate to each filtered column → Press r on each
-# Or press f and enter empty text
 ```
-
-**Use Cases:**
-- Use **OR** when a single field can have alternative values
-- Use **AND** when a single field must meet multiple criteria
-- Use **ROR** when you want to combine different categories of results
-- Use **numeric operators** (`>`, `<`, `>=`, `<=`) to filter by numeric ranges on number or date columns
-- Use **multi-column filters** to narrow down data by multiple dimensions (e.g., location AND department AND status)
 
 **Visual Feedback:**
 - When a filter is active, the filtered column header displays 🔎 icons and an orange background
-- A dedicated **filter strip** appears above the main footer **only when cursor is on the filtered column**
-- Filter strip format: `🔎 Filter Active: [Column Name] = "query"  |  Press 'r' to clear`
+- A dedicated **filter strip** appears above the main footer showing the active filter on the current column.
+- Filter strip format: `🔎 Filter Active: [Column Name] [operator] "query"  |  Press 'r' to clear`
 - The strip automatically hides when you move to a different column
 - Press `r` to clear the filter and return to normal view
 
