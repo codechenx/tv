@@ -52,6 +52,7 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 - **Text wrapping** - Wrap long cell content for better readability
 - **Statistics & plots** - View column statistics with visual distribution charts
 - **Vim keybindings** - Navigate naturally with h/j/k/l and more
+- **Mouse support** - Click to select cells, scroll with mouse wheel, interact with dialogs
 - **Pipe support** - Read from stdin for seamless integration with shell pipelines
 
 
@@ -233,6 +234,18 @@ tv uses vim-inspired keybindings for intuitive navigation.
 | `?` | Show help |
 | `Esc` | Close dialogs / clear search |
 | `q` | Quit |
+
+### Mouse Support
+
+| Action | Behavior |
+|--------|----------|
+| **Left Click** | Select cell at click position |
+| **Scroll Wheel Up** | Scroll up one row |
+| **Scroll Wheel Down** | Scroll down one row |
+| **Click on Buttons** | Activate buttons in dialogs (Search, Filter, Stats) |
+| **Click on Checkboxes** | Toggle checkboxes in forms (e.g., "Use Regex") |
+
+**Note:** Mouse support works in most modern terminals. If your terminal doesn't support mouse events, you can still use keyboard navigation exclusively.
 
 ## Features in Detail
 
@@ -571,6 +584,7 @@ tv data.txt -s "  "
 - **Wrong sort order?** Press `t` to change the column type, then `s` to re-sort
 - **Complex filtering?** Use `OR` for alternatives, `AND` for requirements, `ROR` to combine results
 - **Need insights?** Press `i` for comprehensive statistics with visual plots - histograms for numeric data, frequency charts for categorical data
+- **Prefer mouse?** Click cells to select them, use scroll wheel to navigate, and click buttons in dialogs
 
 ## License
 

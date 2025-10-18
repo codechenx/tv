@@ -90,6 +90,11 @@ func getHelpContent() string {
   [yellow]Ctrl-d[-]              Page down (half page)
   [yellow]Ctrl-u[-]              Page up (half page)
 
+[::b][cyan]🖱️  Mouse Support[white]
+  [yellow]Left Click[-]          Select cell
+  [yellow]Scroll Wheel[-]        Scroll up/down through rows
+  [yellow]Click Buttons[-]       Interact with dialogs and forms
+
 [::b][magenta]🔍 Search[white]
   [yellow]/[-]                   Search for text
                     • Case-insensitive by default

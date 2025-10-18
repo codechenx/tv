@@ -866,6 +866,33 @@ func drawUI(b *Buffer) error {
 		return event
 	})
 
+	// Add mouse handler for scrolling and clicking
+	bufferTable.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		// Mark that user has interacted via mouse
+		if action == tview.MouseLeftClick {
+			userMovedCursor = true
+		}
+		
+		// Handle mouse wheel scrolling
+		switch action {
+		case tview.MouseScrollUp:
+			row, col := bufferTable.GetSelection()
+			if row > 0 {
+				bufferTable.Select(row-1, col)
+			}
+			return action, nil
+		case tview.MouseScrollDown:
+			row, col := bufferTable.GetSelection()
+			if row < b.rowLen-1 {
+				bufferTable.Select(row+1, col)
+			}
+			return action, nil
+		}
+		
+		// Pass through other mouse events to default handler
+		return action, event
+	})
+
 	//bufferTable quit event
 	bufferTable.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEscape {
