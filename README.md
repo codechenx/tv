@@ -15,7 +15,7 @@
 
 ## Demo
 
-[![asciicast](https://asciinema.org/a/347295.svg)](https://asciinema.org/a/347295)
+[![asciicast](https://asciinema.org/a/AL2UvtQBxa00Aa44rhsmqj5mn.svg)](https://asciinema.org/a/AL2UvtQBxa00Aa44rhsmqj5mn)
 
 ## Table of Contents
 
