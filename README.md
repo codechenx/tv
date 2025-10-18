@@ -89,7 +89,7 @@ go install github.com/codechenx/tv@latest
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/download/v0.6.2/tv_0.6.3_linux_amd64.deb
+wget https://github.com/codechenx/tv/releases/download/v0.7.0/tv_0.7.0_linux_amd64.deb
 sudo dpkg -i tv_*.deb
 ```
 
@@ -97,7 +97,7 @@ sudo dpkg -i tv_*.deb
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/download/v0.6.2/tv_0.6.3_linux_amd64.rpm
+wget https://github.com/codechenx/tv/releases/download/v0.7.0/tv_0.7.0_linux_amd64.rpm
 sudo rpm -i tv_*.rpm
 ```
 
