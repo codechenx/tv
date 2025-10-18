@@ -274,8 +274,9 @@ func performSearch(b *Buffer, query string, caseSensitive bool) []SearchResult {
 		searchQuery = toLower(query)
 	}
 
-	for r := 0; r < b.rowLen; r++ {
-		for c := 0; c < b.colLen; c++ {
+	// Scan column by column (same column first, then next column)
+	for c := 0; c < b.colLen; c++ {
+		for r := 0; r < b.rowLen; r++ {
 			cellText := b.cont[r][c]
 			if !caseSensitive {
 				cellText = toLower(cellText)
