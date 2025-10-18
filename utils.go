@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/fatih/color"
@@ -91,9 +92,20 @@ func getHelpContent() string {
 
 [::b][magenta]🔍 Search[white]
   [yellow]/[-]                   Search for text
+                    • Case-insensitive by default
+                    • Press [yellow]Tab[-] to navigate to checkbox
+                    • Press [yellow]Space[-] to toggle [yellow]Use Regex[-] option
   [yellow]n[-]                   Next search result ⏭
   [yellow]N[-]                   Previous search result ⏮
   [yellow]Esc[-]                 Clear search highlighting
+
+[::b][green]🎯 Regex Search Examples[white]
+  [yellow]^start[-]              Match at beginning of cell
+  [yellow]end$[-]                Match at end of cell
+  [yellow]\d+[-]                 Match digits (numbers)
+  [yellow]@.*\.com[-]            Match email pattern
+  [yellow]word1|word2[-]         Match either word (OR)
+  [yellow][A-Z]+[-]              Match uppercase letters
 
 [::b][orange]🔎 Filter[white]
   [yellow]f[-]                   Filter rows by current column value
@@ -127,6 +139,7 @@ func getHelpContent() string {
 [::b][green]💡 Pro Tips:[white]
   • Press [yellow]gg[-] to jump to the top of any table
   • Use [yellow]/[-] for quick searching across all cells
+  • Enable [yellow]regex[-] mode for powerful pattern matching
   • Press [yellow]i[-] to see detailed statistics for any column
   • Use [yellow]f[-] on multiple columns to combine filters
   • Headers are frozen by default for easy navigation
@@ -263,26 +276,40 @@ func detectAndWrapLongColumns(b *Buffer, sampleSize int, threshold int) {
 }
 
 // performSearch searches for a query string in the buffer and stores results
-func performSearch(b *Buffer, query string, caseSensitive bool) []SearchResult {
+// Supports both plain text and regex search modes
+func performSearch(b *Buffer, query string, useRegex bool) []SearchResult {
 	results := []SearchResult{}
 
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
-	searchQuery := query
-	if !caseSensitive {
-		searchQuery = toLower(query)
+	// Compile regex if in regex mode
+	var re *regexp.Regexp
+	var err error
+	if useRegex {
+		re, err = regexp.Compile(query)
+		if err != nil {
+			// If regex is invalid, return empty results
+			return results
+		}
+	} else {
+		// For non-regex, convert to lowercase for case-insensitive search
+		query = toLower(query)
 	}
 
 	// Scan column by column (same column first, then next column)
 	for c := 0; c < b.colLen; c++ {
 		for r := 0; r < b.rowLen; r++ {
 			cellText := b.cont[r][c]
-			if !caseSensitive {
-				cellText = toLower(cellText)
+			
+			var matches bool
+			if useRegex {
+				matches = re.MatchString(cellText)
+			} else {
+				matches = stringContains(toLower(cellText), query)
 			}
 
-			if stringContains(cellText, searchQuery) {
+			if matches {
 				results = append(results, SearchResult{Row: r, Col: c})
 			}
 		}

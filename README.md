@@ -46,7 +46,7 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 - **Smart parsing** - Automatically detects delimiters (CSV, TSV, custom separators)
 - **Progressive loading** - Start viewing large files immediately while they load
 - **Gzip support** - Read compressed files directly
-- **Powerful search** - Find text across all cells with highlighting
+- **Powerful search** - Find text across all cells with highlighting and regex pattern matching support
 - **Advanced filtering** - Filter rows with OR, AND, and ROR operators for complex queries
 - **Flexible sorting** - Sort by any column with intelligent type detection
 - **Text wrapping** - Wrap long cell content for better readability
@@ -295,25 +295,61 @@ The statistics dialog features a split-pane layout with numerical stats on the l
 
 ### Search
 
-Find text anywhere in your table with full highlighting support.
+Find text anywhere in your table with full highlighting support and powerful regex pattern matching.
 
 **How to search:**
 
 1. Press `/` to open the search dialog
-2. Type your search term (case-insensitive)
-3. Press Enter to execute
-4. Navigate results with `n` (next) and `N` (previous)
-5. Press `Ctrl-/` to clear highlighting
+2. Type your search term (case-insensitive by default)
+3. **Optional:** Press Tab to navigate to the checkbox, then Space to enable "Use Regex" for pattern matching with regular expressions
+4. Press Enter to execute the search
+5. Navigate results with `n` (next) and `N` (previous)
+6. Press `Esc` to clear highlighting
+
+**Search Modes:**
+
+- **Plain Text (default):** Case-insensitive substring matching
+- **Regex:** Full regular expression support for advanced pattern matching
+
+**Navigation in Search Dialog:**
+- Type your search query in the text field
+- Press `Tab` to move between the search field, checkbox, and buttons
+- Press `Space` to toggle the "Use Regex" checkbox when focused on it
+- Press `Enter` from anywhere in the form to execute the search
+- Press `Esc` to cancel and close the dialog
 
 **Visual feedback:**
 - Current match: bright cyan highlight
 - Other matches: gray highlight
-- Footer shows position: `Match 3/12`
+- Footer shows position: `Match 3/12` or `regex matches 3/12`
 
 **Example:**
 ```
-/ → type "error" → Enter → n → n → N → Ctrl-/
+# Simple text search
+/ → type "error" → Enter → n → n → N → Esc
+
+# Regex search examples
+/ → check "Use Regex" → type "^ERROR" → Enter     # Lines starting with ERROR
+/ → check "Use Regex" → type "\d{4}-\d{2}-\d{2}" → Enter     # Date patterns (YYYY-MM-DD)
+/ → check "Use Regex" → type "user(name)?" → Enter           # Match "user" or "username"
+/ → check "Use Regex" → type "error|warning|critical" → Enter # Match any of these words
+/ → check "Use Regex" → type "@.*\.(com|org)$" → Enter       # Email domains ending in .com or .org
 ```
+
+**Common Regex Patterns:**
+
+| Pattern | Description | Example Match |
+|---------|-------------|---------------|
+| `^start` | Match at beginning of cell | `^Error` matches "Error: failed" |
+| `end$` | Match at end of cell | `\.txt$` matches "file.txt" |
+| `\d+` | Match one or more digits | `\d+` matches "123" |
+| `\w+@\w+\.\w+` | Match email pattern | Matches "user@example.com" |
+| `word1\|word2` | Match either word (OR) | `success\|complete` matches either |
+| `[A-Z]+` | Match uppercase letters | `[A-Z]{3}` matches "USA" |
+| `.*` | Match any characters | `start.*end` matches "start...end" |
+| `\s+` | Match whitespace | `\s{2,}` matches 2+ spaces |
+
+**Note:** Regex mode is case-sensitive. Use `(?i)` at the start of your pattern for case-insensitive matching (e.g., `(?i)error`).
 
 ### Column Filter
 

@@ -378,34 +378,54 @@ func drawUI(b *Buffer) error {
 			// Create search form
 			form := tview.NewForm()
 			form.AddInputField("Search:", "", 40, nil, nil)
-			form.AddButton("Search", func() {
+			form.AddCheckbox("Use Regex:", searchUseRegex, func(checked bool) {
+				// Update state when checkbox is toggled
+				searchUseRegex = checked
+			})
+			
+			// Define search execution function to avoid duplication
+			executeSearch := func() {
 				query := form.GetFormItem(0).(*tview.InputField).GetText()
+				useRegex := form.GetFormItem(1).(*tview.Checkbox).IsChecked()
+				
 				if query != "" {
 					searchQuery = query
-					searchResults = performSearch(b, query, false)
+					searchUseRegex = useRegex
+					searchResults = performSearch(b, query, useRegex)
 
 					if len(searchResults) > 0 {
 						currentSearchIndex = 0
 						bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
 						drawBuffer(b, bufferTable)
+						searchMode := "matches"
+						if useRegex {
+							searchMode = "regex matches"
+						}
 						drawFooterText(fileNameStr,
-							fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
+							fmt.Sprintf("Found %d %s (1/%d)", len(searchResults), searchMode, len(searchResults)),
 							cursorPosStr)
 					} else {
 						currentSearchIndex = -1
-						drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+						if useRegex {
+							drawFooterText(fileNameStr, "Invalid regex or no matches found", cursorPosStr)
+						} else {
+							drawFooterText(fileNameStr, "No matches found", cursorPosStr)
+						}
 					}
 				}
 				UI.HidePage("searchModal")
 				app.SetFocus(bufferTable)
-			})
+			}
+			
+			form.AddButton("Search", executeSearch)
 			form.AddButton("Cancel", func() {
 				UI.HidePage("searchModal")
 				app.SetFocus(bufferTable)
 			})
 			form.SetButtonsAlign(tview.AlignCenter)
 			form.SetBorder(true)
-			form.SetTitle(" 🔍 Search (case-insensitive) - Enter to search, Esc to cancel ")
+			title := " 🔍 Search - Tab to navigate, Enter to search, Esc to cancel "
+			form.SetTitle(title)
 			form.SetTitleAlign(tview.AlignCenter)
 			form.SetBorderColor(tcell.NewRGBColor(100, 200, 255))
 
@@ -416,26 +436,9 @@ func drawUI(b *Buffer) error {
 					app.SetFocus(bufferTable)
 					return nil
 				}
+				// Allow Enter to submit from any field
 				if event.Key() == tcell.KeyEnter {
-					query := form.GetFormItem(0).(*tview.InputField).GetText()
-					if query != "" {
-						searchQuery = query
-						searchResults = performSearch(b, query, false)
-
-						if len(searchResults) > 0 {
-							currentSearchIndex = 0
-							bufferTable.Select(searchResults[0].Row, searchResults[0].Col)
-							drawBuffer(b, bufferTable)
-							drawFooterText(fileNameStr,
-								fmt.Sprintf("Found %d matches (1/%d)", len(searchResults), len(searchResults)),
-								cursorPosStr)
-						} else {
-							currentSearchIndex = -1
-							drawFooterText(fileNameStr, "No matches found", cursorPosStr)
-						}
-					}
-					UI.HidePage("searchModal")
-					app.SetFocus(bufferTable)
+					executeSearch()
 					return nil
 				}
 				return event
@@ -446,7 +449,7 @@ func drawUI(b *Buffer) error {
 				AddItem(nil, 0, 1, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(nil, 0, 1, false).
-					AddItem(form, 9, 1, true).
+					AddItem(form, 11, 1, true).
 					AddItem(nil, 0, 1, false), 60, 1, true).
 				AddItem(nil, 0, 1, false)
 
