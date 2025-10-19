@@ -66,32 +66,8 @@ curl -sSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bas
 sudo mv tv /usr/local/bin/
 ```
 
+
 ### Package Managers
-
-**Snap (Linux)**
-
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
-
-```bash
-sudo snap install codechenx-tv
-sudo snap alias codechenx-tv tv
-```
-
-**Go Install**
-
-```bash
-go install github.com/codechenx/tv@latest
-```
-
-**Arch Linux (AUR)**
-
-`tv` is available on the [Arch User Repository (AUR)](https://aur.archlinux.org/packages/tv-bin) as `tv-bin`. Use your favorite AUR helper to install it.
-
-```bash
-yay -S tv-bin
-```
-
-### Linux Package Managers
 
 **Debian/Ubuntu (.deb)**
 
@@ -108,6 +84,28 @@ sudo dpkg -i tv_*.deb
 wget https://github.com/codechenx/tv/releases/download/v0.7.1/tv_0.7.1_linux_amd64.rpm
 sudo rpm -i tv_*.rpm
 ```
+
+**Arch Linux (AUR)**
+
+```bash
+yay -S tv-bin
+```
+
+**Snap (Linux)**
+
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
+
+```bash
+sudo snap install codechenx-tv
+sudo snap alias codechenx-tv tv
+```
+
+**Go Install**
+
+```bash
+go install github.com/codechenx/tv@latest
+```
+
 
 ### Manual Download
 
