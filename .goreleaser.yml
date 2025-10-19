@@ -69,3 +69,17 @@ nfpms:
       - deb
       - rpm
     bindir: /usr/bin
+
+aurs:
+  - name: tv-bin
+    homepage: https://github.com/codechenx/tv
+    description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
+    maintainers:
+      - "codechenx <codechenx@gmail.com>"
+    license: "MIT"
+    private_key: "{{ .Env.AUR_KEY }}"
+    git_url: "ssh://aur@aur.archlinux.org/tv-bin.git"
+    provides:
+      - tv
+    conflicts:
+      - tv
