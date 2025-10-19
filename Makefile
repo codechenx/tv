@@ -66,6 +66,14 @@ deps:
 ## check: Run tests and linters
 check: test lint
 
+## version: Update version in all files
+version:
+	@echo "Updating version to $(VERSION)..."
+	@sed -i "" "s/version: '.*'/version: '$(VERSION)'/g" snap/snapcraft.yaml
+	@sed -i "" "s/v[0-9]\.[0-9]\.[0-9]/v$(VERSION)/g" README.md
+	@sed -i "" "s/Version: \".*\"/Version: \"$(VERSION)\"/g" tv.go
+	@sed -i "" "s/pkgver=.*/pkgver=$(VERSION)/g" PKGBUILD
+
 ## help: Show this help message
 help:
 	@echo "Usage: make [target]"
