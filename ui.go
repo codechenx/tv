@@ -177,8 +177,8 @@ func drawUI(b *Buffer) error {
 	bufferTable.SetFixed(b.rowFreeze, b.colFreeze)
 	bufferTable.Select(0, 0)
 	bufferTable.SetSelectedStyle(tcell.Style{}.
-		Foreground(tcell.ColorBlack).
-		Background(tcell.NewRGBColor(100, 200, 255)). // Modern cyan selection
+		Foreground(tcell.ColorWhite).
+		Background(tcell.NewRGBColor(80, 120, 160)). // Darker, muted blue
 		Attributes(tcell.AttrBold))
 
 	// Auto-detect and wrap long columns (sample first 100 rows, threshold 50 characters)
@@ -382,6 +382,10 @@ func drawUI(b *Buffer) error {
 				searchUseRegex = checked
 			})
 			form.AddCheckbox("Case Sensitive:", false, nil)
+			form.GetFormItem(1).(*tview.Checkbox).SetLabelColor(tcell.NewRGBColor(180, 220, 220))
+			form.GetFormItem(2).(*tview.Checkbox).SetLabelColor(tcell.NewRGBColor(180, 220, 220))
+			form.GetFormItem(1).(*tview.Checkbox).SetFieldBackgroundColor(tcell.NewRGBColor(80, 80, 100)).SetFieldTextColor(tcell.NewRGBColor(0, 255, 255))
+			form.GetFormItem(2).(*tview.Checkbox).SetFieldBackgroundColor(tcell.NewRGBColor(80, 80, 100)).SetFieldTextColor(tcell.NewRGBColor(0, 255, 255))
 
 			// Define search execution function to avoid duplication
 			executeSearch := func() {
@@ -426,7 +430,21 @@ func drawUI(b *Buffer) error {
 			title := " 🔍 Search - Tab to navigate, Enter to search, Esc to cancel "
 			form.SetTitle(title)
 			form.SetTitleAlign(tview.AlignCenter)
-			form.SetBorderColor(tcell.NewRGBColor(100, 200, 255))
+			form.SetBorderColor(tcell.NewRGBColor(0, 200, 255)) // Bright Blue
+			form.SetBackgroundColor(tcell.NewRGBColor(20, 30, 40))
+			form.SetLabelColor(tcell.NewRGBColor(180, 220, 220))
+			form.SetFieldBackgroundColor(tcell.NewRGBColor(30, 40, 50))
+			form.SetFieldTextColor(tcell.ColorWhite)
+			form.SetButtonBackgroundColor(tcell.NewRGBColor(0, 200, 255))
+			form.SetButtonTextColor(tcell.ColorBlack)
+			searchButton := form.GetButton(0)
+			searchButton.SetActivatedStyle(tcell.Style{}.
+				Background(tcell.NewRGBColor(80, 120, 160)).
+				Foreground(tcell.ColorWhite))
+			cancelButton := form.GetButton(1)
+			cancelButton.SetActivatedStyle(tcell.Style{}.
+				Background(tcell.NewRGBColor(80, 120, 160)).
+				Foreground(tcell.ColorWhite))
 
 			// Handle Escape and Enter keys on form
 			form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -435,8 +453,14 @@ func drawUI(b *Buffer) error {
 					app.SetFocus(bufferTable)
 					return nil
 				}
-				// Allow Enter to submit from any field
 				if event.Key() == tcell.KeyEnter {
+					if itemIndex, _ := form.GetFocusedItemIndex(); itemIndex >= 0 {
+						item := form.GetFormItem(itemIndex)
+						if checkbox, ok := item.(*tview.Checkbox); ok {
+							checkbox.SetChecked(!checkbox.IsChecked())
+							return nil
+						}
+					}
 					executeSearch()
 					return nil
 				}
@@ -536,6 +560,8 @@ func drawUI(b *Buffer) error {
 			filterForm.AddCheckbox("Case Sensitive:", caseSensitive, func(checked bool) {
 				caseSensitive = checked
 			})
+			filterForm.GetFormItem(2).(*tview.Checkbox).SetLabelColor(tcell.NewRGBColor(180, 220, 220))
+			filterForm.GetFormItem(2).(*tview.Checkbox).SetFieldBackgroundColor(tcell.NewRGBColor(80, 80, 100)).SetFieldTextColor(tcell.NewRGBColor(0, 255, 255))
 
 			applyFilter := func() {
 				query = filterForm.GetFormItem(1).(*tview.InputField).GetText()
@@ -627,7 +653,21 @@ func drawUI(b *Buffer) error {
 			}
 			filterForm.SetTitle(filterTitle)
 			filterForm.SetTitleAlign(tview.AlignCenter)
-			filterForm.SetBorderColor(tcell.NewRGBColor(255, 150, 50))
+			filterForm.SetBorderColor(tcell.NewRGBColor(0, 200, 255)) // Bright Blue
+			filterForm.SetBackgroundColor(tcell.NewRGBColor(20, 30, 40))
+			filterForm.SetLabelColor(tcell.NewRGBColor(180, 220, 220))
+			filterForm.SetFieldBackgroundColor(tcell.NewRGBColor(30, 40, 50))
+			filterForm.SetFieldTextColor(tcell.ColorWhite)
+			filterForm.SetButtonBackgroundColor(tcell.NewRGBColor(0, 200, 255))
+			filterForm.SetButtonTextColor(tcell.ColorBlack)
+			filterButton := filterForm.GetButton(0)
+			filterButton.SetActivatedStyle(tcell.Style{}.
+				Background(tcell.NewRGBColor(80, 120, 160)).
+				Foreground(tcell.ColorWhite))
+			cancelButton := filterForm.GetButton(1)
+			cancelButton.SetActivatedStyle(tcell.Style{}.
+				Background(tcell.NewRGBColor(80, 120, 160)).
+				Foreground(tcell.ColorWhite))
 
 			// Handle Escape and Enter keys on form
 			filterForm.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -637,6 +677,22 @@ func drawUI(b *Buffer) error {
 					return nil
 				}
 				if event.Key() == tcell.KeyEnter {
+					// If the dropdown has focus, let it handle the Enter key.
+					if itemIndex, _ := filterForm.GetFocusedItemIndex(); itemIndex >= 0 {
+						if item := filterForm.GetFormItem(itemIndex); item != nil {
+							if _, ok := item.(*tview.DropDown); ok {
+								return event
+							}
+							if checkbox, ok := item.(*tview.Checkbox); ok {
+								checkbox.SetChecked(!checkbox.IsChecked())
+								return nil
+							}
+						}
+					}
+					// if dropdown is open, pass enter to it
+					if _, ok := app.GetFocus().(*tview.List); ok {
+						return event
+					}
 					applyFilter()
 					return nil
 				}
