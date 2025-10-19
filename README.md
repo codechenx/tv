@@ -10,7 +10,7 @@
 
 
 <p align="center">
-   <img src="data/icon_white.png"  style="width:150px;" alt="tv icon"/>
+   <img src="data/icon_transparent.png"  style="width:150px;" alt="tv icon"/>
 </p>
 
 
