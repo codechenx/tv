@@ -83,6 +83,14 @@ sudo snap alias codechenx-tv tv
 go install github.com/codechenx/tv@latest
 ```
 
+**Arch Linux (AUR)**
+
+`tv` is available on the [Arch User Repository (AUR)](https://aur.archlinux.org/packages/tv-bin) as `tv-bin`. Use your favorite AUR helper to install it.
+
+```bash
+yay -S tv-bin
+```
+
 ### Linux Package Managers
 
 **Debian/Ubuntu (.deb)**

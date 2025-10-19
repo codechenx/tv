@@ -1,4 +1,4 @@
-# Maintainer: Your Name <youremail@domain.com>
+# Maintainer: codechenx <codechenx@gmail.com>
 pkgname=tv-bin
 _pkgname=tv
 pkgver=0.7.1
