@@ -72,7 +72,8 @@ sudo mv tv /usr/local/bin/
 **macOS (homebrew)**
 
 ```bash
-brew install codechenx/tap/codechenx-tv
+brew tap codechenx/tap
+brew install codechenx-tv
 ```
 
 **Debian/Ubuntu (.deb)**
