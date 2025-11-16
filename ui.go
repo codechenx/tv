@@ -896,13 +896,13 @@ func drawUI(b *Buffer) error {
 			if row > 0 {
 				bufferTable.Select(row-1, col)
 			}
-			return action, nil
+			return action, event
 		case tview.MouseScrollDown:
 			row, col := bufferTable.GetSelection()
 			if row < b.rowLen-1 {
 				bufferTable.Select(row+1, col)
 			}
-			return action, nil
+			return action, event
 		}
 
 		// Pass through other mouse events to default handler
