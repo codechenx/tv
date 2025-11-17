@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-tv
+ftv
 # Test binary, built with `go test -c`
 *.test
 
@@ -105,7 +105,8 @@ fabric.properties
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -125,3 +126,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+# pixi environments
+.pixi/*
+!.pixi/config.toml

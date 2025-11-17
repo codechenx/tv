@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-# tv installer script
+# ftv installer script
 # Automatically detects platform and installs the latest release
 
 get_latest_release() {
-    curl --silent "https://api.github.com/repos/codechenx/tv/releases/latest" |
+    curl --silent "https://api.github.com/repos/codechenx/FastTableViewer/releases/latest" |
         grep '"tag_name":' |
         sed -E 's/.*"v([^"]+)".*/\1/'
 }
@@ -34,13 +34,13 @@ detect_platform() {
 }
 
 main() {
-    echo "tv installer"
+    echo "ftv installer"
     echo "============="
     echo
     
-    # Check if tv already exists
-    if [ -f "$PWD/tv" ]; then
-        echo "Error: tv already exists in current directory" >&2
+    # Check if ftv already exists
+    if [ -f "$PWD/ftv" ]; then
+        echo "Error: ftv already exists in current directory" >&2
         echo "Please remove it first or install to a different location" >&2
         exit 1
     fi
@@ -58,8 +58,8 @@ main() {
     echo "Latest version: v$version"
     
     # Construct download URL
-    filename="tv_${version}_${platform}.tar.gz"
-    url="https://github.com/codechenx/tv/releases/download/v${version}/${filename}"
+    filename="ftv_${version}_${platform}.tar.gz"
+    url="https://github.com/codechenx/FastTableViewer/releases/download/v${version}/${filename}"
     
     echo "Downloading: $url"
     
@@ -74,14 +74,14 @@ main() {
     fi
     
     # Move binary to current directory
-    mv "$tmp_dir/tv" "$PWD/tv"
-    chmod +x "$PWD/tv"
+    mv "$tmp_dir/ftv" "$PWD/ftv"
+    chmod +x "$PWD/ftv"
     
     echo
-    echo "✓ Successfully installed tv to: $PWD/tv"
+    echo "✓ Successfully installed ftv to: $PWD/ftv"
     echo
     echo "To make it globally accessible, run:"
-    echo "  sudo mv tv /usr/local/bin/"
+    echo "  sudo mv ftv /usr/local/bin/"
     echo
     echo "Or add the current directory to your PATH:"
     echo "  export PATH=\"\$PATH:$PWD\""

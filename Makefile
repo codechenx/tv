@@ -1,6 +1,6 @@
 .PHONY: all build clean test lint install uninstall release snapshot help
 
-BINARY_NAME=tv
+BINARY_NAME=ftv
 INSTALL_PATH=/usr/local/bin
 VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS=-ldflags="-s -w -X main.version=$(VERSION)"
@@ -71,7 +71,7 @@ version:
 	@echo "Updating version to $(VERSION)..."
 	@sed -i "" "s/version: '.*'/version: '$(VERSION)'/g" snap/snapcraft.yaml
 	@sed -i "" "s/v[0-9]\.[0-9]\.[0-9]/v$(VERSION)/g" README.md
-	@sed -i "" "s/Version: \".*\"/Version: \"$(VERSION)\"/g" tv.go
+	@sed -i "" "s/Version: \".*\"/Version: \"$(VERSION)\"/g" ftv.go
 	@sed -i "" "s/pkgver=.*/pkgver=$(VERSION)/g" PKGBUILD
 
 ## help: Show this help message

@@ -1,4 +1,4 @@
-module tv
+module ftv
 
 go 1.24.0
 

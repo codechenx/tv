@@ -17,7 +17,7 @@ parts:
 
 apps:
   codechenx-tv:
-    command: bin/tv
+    command: bin/ftv
     plugs:
       - home
       - removable-media

@@ -1,16 +1,16 @@
-# tv - Table Viewer for Terminal
+# Fast Table Viewer for Terminal
 
 **A fast, feature-rich CSV/TSV/delimited file viewer for the command line**
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/tv)](https://goreportcard.com/report/github.com/codechenx/tv)
-![test](https://github.com/codechenx/tv/workflows/test/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/codechenx/tv/badge.svg?branch=main)](https://coveralls.io/github/codechenx/tv?branch=main)
-[![GitHub license](https://img.shields.io/github/license/codechenx/tv.svg)](https://github.com/codechenx/tv/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/release/codechenx/tv.svg)](http://GitHub.com/codechenx/tv/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codechenx/FastTableViewer)](https://goreportcard.com/report/github.com/codechenx/FastTableViewer)
+![test](https://github.com/codechenx/FastTableViewer/workflows/test/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/codechenx/FastTableViewer/badge.svg?branch=main)](https://coveralls.io/github/codechenx/FastTableViewer?branch=main)
+[![GitHub license](https://img.shields.io/github/license/codechenx/FastTableViewer.svg)](https://github.com/codechenx/FastTableViewer/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/codechenx/FastTableViewer.svg)](http://GitHub.com/codechenx/FastTableViewer/releases)
 
 
 <p align="center">
-   <img src="data/icon_transparent.png"  style="width:200px;" alt="tv icon"/>
+   <img src="data/icon_transparent.png"  style="width:200px;" alt="ftv icon"/>
 </p>
 
 
@@ -41,7 +41,7 @@
 
 ## Features
 
-tv brings spreadsheet-like functionality to your terminal with vim-inspired controls.
+ftv brings spreadsheet-like functionality to your terminal with vim-inspired controls.
 
 - **Spreadsheet interface** - Navigate and view tabular data with frozen headers
 - **Smart parsing** - Automatically detects delimiters (CSV, TSV, custom separators)
@@ -62,8 +62,8 @@ tv brings spreadsheet-like functionality to your terminal with vim-inspired cont
 ### Recommended: Install Script (Linux/macOS)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/codechenx/tv/master/install.sh | bash
-sudo mv tv /usr/local/bin/
+curl -sSL https://raw.githubusercontent.com/codechenx/FastTableViewer/master/install.sh | bash
+sudo mv ftv /usr/local/bin/
 ```
 
 
@@ -73,29 +73,29 @@ sudo mv tv /usr/local/bin/
 
 ```bash
 brew tap codechenx/tap
-brew install codechenx-tv
+brew install codechenx-ftv
 ```
 
 **Debian/Ubuntu (.deb)**
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/download/v0.7.1/tv_0.7.1_linux_amd64.deb
-sudo dpkg -i tv_*.deb
+wget https://github.com/codechenx/FastTableViewer/releases/download/v0.7.1/ftv_0.7.1_linux_amd64.deb
+sudo dpkg -i ftv_*.deb
 ```
 
 **CentOS/Fedora (.rpm)**
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/tv/releases/download/v0.7.1/tv_0.7.1_linux_amd64.rpm
-sudo rpm -i tv_*.rpm
+wget https://github.com/codechenx/FastTableViewer/releases/download/v0.7.1/ftv_0.7.1_linux_amd64.rpm
+sudo rpm -i ftv_*.rpm
 ```
 
 **Arch Linux (AUR)**
 
 ```bash
-yay -S tv-bin
+yay -S ftv-bin
 ```
 
 **Snap (Linux)**
@@ -103,20 +103,20 @@ yay -S tv-bin
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-white.svg)](https://snapcraft.io/codechenx-tv)
 
 ```bash
-sudo snap install codechenx-tv
-sudo snap alias codechenx-tv tv
+sudo snap install codechenx-ftv
+sudo snap alias codechenx-ftv ftv
 ```
 
 **Go Install**
 
 ```bash
-go install github.com/codechenx/tv@latest
+go install github.com/codechenx/FastTableViewer@latest
 ```
 
 
 ### Manual Download
 
-Download pre-built binaries from [releases](https://github.com/codechenx/tv/releases) for:
+Download pre-built binaries from [releases](https://github.com/codechenx/FastTableViewer/releases) for:
 - Linux (x86_64, ARM, ARM64)
 - macOS (Intel, Apple Silicon)
 - Windows (x86_64, i386)
@@ -126,9 +126,9 @@ Download pre-built binaries from [releases](https://github.com/codechenx/tv/rele
 Requires Go 1.21 or later:
 
 ```bash
-git clone https://github.com/codechenx/tv.git
-cd tv
-go build -ldflags="-s -w" -o tv
+git clone https://github.com/codechenx/FastTableViewer.git
+cd FastTableViewer
+go build -ldflags="-s -w" -o ftv
 ```
 
 ## Quick Start
@@ -136,43 +136,43 @@ go build -ldflags="-s -w" -o tv
 View a CSV file:
 
 ```bash
-tv data.csv
+ftv data.csv
 ```
 
 View a TSV file (tab-separated):
 
 ```bash
-tv data.tsv
+ftv data.tsv
 ```
 
 Read from stdin:
 
 ```bash
-cat data.csv | tv
-ps aux | tv
+cat data.csv | ftv
+ps aux | ftv
 ```
 
 Specify a custom delimiter:
 
 ```bash
-tv data.txt -s "|"
+ftv data.txt -s "|"
 ```
 
 View only specific columns:
 
 ```bash
-tv data.csv --columns 1,3,5
+ftv data.csv --columns 1,3,5
 ```
 
 Skip header lines (e.g., for VCF files):
 
 ```bash
-tv file.vcf --skip-prefix "##"
+ftv file.vcf --skip-prefix "##"
 ```
 
 ## Command Line Flags
 
-**Syntax:** `tv [FILE] [flags]`
+**Syntax:** `ftv [FILE] [flags]`
 
 | Flag | Short | Description |
 |------|-------|-------------|
@@ -192,24 +192,24 @@ tv file.vcf --skip-prefix "##"
 
 ```bash
 # Use custom delimiter
-tv data.txt -s ","
+ftv data.txt -s ","
 
 # View only columns 1, 3, and 5
-tv data.csv --columns 1,3,5
+ftv data.csv --columns 1,3,5
 
 # Skip lines starting with "#"
-tv data.txt --skip-prefix "#"
+ftv data.txt --skip-prefix "#"
 
 # Disable header freezing
-tv data.csv -f -1
+ftv data.csv -f -1
 
 # Disable async loading for slow systems
-tv large.csv --async=false
+ftv large.csv --async=false
 ```
 
 ## Key Bindings
 
-tv uses vim-inspired keybindings for intuitive navigation.
+ftv uses vim-inspired keybindings for intuitive navigation.
 
 ### Navigation
 
@@ -267,10 +267,10 @@ Start viewing large files instantly without waiting for them to fully load. The 
 
 ```bash
 # Default behavior - UI appears instantly
-tv huge_dataset.csv
+ftv huge_dataset.csv
 
 # Disable if you prefer traditional loading
-tv huge_dataset.csv --async=false
+ftv huge_dataset.csv --async=false
 ```
 
 **Progress indicators:**
@@ -282,7 +282,7 @@ tv huge_dataset.csv --async=false
 
 tv automatically detects column types and provides intelligent sorting.
 
-**Type Detection:** When loading data, tv analyzes each column to determine if it contains strings, numbers, or dates using a 90% confidence threshold.
+**Type Detection:** When loading data, ftv analyzes each column to determine if it contains strings, numbers, or dates using a 90% confidence threshold.
 
 **Manual Type Toggle:** Press `t` to cycle through types for the current column:
 - String → Number → Date → String
@@ -481,37 +481,37 @@ Handle long cell content without horizontal scrolling.
 
 ### Biological Data Formats
 
-tv handles common bioinformatics file formats with comment/header prefixes.
+ftv handles common bioinformatics file formats with comment/header prefixes.
 
 **VCF files:**
 ```bash
 # Skip VCF metadata lines
-tv sample.vcf --skip-prefix "##"
-tv sample.vcf.gz --skip-prefix "##"
+ftv sample.vcf --skip-prefix "##"
+ftv sample.vcf.gz --skip-prefix "##"
 ```
 
 **QIIME OTU tables:**
 ```bash
-tv otu_table.txt --skip-prefix "# "
+ftv otu_table.txt --skip-prefix "# "
 ```
 
 **MAF (Mutation Annotation Format):**
 ```bash
-tv mutations.maf --skip-prefix "#"
+ftv mutations.maf --skip-prefix "#"
 ```
 
 **Interval lists:**
 ```bash
 # Skip SAM header lines
-tv intervals.interval_list --skip-prefix "@HD","@SQ"
+ftv intervals.interval_list --skip-prefix "@HD","@SQ"
 
 # Or skip all @ lines
-tv intervals.interval_list --skip-prefix "@"
+ftv intervals.interval_list --skip-prefix "@"
 ```
 
 **BED files with headers:**
 ```bash
-tv peaks.bed --skip-prefix "track","browser"
+ftv peaks.bed --skip-prefix "track","browser"
 ```
 
 ### General Examples
@@ -519,43 +519,43 @@ tv peaks.bed --skip-prefix "track","browser"
 **Large log files:**
 ```bash
 # View first 1000 lines only
-tv app.log -n 1000
+ftv app.log -n 1000
 
 # Skip timestamp lines
-tv app.log --skip-prefix "2024"
+ftv app.log --skip-prefix "2024"
 ```
 
 **CSV with specific columns:**
 ```bash
 # Show only columns 1, 3, and 5
-tv data.csv --columns 1,3,5
+ftv data.csv --columns 1,3,5
 
 # Hide sensitive columns 2 and 4
-tv data.csv --hide-columns 2,4
+ftv data.csv --hide-columns 2,4
 ```
 
 **Pipeline integration:**
 ```bash
 # View process list
-ps aux | tv
+ps aux | ftv
 
 # View git log as table
-git log --pretty=format:"%h,%an,%ar,%s" | tv -s ","
+git log --pretty=format:"%h,%an,%ar,%s" | ftv -s ","
 
 # Parse JSON with jq, view as table
-cat data.json | jq -r '.[] | [.id, .name, .value] | @csv' | tv
+cat data.json | jq -r '.[] | [.id, .name, .value] | @csv' | ftv
 ```
 
 **Custom delimiters:**
 ```bash
 # Pipe-separated
-tv data.txt -s "|"
+ftv data.txt -s "|"
 
 # Semicolon-separated
-tv data.txt -s ";"
+ftv data.txt -s ";"
 
 # Multiple spaces
-tv data.txt -s "  "
+ftv data.txt -s "  "
 ```
 
 ---

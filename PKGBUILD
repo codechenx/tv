@@ -1,6 +1,6 @@
 # Maintainer: codechenx <codechenx@gmail.com>
-pkgname=tv-bin
-_pkgname=tv
+pkgname=ftv-bin
+_pkgname=ftv
 pkgver=0.7.1
 pkgrel=1
 pkgdesc="A fast, feature-rich CSV/TSV/delimited file viewer for the command line"

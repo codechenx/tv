@@ -1,0 +1,11 @@
+[workspace]
+authors = ["codechenx <codechenx@gmail.com>"]
+channels = ["conda-forge"]
+name = "FastTableViewer"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+go = ">=1.25.4,<2"
