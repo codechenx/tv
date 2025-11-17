@@ -58,7 +58,7 @@ main() {
     echo "Latest version: v$version"
     
     # Construct download URL
-    filename="ftv_${version}_${platform}.tar.gz"
+    filename="FastTableViewer_${version}_${platform}.tar.gz"
     url="https://github.com/codechenx/FastTableViewer/releases/download/v${version}/${filename}"
     
     echo "Downloading: $url"
@@ -74,7 +74,7 @@ main() {
     fi
     
     # Move binary to current directory
-    mv "$tmp_dir/ftv" "$PWD/ftv"
+    mv "$tmp_dir/FastTableViewer" "$PWD/ftv"
     chmod +x "$PWD/ftv"
     
     echo
