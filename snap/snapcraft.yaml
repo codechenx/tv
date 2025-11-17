@@ -1,7 +1,7 @@
 name: codechenx-tv
  
-version: '0.7.1' # just for humans, typically '1.2+git' or '1.3.2'
-summary: tv(Table Viewer) for delimited file in terminal.
+version: '0.8' # just for humans, typically '1.2+git' or '1.3.2'
+summary: Fast table viewer for delimited file in terminal.
 description: |
     A fast, feature-rich CSV/TSV/delimited file viewer for the command line.
 base: core24
@@ -12,7 +12,7 @@ parts:
   woke:
     plugin: go
     build-snaps: [go/latest/stable]
-    source: https://github.com/codechenx/tv.git
+    source: https://github.com/codechenx/FastTableViewer.git
     source-type: git
 
 apps:

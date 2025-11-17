@@ -80,7 +80,7 @@ brew install codechenx-ftv
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/FastTableViewer/releases/download/v0.7.1/ftv_0.7.1_linux_amd64.deb
+wget https://github.com/codechenx/FastTableViewer/releases/download/v0.8/ftv_0.8_linux_amd64.deb
 sudo dpkg -i ftv_*.deb
 ```
 
@@ -88,7 +88,7 @@ sudo dpkg -i ftv_*.deb
 
 ```bash
 # Download from releases page
-wget https://github.com/codechenx/FastTableViewer/releases/download/v0.7.1/ftv_0.7.1_linux_amd64.rpm
+wget https://github.com/codechenx/FastTableViewer/releases/download/v0.8/ftv_0.8_linux_amd64.rpm
 sudo rpm -i ftv_*.rpm
 ```
 

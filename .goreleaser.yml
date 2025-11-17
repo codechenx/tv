@@ -63,7 +63,7 @@ changelog:
 nfpms:
   - maintainer: codechenx <codechenx@gmail.com>
     description: "Fast, feature-rich CSV/TSV/delimited file viewer for the command line"
-    homepage: https://github.com/codechenx/tv
+    homepage: https://github.com/codechenx/FastTableViewer
     license: MIT
     formats:
       - deb

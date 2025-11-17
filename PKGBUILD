@@ -1,11 +1,11 @@
 # Maintainer: codechenx <codechenx@gmail.com>
 pkgname=ftv-bin
 _pkgname=ftv
-pkgver=0.7.1
+pkgver=0.8
 pkgrel=1
 pkgdesc="A fast, feature-rich CSV/TSV/delimited file viewer for the command line"
 arch=('x86_64')
-url="https://github.com/codechenx/tv"
+url="https://github.com/codechenx/FastTableViewer"
 license=('Apache')
 provides=("${_pkgname}")
 conflicts=("${_pkgname}")
