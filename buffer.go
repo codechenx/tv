@@ -28,6 +28,23 @@ const (
 	defaultRowCapacity = 10000
 )
 
+// Common date formats for parsing (most common first for performance)
+// Shared by both isDateValue and parseDateValueFast to ensure consistency
+var commonDateFormats = []string{
+	"2006-01-02",          // ISO date: 2024-10-17
+	"2006-01-02 15:04:05", // ISO datetime: 2024-10-17 15:30:00
+	"01/02/2006",          // US date: 10/17/2024
+	"02/01/2006",          // EU date: 17/10/2024
+	"2006/01/02",          // Alt ISO: 2024/10/17
+	time.RFC3339,          // RFC3339: 2024-10-17T15:30:00Z
+	"2006-01-02T15:04:05", // ISO8601 without timezone
+	"Jan 02, 2006",        // Mon DD, YYYY
+	"January 02, 2006",    // Month DD, YYYY
+	"02-Jan-2006",         // DD-Mon-YYYY
+	"02 Jan 2006",         // DD Mon YYYY
+	"2006.01.02",          // Dotted date
+}
+
 // createNewBuffer initializes and returns a new empty Buffer
 func createNewBuffer() *Buffer {
 	return &Buffer{
@@ -250,23 +267,8 @@ func parseDateValueFast(s string) int64 {
 		return 0
 	}
 
-	// Try common date formats (most common first for performance)
-	formats := []string{
-		"2006-01-02",          // ISO date: 2024-10-17
-		"2006-01-02 15:04:05", // ISO datetime: 2024-10-17 15:30:00
-		"01/02/2006",          // US date: 10/17/2024
-		"02/01/2006",          // EU date: 17/10/2024
-		"2006/01/02",          // Alt ISO: 2024/10/17
-		time.RFC3339,          // RFC3339: 2024-10-17T15:30:00Z
-		"2006-01-02T15:04:05", // ISO8601 without timezone
-		"Jan 02, 2006",        // Mon DD, YYYY
-		"January 02, 2006",    // Month DD, YYYY
-		"02-Jan-2006",         // DD-Mon-YYYY
-		"02 Jan 2006",         // DD Mon YYYY
-		"2006.01.02",          // Dotted date
-	}
-
-	for _, format := range formats {
+	// Try common date formats using shared constant
+	for _, format := range commonDateFormats {
 		if t, err := time.Parse(format, s); err == nil {
 			return t.Unix()
 		}
@@ -397,23 +399,8 @@ func isDateValue(s string) bool {
 		return false
 	}
 
-	// Common date formats (most common first for performance)
-	formats := []string{
-		"2006-01-02",          // ISO date: 2024-10-17
-		"2006-01-02 15:04:05", // ISO datetime: 2024-10-17 15:30:00
-		"01/02/2006",          // US date: 10/17/2024
-		"02/01/2006",          // EU date: 17/10/2024
-		"2006/01/02",          // Alt ISO: 2024/10/17
-		time.RFC3339,          // RFC3339: 2024-10-17T15:30:00Z
-		"2006-01-02T15:04:05", // ISO8601 without timezone
-		"Jan 02, 2006",        // Mon DD, YYYY
-		"January 02, 2006",    // Month DD, YYYY
-		"02-Jan-2006",         // DD-Mon-YYYY
-		"02 Jan 2006",         // DD Mon YYYY
-		"2006.01.02",          // Dotted date
-	}
-
-	for _, format := range formats {
+	// Try common date formats using shared constant
+	for _, format := range commonDateFormats {
 		if _, err := time.Parse(format, s); err == nil {
 			return true
 		}
@@ -534,6 +521,39 @@ func (b *Buffer) filterByColumn(colIndex int, options FilterOptions) *Buffer {
 		colType = b.colType[colIndex]
 	}
 
+	// Pre-compile regex if using regex operator (performance optimization)
+	var compiledRegex *regexp.Regexp
+	if options.Operator == "regex" {
+		var err error
+		compiledRegex, err = regexp.Compile(options.Query)
+		if err != nil {
+			// Invalid regex - return buffer with just header
+			return filtered
+		}
+	}
+
+	// Pre-parse numeric threshold if using numeric operators (performance optimization)
+	var thresholdVal float64
+	isNumericOp := false
+	if colType == colTypeFloat || colType == colTypeDate {
+		switch options.Operator {
+		case ">", "<", ">=", "<=":
+			isNumericOp = true
+			var err error
+			thresholdVal, err = strconv.ParseFloat(strings.TrimSpace(options.Query), 64)
+			if err != nil {
+				// Invalid numeric threshold - return buffer with just header
+				return filtered
+			}
+		}
+	}
+
+	// Pre-convert query to lowercase if case-insensitive (performance optimization)
+	lowerQuery := options.Query
+	if !options.CaseSensitive && options.Operator != "regex" {
+		lowerQuery = strings.ToLower(options.Query)
+	}
+
 	// Filter data rows
 	startRow := b.rowFreeze
 	for i := startRow; i < b.rowLen; i++ {
@@ -543,8 +563,8 @@ func (b *Buffer) filterByColumn(colIndex int, options FilterOptions) *Buffer {
 
 		cellValue := b.cont[i][colIndex]
 
-		// Evaluate filter condition
-		if evaluateFilter(cellValue, options, colType) {
+		// Evaluate filter condition with pre-compiled/parsed values
+		if evaluateFilterOptimized(cellValue, options, colType, compiledRegex, isNumericOp, thresholdVal, lowerQuery) {
 			filtered.cont = append(filtered.cont, b.cont[i])
 			filtered.rowLen++
 		}
@@ -553,45 +573,36 @@ func (b *Buffer) filterByColumn(colIndex int, options FilterOptions) *Buffer {
 	return filtered
 }
 
-// evaluateFilter checks if a cell value matches the filter query based on the operator.
-func evaluateFilter(cellValue string, options FilterOptions, colType int) bool {
-	query := options.Query
+// evaluateFilterOptimized checks if a cell value matches the filter query based on the operator.
+// This version accepts pre-compiled regex and pre-parsed values for better performance.
+func evaluateFilterOptimized(cellValue string, options FilterOptions, colType int, compiledRegex *regexp.Regexp, isNumericOp bool, thresholdVal float64, lowerQuery string) bool {
 	operator := options.Operator
 
 	// Handle numeric comparisons first
-	if colType == colTypeFloat || colType == colTypeDate {
-		isNumericOperator := false
+	if isNumericOp {
+		cellVal := parseNumericValueFast(cellValue)
 		switch operator {
-		case ">", "<", ">=", "<=":
-			isNumericOperator = true
+		case ">":
+			return cellVal > thresholdVal
+		case "<":
+			return cellVal < thresholdVal
+		case ">=":
+			return cellVal >= thresholdVal
+		case "<=":
+			return cellVal <= thresholdVal
 		}
+	}
 
-		if isNumericOperator {
-			cellVal := parseNumericValueFast(cellValue)
-			thresholdVal, err := strconv.ParseFloat(strings.TrimSpace(query), 64)
-			if err != nil {
-				return false // Cannot compare if query is not a number
-			}
-
-			switch operator {
-			case ">":
-				return cellVal > thresholdVal
-			case "<":
-				return cellVal < thresholdVal
-			case ">=":
-				return cellVal >= thresholdVal
-			case "<=":
-				return cellVal <= thresholdVal
-			}
-		}
+	// Handle regex operator with pre-compiled regex
+	if operator == "regex" && compiledRegex != nil {
+		return compiledRegex.MatchString(cellValue)
 	}
 
 	// Prepare strings for comparison
 	cell := cellValue
-	q := query
+	q := lowerQuery
 	if !options.CaseSensitive {
 		cell = strings.ToLower(cell)
-		q = strings.ToLower(q)
 	}
 
 	// Handle string-based operators
@@ -604,15 +615,45 @@ func evaluateFilter(cellValue string, options FilterOptions, colType int) bool {
 		return strings.HasPrefix(cell, q)
 	case "ends with":
 		return strings.HasSuffix(cell, q)
-	case "regex":
-		// When using regex, the user has full control over case sensitivity in the pattern.
-		re, err := regexp.Compile(options.Query)
-		if err != nil {
-			return false // Invalid regex
-		}
-		return re.MatchString(cellValue)
 	default:
 		// Default to contains for backward compatibility if operator is empty
 		return strings.Contains(cell, q)
 	}
+}
+
+// evaluateFilter checks if a cell value matches the filter query based on the operator.
+// Kept for backward compatibility - calls evaluateFilterOptimized with default parameters.
+func evaluateFilter(cellValue string, options FilterOptions, colType int) bool {
+	// For backward compatibility, compile regex on-the-fly if needed
+	var compiledRegex *regexp.Regexp
+	if options.Operator == "regex" {
+		var err error
+		compiledRegex, err = regexp.Compile(options.Query)
+		if err != nil {
+			return false
+		}
+	}
+
+	// Parse numeric threshold if needed
+	var thresholdVal float64
+	isNumericOp := false
+	if colType == colTypeFloat || colType == colTypeDate {
+		switch options.Operator {
+		case ">", "<", ">=", "<=":
+			isNumericOp = true
+			var err error
+			thresholdVal, err = strconv.ParseFloat(strings.TrimSpace(options.Query), 64)
+			if err != nil {
+				return false
+			}
+		}
+	}
+
+	// Convert query to lowercase if needed
+	lowerQuery := options.Query
+	if !options.CaseSensitive && options.Operator != "regex" {
+		lowerQuery = strings.ToLower(options.Query)
+	}
+
+	return evaluateFilterOptimized(cellValue, options, colType, compiledRegex, isNumericOp, thresholdVal, lowerQuery)
 }

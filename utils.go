@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -330,37 +331,12 @@ func performSearch(b *Buffer, query string, useRegex bool, caseSensitive bool) [
 	return results
 }
 
-// toLower converts a string to lowercase
+// toLower converts a string to lowercase using optimized standard library
 func toLower(s string) string {
-	runes := []rune(s)
-	for i, r := range runes {
-		if r >= 'A' && r <= 'Z' {
-			runes[i] = r + 32
-		}
-	}
-	return string(runes)
+	return strings.ToLower(s)
 }
 
-// stringContains checks if s contains substr
+// stringContains checks if s contains substr using optimized standard library
 func stringContains(s, substr string) bool {
-	if len(substr) == 0 {
-		return true
-	}
-	if len(substr) > len(s) {
-		return false
-	}
-
-	for i := 0; i <= len(s)-len(substr); i++ {
-		match := true
-		for j := 0; j < len(substr); j++ {
-			if s[i+j] != substr[j] {
-				match = false
-				break
-			}
-		}
-		if match {
-			return true
-		}
-	}
-	return false
+	return strings.Contains(s, substr)
 }
