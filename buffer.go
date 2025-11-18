@@ -465,10 +465,45 @@ func isNumericValue(s string) bool {
 }
 
 // detectAllColumnTypes automatically detects types for all columns
+// Uses parallel processing for better performance on multi-column datasets
 func (b *Buffer) detectAllColumnTypes() {
+	// For small number of columns, sequential processing is faster
+	if b.colLen <= 4 {
+		for i := 0; i < b.colLen; i++ {
+			detectedType := b.autoDetectColumnType(i)
+			b.setColType(i, detectedType)
+		}
+		return
+	}
+
+	// For larger datasets, use parallel processing
+	type result struct {
+		index int
+		ctype int
+	}
+
+	results := make(chan result, b.colLen)
+	var wg sync.WaitGroup
+
+	// Process columns in parallel
 	for i := 0; i < b.colLen; i++ {
-		detectedType := b.autoDetectColumnType(i)
-		b.setColType(i, detectedType)
+		wg.Add(1)
+		go func(colIndex int) {
+			defer wg.Done()
+			detectedType := b.autoDetectColumnType(colIndex)
+			results <- result{index: colIndex, ctype: detectedType}
+		}(i)
+	}
+
+	// Close results channel when all goroutines finish
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	// Collect results and set column types
+	for res := range results {
+		b.setColType(res.index, res.ctype)
 	}
 }
 
