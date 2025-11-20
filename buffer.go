@@ -13,7 +13,6 @@ import (
 // stringInterner provides efficient string deduplication for categorical data
 type stringInterner struct {
 	pool sync.Map // map[string]string for concurrent access
-	hits uint64   // Cache hits (for debugging/stats)
 }
 
 // newStringInterner creates a new string interner
