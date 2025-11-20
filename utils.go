@@ -5,6 +5,8 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 )
@@ -281,10 +283,8 @@ func detectAndWrapLongColumns(b *Buffer, sampleSize int, threshold int) {
 }
 
 // performSearch searches for a query string in the buffer and stores results
-// Supports both plain text and regex search modes
+// Supports both plain text and regex search modes with parallel column scanning
 func performSearch(b *Buffer, query string, useRegex bool, caseSensitive bool) []SearchResult {
-	results := []SearchResult{}
-
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -297,73 +297,65 @@ func performSearch(b *Buffer, query string, useRegex bool, caseSensitive bool) [
 		}
 		re, err = regexp.Compile(query)
 		if err != nil {
-			// If regex is invalid, return empty results
-			return results
+			return []SearchResult{}
 		}
 	} else if !caseSensitive {
-		// For non-regex, convert to lowercase for case-insensitive search
-		query = toLower(query)
+		query = strings.ToLower(query)
 	}
 
-	// Scan column by column (same column first, then next column)
-	for c := 0; c < b.colLen; c++ {
-		for r := 0; r < b.rowLen; r++ {
-			cellText := b.cont[r][c]
+	// Parallel search across columns for better performance
+	resultChan := make(chan []SearchResult, b.colLen)
+	var wg sync.WaitGroup
 
-			var matches bool
-			if useRegex {
-				matches = re.MatchString(cellText)
-			} else {
-				if caseSensitive {
-					matches = stringContains(cellText, query)
+	for c := 0; c < b.colLen; c++ {
+		wg.Add(1)
+		go func(col int) {
+			defer wg.Done()
+			var colResults []SearchResult
+
+			for r := 0; r < b.rowLen; r++ {
+				cellText := b.cont[r][col]
+
+				var matches bool
+				if useRegex {
+					matches = re.MatchString(cellText)
 				} else {
-					matches = stringContains(toLower(cellText), query)
+					if caseSensitive {
+						matches = strings.Contains(cellText, query)
+					} else {
+						matches = strings.Contains(strings.ToLower(cellText), query)
+					}
+				}
+
+				if matches {
+					colResults = append(colResults, SearchResult{Row: r, Col: col})
 				}
 			}
 
-			if matches {
-				results = append(results, SearchResult{Row: r, Col: c})
-			}
-		}
+			resultChan <- colResults
+		}(c)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	// Collect results from all columns
+	var results []SearchResult
+	for colResults := range resultChan {
+		results = append(results, colResults...)
 	}
 
 	return results
 }
 
-// toLower converts a string to lowercase
+// toLower converts a string to lowercase using optimized stdlib
 func toLower(s string) string {
-	runes := []rune(s)
-	for i, r := range runes {
-		if r >= 'A' && r <= 'Z' {
-			runes[i] = r + 32
-		}
-	}
-	return string(runes)
+	return strings.ToLower(s)
 }
 
-// stringContains checks if s contains substr
-func stringContains(s, substr string) bool {
-	if len(substr) == 0 {
-		return true
-	}
-	if len(substr) > len(s) {
-		return false
-	}
 
-	for i := 0; i <= len(s)-len(substr); i++ {
-		match := true
-		for j := 0; j < len(substr); j++ {
-			if s[i+j] != substr[j] {
-				match = false
-				break
-			}
-		}
-		if match {
-			return true
-		}
-	}
-	return false
-}
 
 // makeProgressBar creates a visual progress bar
 // percent should be between 0 and 100

@@ -38,13 +38,25 @@ func buildFilterInfoStr(currentColumn int) string {
 	return fmt.Sprintf("🔎 %d filters active  |  Navigate to filtered column and press 'r' to remove", len(activeFilters))
 }
 
-// add buffer data to buffer table
+// add buffer data to buffer table with optimized wrapped column lookup
 func drawBuffer(b *Buffer, t *tview.Table) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
 	t.Clear()
 	cols, rows := b.colLen, b.rowLen
+
+	// Pre-compute wrapped column info to avoid repeated map lookups
+	type colInfo struct {
+		maxWidth      int
+		needsTruncate bool
+	}
+	colInfos := make([]colInfo, cols)
+	for c := 0; c < cols; c++ {
+		if width, isWrapped := wrappedColumns[c]; isWrapped {
+			colInfos[c] = colInfo{maxWidth: width, needsTruncate: true}
+		}
+	}
 
 	for r := 0; r < rows; r++ {
 		for c := 0; c < cols; c++ {
@@ -110,11 +122,10 @@ func drawBuffer(b *Buffer, t *tview.Table) {
 				}
 			}
 
-			// Determine max width for this column
+			// Use pre-computed column info for truncation
 			maxWidth := 0
-			if width, isWrapped := wrappedColumns[c]; isWrapped {
-				maxWidth = width
-				// Truncate text if it exceeds max width
+			if colInfos[c].needsTruncate {
+				maxWidth = colInfos[c].maxWidth
 				cellText = truncateText(cellText, maxWidth)
 			}
 
@@ -229,7 +240,10 @@ func drawUI(b *Buffer) error {
 	UI.AddPage("main", mainPage, true, true)
 
 	//bufferTable Event
-	//bufferTable update cursor position
+	//bufferTable update cursor position with throttling to reduce UI redraws
+	var lastFooterUpdate time.Time
+	var footerUpdateThrottle = 50 * time.Millisecond
+
 	bufferTable.SetSelectionChangedFunc(func(row int, column int) {
 		// Mark that user has moved cursor if they moved from initial position (0,0)
 		if !userMovedCursor && (row != 0 || column != 0) {
@@ -241,8 +255,13 @@ func drawUI(b *Buffer) error {
 
 		cursorPosStr = buildCursorPosStr(row, column)
 
-		// Rebuild the page with filter strip based on current column
-		drawFooterText(fileNameStr, statusMessage, cursorPosStr)
+		// Throttle footer updates to reduce unnecessary redraws
+		now := time.Now()
+		if now.Sub(lastFooterUpdate) >= footerUpdateThrottle {
+			lastFooterUpdate = now
+			// Rebuild the page with filter strip based on current column
+			drawFooterText(fileNameStr, statusMessage, cursorPosStr)
+		}
 	})
 
 	//bufferTable HotKey Event

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -140,9 +141,9 @@ func TestStringContains(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := stringContains(test.s, test.substr)
+		result := strings.Contains(test.s, test.substr)
 		if result != test.expected {
-			t.Errorf("stringContains(%q, %q) = %v, want %v",
+			t.Errorf("strings.Contains(%q, %q) = %v, want %v",
 				test.s, test.substr, result, test.expected)
 		}
 	}

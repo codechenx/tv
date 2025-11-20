@@ -12,6 +12,7 @@ type Args struct {
 	NLine      int      //number of lines that should be displayed
 	Strict     bool     // check for missing data
 	AsyncLoad  bool     // enable async loading for progressive rendering
+	MemoryMB   int      // Memory limit in MB (0 = unlimited/default, >0 = custom limit)
 }
 
 func (args *Args) setDefault() {
@@ -24,4 +25,5 @@ func (args *Args) setDefault() {
 	args.NLine = 0
 	args.Strict = false
 	args.AsyncLoad = true // default to async loading
+	args.MemoryMB = 0     // Unlimited by default
 }

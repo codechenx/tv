@@ -313,6 +313,9 @@ func loadFileToBufferAsync(fn string, b *Buffer, updateChan chan<- bool, doneCha
 	// Auto-detect column types after loading (async)
 	go b.detectAllColumnTypes()
 
+	// Enable string interning for categorical columns (async)
+	go b.enableStringInterning()
+
 	progress.finish()
 	doneChan <- nil
 }
@@ -428,6 +431,9 @@ func loadFileToBuffer(fn string, b *Buffer) error {
 
 	// Auto-detect column types after loading
 	b.detectAllColumnTypes()
+
+	// Enable string interning for categorical columns
+	b.enableStringInterning()
 
 	progress.finish()
 	return nil
@@ -617,6 +623,9 @@ func loadPipeToBufferAsync(stdin io.Reader, b *Buffer, updateChan chan<- bool, d
 	// Auto-detect column types after loading (async)
 	go b.detectAllColumnTypes()
 
+	// Enable string interning for categorical columns (async)
+	go b.enableStringInterning()
+
 	progress.finish()
 	doneChan <- nil
 }
@@ -711,6 +720,9 @@ func loadPipeToBuffer(stdin io.Reader, b *Buffer) error {
 
 	// Auto-detect column types after loading
 	b.detectAllColumnTypes()
+
+	// Enable string interning for categorical columns
+	b.enableStringInterning()
 
 	progress.finish()
 	return nil

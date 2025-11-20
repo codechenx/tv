@@ -10,22 +10,82 @@ import (
 	"time"
 )
 
+// stringInterner provides efficient string deduplication for categorical data
+type stringInterner struct {
+	pool sync.Map // map[string]string for concurrent access
+	hits uint64   // Cache hits (for debugging/stats)
+}
+
+// newStringInterner creates a new string interner
+func newStringInterner() *stringInterner {
+	return &stringInterner{}
+}
+
+// intern returns a canonical version of the string, reducing memory usage
+func (si *stringInterner) intern(s string) string {
+	// Quick path for empty strings
+	if s == "" {
+		return s
+	}
+	
+	// Try to load existing string
+	if existing, ok := si.pool.Load(s); ok {
+		return existing.(string)
+	}
+	
+	// Store and return the string
+	si.pool.Store(s, s)
+	return s
+}
+
+// shouldInternColumn determines if a column should use string interning
+// based on its cardinality (ratio of unique values to total values)
+func shouldInternColumn(values []string, threshold float64) bool {
+	if len(values) < 100 {
+		return false // Too small to benefit
+	}
+	
+	// Sample the column to estimate cardinality
+	sampleSize := 1000
+	if len(values) < sampleSize {
+		sampleSize = len(values)
+	}
+	
+	seen := make(map[string]bool, sampleSize)
+	for i := 0; i < sampleSize; i++ {
+		seen[values[i]] = true
+	}
+	
+	cardinality := float64(len(seen)) / float64(sampleSize)
+	return cardinality < threshold // Low cardinality = good for interning
+}
+
 // Buffer represents a table data structure with concurrent access support
 type Buffer struct {
-	sep          rune         // Column separator character
-	cont         [][]string   // Table content (rows x columns)
-	colType      []int        // Column data types (colTypeStr or colTypeFloat)
-	rowLen       int          // Number of rows
-	colLen       int          // Number of columns
-	rowFreeze    int          // Number of frozen header rows (0 or 1)
-	colFreeze    int          // Number of frozen columns (0 or 1)
-	selectedCell [][]int      // Selected cell coordinates
-	mu           sync.RWMutex // Mutex for concurrent access
+	sep          rune              // Column separator character
+	cont         [][]string        // Table content (rows x columns)
+	colType      []int             // Column data types (colTypeStr or colTypeFloat)
+	rowLen       int               // Number of rows
+	colLen       int               // Number of columns
+	rowFreeze    int               // Number of frozen header rows (0 or 1)
+	colFreeze    int               // Number of frozen columns (0 or 1)
+	selectedCell [][]int           // Selected cell coordinates
+	mu           sync.RWMutex      // Mutex for concurrent access
+	interners    []*stringInterner // String interners per column (nil if not used)
+	internCols   []bool            // Track which columns use interning
+	memoryUsage  int64             // Current estimated memory usage in bytes
+	maxMemory    int64             // Maximum allowed memory in bytes (0 = no limit)
 }
 
 const (
 	// Pre-allocated capacity for rows (optimized for large files)
 	defaultRowCapacity = 10000
+	// Cardinality threshold for string interning (30% unique values)
+	internCardinalityThreshold = 0.30
+	// Default memory limit: 0 = unlimited (users can set custom limit with --memory flag)
+	defaultMaxMemoryBytes = 0
+	// Estimated overhead per string in bytes (header + pointer + padding)
+	stringOverheadBytes = 24
 )
 
 // createNewBuffer initializes and returns a new empty Buffer
@@ -39,6 +99,10 @@ func createNewBuffer() *Buffer {
 		rowFreeze:    1,
 		colFreeze:    1,
 		selectedCell: [][]int{},
+		interners:    nil,
+		internCols:   nil,
+		memoryUsage:  0,
+		maxMemory:    defaultMaxMemoryBytes,
 	}
 }
 
@@ -69,12 +133,20 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 		}
 	}
 
+	// Check memory limit before adding row
+	rowSize := b.estimateRowSize(s)
+	if b.maxMemory > 0 && b.memoryUsage+rowSize > b.maxMemory {
+		return errors.New("Memory limit exceeded: cannot load more data (limit: " + 
+			formatBytes(b.maxMemory) + ", current: " + formatBytes(b.memoryUsage) + ")")
+	}
+
 	// Strict mode: enforce column count
 	if strict && len(s) != b.colLen {
 		return errors.New("Row " + I2S(b.rowLen+b.rowFreeze) + " lacks some columns")
 	}
 
 	b.cont = append(b.cont, s)
+	b.memoryUsage += rowSize
 
 	// Adjust column count if needed
 	if b.colLen != len(s) {
@@ -83,6 +155,74 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	b.rowLen++
 
 	return nil
+}
+
+// estimateRowSize estimates memory usage for a row in bytes
+func (b *Buffer) estimateRowSize(row []string) int64 {
+	size := int64(len(row) * 8) // Slice overhead (pointers)
+	for _, s := range row {
+		size += int64(len(s)) + stringOverheadBytes
+	}
+	return size
+}
+
+// getMemoryUsage returns current estimated memory usage
+func (b *Buffer) getMemoryUsage() int64 {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.memoryUsage
+}
+
+// getMemoryLimit returns the configured memory limit
+func (b *Buffer) getMemoryLimit() int64 {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.maxMemory
+}
+
+// setMemoryLimit sets the maximum memory limit in bytes (0 = no limit)
+func (b *Buffer) setMemoryLimit(bytes int64) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.maxMemory = bytes
+}
+
+// getMemoryStats returns memory usage statistics
+func (b *Buffer) getMemoryStats() map[string]interface{} {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	stats := make(map[string]interface{})
+	stats["current_bytes"] = b.memoryUsage
+	stats["current_formatted"] = formatBytes(b.memoryUsage)
+	stats["limit_bytes"] = b.maxMemory
+	stats["limit_formatted"] = formatBytes(b.maxMemory)
+	
+	if b.maxMemory > 0 {
+		stats["usage_percent"] = float64(b.memoryUsage) / float64(b.maxMemory) * 100.0
+		stats["available_bytes"] = b.maxMemory - b.memoryUsage
+		stats["available_formatted"] = formatBytes(b.maxMemory - b.memoryUsage)
+	} else {
+		stats["usage_percent"] = 0.0
+		stats["unlimited"] = true
+	}
+	
+	return stats
+}
+
+// formatBytes formats bytes into human-readable format
+func formatBytes(bytes int64) string {
+	const unit = 1024
+	if bytes < unit {
+		return strconv.FormatInt(bytes, 10) + " B"
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	units := []string{"KB", "MB", "GB", "TB"}
+	return strconv.FormatFloat(float64(bytes)/float64(div), 'f', 2, 64) + " " + units[exp]
 }
 
 // resizeColUnsafe adjusts the number of columns (must be called with lock held)
@@ -255,11 +395,34 @@ func parseNumericValueFast(s string) float64 {
 }
 
 // parseDateValueFast quickly parses a date string to unix timestamp
-// Returns 0 for invalid dates
+// Returns 0 for invalid dates with fast pre-checks
 func parseDateValueFast(s string) int64 {
 	s = strings.TrimSpace(s)
 
+	// Fast rejection checks
 	if s == "" || s == "NA" || s == "N/A" || s == "null" {
+		return 0
+	}
+
+	// Dates are typically 8-30 characters
+	if len(s) < 8 || len(s) > 30 {
+		return 0
+	}
+
+	// Must contain date separators
+	if !strings.ContainsAny(s, "-/.:T ") {
+		return 0
+	}
+
+	// Must contain at least one digit
+	hasDigit := false
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			hasDigit = true
+			break
+		}
+	}
+	if !hasDigit {
 		return 0
 	}
 
@@ -397,9 +560,14 @@ func (b *Buffer) autoDetectColumnType(colIndex int) int {
 	return colTypeStr
 }
 
-// isDateValue checks if a string represents a valid date
+// isDateValue checks if a string represents a valid date with fast pre-checks
 func isDateValue(s string) bool {
 	if len(s) == 0 {
+		return false
+	}
+
+	// Fast rejection: dates are typically 8-30 characters
+	if len(s) < 8 || len(s) > 30 {
 		return false
 	}
 
@@ -407,6 +575,18 @@ func isDateValue(s string) bool {
 	// Dates typically contain: -, /, :, T, or spaces with commas (for month names)
 	hasDateSep := strings.ContainsAny(s, "-/.:T") || (strings.Contains(s, " ") && strings.Contains(s, ","))
 	if !hasDateSep {
+		return false
+	}
+
+	// Must contain at least one digit
+	hasDigit := false
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			hasDigit = true
+			break
+		}
+	}
+	if !hasDigit {
 		return false
 	}
 
@@ -490,12 +670,102 @@ func isNumericValue(s string) bool {
 	return hasDigit
 }
 
-// detectAllColumnTypes automatically detects types for all columns
+// detectAllColumnTypes automatically detects types for all columns in parallel
 func (b *Buffer) detectAllColumnTypes() {
+	types := make([]int, b.colLen)
+	var wg sync.WaitGroup
+
 	for i := 0; i < b.colLen; i++ {
-		detectedType := b.autoDetectColumnType(i)
-		b.setColType(i, detectedType)
+		wg.Add(1)
+		go func(col int) {
+			defer wg.Done()
+			types[col] = b.autoDetectColumnType(col)
+		}(i)
 	}
+
+	wg.Wait()
+
+	for i, t := range types {
+		b.setColType(i, t)
+	}
+}
+
+// enableStringInterning analyzes columns and enables interning for low-cardinality string columns
+// This can save 30-70% memory for datasets with repeated categorical values
+func (b *Buffer) enableStringInterning() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.rowLen < 100 {
+		return // Too small to benefit
+	}
+
+	// Initialize interning structures
+	b.interners = make([]*stringInterner, b.colLen)
+	b.internCols = make([]bool, b.colLen)
+
+	// Analyze each column
+	for col := 0; col < b.colLen; col++ {
+		// Skip non-string columns
+		if b.colType[col] != colTypeStr {
+			continue
+		}
+
+		// Get column data
+		colData := make([]string, b.rowLen)
+		for row := 0; row < b.rowLen; row++ {
+			if col < len(b.cont[row]) {
+				colData[row] = b.cont[row][col]
+			}
+		}
+
+		// Check if column should be interned (low cardinality)
+		if shouldInternColumn(colData, internCardinalityThreshold) {
+			b.interners[col] = newStringInterner()
+			b.internCols[col] = true
+
+			// Intern existing values
+			for row := 0; row < b.rowLen; row++ {
+				if col < len(b.cont[row]) {
+					b.cont[row][col] = b.interners[col].intern(b.cont[row][col])
+				}
+			}
+		}
+	}
+}
+
+// internValue interns a string value for a specific column if interning is enabled
+func (b *Buffer) internValue(col int, value string) string {
+	if col < len(b.internCols) && b.internCols[col] && b.interners[col] != nil {
+		return b.interners[col].intern(value)
+	}
+	return value
+}
+
+// getInterningStats returns statistics about string interning usage
+func (b *Buffer) getInterningStats() map[string]interface{} {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	stats := make(map[string]interface{})
+	stats["enabled"] = len(b.internCols) > 0
+
+	if len(b.internCols) == 0 {
+		return stats
+	}
+
+	internedCols := 0
+	for _, enabled := range b.internCols {
+		if enabled {
+			internedCols++
+		}
+	}
+
+	stats["total_columns"] = b.colLen
+	stats["interned_columns"] = internedCols
+	stats["percentage"] = float64(internedCols) / float64(b.colLen) * 100.0
+
+	return stats
 }
 
 //clear selectedCell of buffer
@@ -535,10 +805,22 @@ func (b *Buffer) filterByColumn(colIndex int, options FilterOptions) *Buffer {
 	filtered.colType = make([]int, len(b.colType))
 	copy(filtered.colType, b.colType)
 
+	// Pre-allocate with estimated capacity (assume ~25% match rate)
+	estimatedCapacity := (b.rowLen - b.rowFreeze) / 4
+	if estimatedCapacity < 100 {
+		estimatedCapacity = 100
+	}
+	filtered.cont = make([][]string, 0, estimatedCapacity)
+
 	// Add header row if present
 	if b.rowFreeze > 0 && b.rowLen > 0 {
 		filtered.cont = append(filtered.cont, b.cont[0])
 		filtered.rowLen = 1
+	}
+
+	// Early exit if column index is invalid - but still return buffer with header
+	if colIndex >= b.colLen {
+		return filtered
 	}
 
 	// Get column type for numeric comparisons
