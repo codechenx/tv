@@ -95,7 +95,20 @@ func (b *Buffer) resizeColUnsafe(n int) {
 	lackLen := b.colLen - n
 	if lackLen < 0 {
 		lackLen = n - b.colLen
+		oldColLen := b.colLen
 		b.colLen = n
+		
+		// Resize colType array if needed
+		if len(b.colType) < n+1 {
+			newColType := make([]int, n+1)
+			copy(newColType, b.colType)
+			b.colType = newColType
+		}
+		
+		// Initialize new column types to colTypeStr (default)
+		for i := oldColLen; i < n; i++ {
+			b.colType[i] = colTypeStr
+		}
 	}
 
 	// Fill missing columns with NaN
