@@ -364,3 +364,29 @@ func stringContains(s, substr string) bool {
 	}
 	return false
 }
+
+// makeProgressBar creates a visual progress bar
+// percent should be between 0 and 100
+// width is the number of characters for the bar
+func makeProgressBar(percent float64, width int) string {
+	if percent < 0 {
+		percent = 0
+	}
+	if percent > 100 {
+		percent = 100
+	}
+	
+	filled := int(float64(width) * percent / 100.0)
+	empty := width - filled
+	
+	bar := "["
+	for i := 0; i < filled; i++ {
+		bar += "█"
+	}
+	for i := 0; i < empty; i++ {
+		bar += "░"
+	}
+	bar += fmt.Sprintf("] %.1f%%", percent)
+	
+	return bar
+}

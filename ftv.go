@@ -129,9 +129,10 @@ func main() {
 									}
 
 									if loadProgress.TotalBytes > 0 {
-										// Show percentage for files
+										// Show progress bar for files
 										percent := loadProgress.GetPercentage()
-										updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+										progressBar := makeProgressBar(percent, 15)
+										updateFooterWithStatus(fmt.Sprintf("Loading... %s", progressBar))
 									} else {
 										// Show row count for pipes (no file size)
 										updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")
@@ -264,9 +265,10 @@ func main() {
 									}
 
 									if loadProgress.TotalBytes > 0 {
-										// Show percentage for files
+										// Show progress bar for files
 										percent := loadProgress.GetPercentage()
-										updateFooterWithStatus(fmt.Sprintf("Loading... %.1f%%", percent))
+										progressBar := makeProgressBar(percent, 15)
+										updateFooterWithStatus(fmt.Sprintf("Loading... %s", progressBar))
 									} else {
 										// Show row count for pipes (no file size)
 										updateFooterWithStatus("Loading... " + strconv.Itoa(b.rowLen) + " rows")

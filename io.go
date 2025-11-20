@@ -67,7 +67,8 @@ func (p *progressTracker) display() {
 		if percent > 100 {
 			percent = 100
 		}
-		fmt.Printf("\r\033[K📊 Loading: %.1f%% | %d lines | %.0f lines/sec", percent, p.lineCount, linesPerSec)
+		progressBar := makeProgressBar(percent, 20)
+		fmt.Printf("\r\033[K📊 Loading: %s | %d lines | %.0f lines/sec", progressBar, p.lineCount, linesPerSec)
 	} else {
 		// For pipes or when size is unknown
 		fmt.Printf("\r\033[K📊 Loading: %d lines | %.0f lines/sec", p.lineCount, linesPerSec)
