@@ -185,6 +185,7 @@ ftv file.vcf --skip-prefix "##"
 | `--freeze` | `-f` | Freeze mode: `-1`=none, `0`=row+col, `1`=row only, `2`=col only |
 | `--strict` | | Strict mode: fail on missing/inconsistent data |
 | `--async` | | Progressive rendering while loading (default: `true`) |
+| `--memory` | `-m` | Memory limit in MB (`0`=unlimited, `>0`=set limit) |
 | `--help` | `-h` | Show help |
 | `--version` | `-v` | Show version |
 
@@ -205,6 +206,10 @@ ftv data.csv -f -1
 
 # Disable async loading for slow systems
 ftv large.csv --async=false
+
+# Set memory limit to 500 MB
+ftv large.csv --memory 500
+ftv large.csv -m 500
 ```
 
 ## Key Bindings
@@ -277,6 +282,22 @@ ftv huge_dataset.csv --async=false
 - Files show percentage: `Loading... 45.2%` → `Loaded 1,000,000 rows`
 - Pipes show row count: `Loading... 5,234 rows` → `Loaded 10,000 rows`
 - Updates at 50 FPS for smooth rendering
+
+**Memory limit:**
+Control memory usage when viewing very large files. By default, ftv has no memory limit and will continue loading data until your system runs out of memory. You can set a limit to prevent excessive memory consumption:
+
+```bash
+# Set memory limit to 500 MB
+ftv huge_dataset.csv --memory 500
+
+# Set memory limit to 1 GB (1024 MB)
+ftv huge_dataset.csv -m 1024
+```
+
+When the memory limit is reached, ftv will stop loading additional rows and display an error message indicating the limit. The data that was loaded before hitting the limit remains viewable and fully functional. This is useful for:
+- Previewing extremely large files without loading everything
+- Running on memory-constrained systems
+- Preventing out-of-memory crashes when exploring unknown files
 
 ### Data Types and Sorting
 
