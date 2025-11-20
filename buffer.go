@@ -27,12 +27,12 @@ func (si *stringInterner) intern(s string) string {
 	if s == "" {
 		return s
 	}
-	
+
 	// Try to load existing string
 	if existing, ok := si.pool.Load(s); ok {
 		return existing.(string)
 	}
-	
+
 	// Store and return the string
 	si.pool.Store(s, s)
 	return s
@@ -44,18 +44,18 @@ func shouldInternColumn(values []string, threshold float64) bool {
 	if len(values) < 100 {
 		return false // Too small to benefit
 	}
-	
+
 	// Sample the column to estimate cardinality
 	sampleSize := 1000
 	if len(values) < sampleSize {
 		sampleSize = len(values)
 	}
-	
+
 	seen := make(map[string]bool, sampleSize)
 	for i := 0; i < sampleSize; i++ {
 		seen[values[i]] = true
 	}
-	
+
 	cardinality := float64(len(seen)) / float64(sampleSize)
 	return cardinality < threshold // Low cardinality = good for interning
 }
@@ -136,7 +136,7 @@ func (b *Buffer) contAppendSli(s []string, strict bool) error {
 	// Check memory limit before adding row
 	rowSize := b.estimateRowSize(s)
 	if b.maxMemory > 0 && b.memoryUsage+rowSize > b.maxMemory {
-		return errors.New("Memory limit exceeded: cannot load more data (limit: " + 
+		return errors.New("Memory limit exceeded: cannot load more data (limit: " +
 			formatBytes(b.maxMemory) + ", current: " + formatBytes(b.memoryUsage) + ")")
 	}
 
@@ -197,7 +197,7 @@ func (b *Buffer) getMemoryStats() map[string]interface{} {
 	stats["current_formatted"] = formatBytes(b.memoryUsage)
 	stats["limit_bytes"] = b.maxMemory
 	stats["limit_formatted"] = formatBytes(b.maxMemory)
-	
+
 	if b.maxMemory > 0 {
 		stats["usage_percent"] = float64(b.memoryUsage) / float64(b.maxMemory) * 100.0
 		stats["available_bytes"] = b.maxMemory - b.memoryUsage
@@ -206,7 +206,7 @@ func (b *Buffer) getMemoryStats() map[string]interface{} {
 		stats["usage_percent"] = 0.0
 		stats["unlimited"] = true
 	}
-	
+
 	return stats
 }
 
@@ -237,14 +237,14 @@ func (b *Buffer) resizeColUnsafe(n int) {
 		lackLen = n - b.colLen
 		oldColLen := b.colLen
 		b.colLen = n
-		
+
 		// Resize colType array if needed
 		if len(b.colType) < n+1 {
 			newColType := make([]int, n+1)
 			copy(newColType, b.colType)
 			b.colType = newColType
 		}
-		
+
 		// Initialize new column types to colTypeStr (default)
 		for i := oldColLen; i < n; i++ {
 			b.colType[i] = colTypeStr
